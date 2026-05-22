@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/img/stmkg-logo.png">
+    <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||'dark')</script>
+    <title>Detail Stasiun - STMKG Monitoring</title>
+    <link rel="icon" href="/img/stmkg-logo.png" type="image/png">
+    <meta name="description" content="Detail monitoring stasiun meteorologi">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="/css/style.css?v=3">
+</head>
+
+<body>
+    <div class="app-layout">
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-icon">
+                    <img src="/img/stmkg-logo.png" alt="STMKG Logo" style="width:36px;height:36px;object-fit:contain">
+                </div>
+                <div class="brand-text">
+                    <h2>STMKG</h2><span>Jawa Barat</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/index.html" class="nav-link"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span> Dashboard</a>
+                <a href="/peta-hujan.html" class="nav-link"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 14.9"/><path d="M16 14v6"/><path d="M8 14v6"/><path d="M12 12v6"/></svg></span> Peta Curah Hujan</a>
+                <a href="/stasiun.html" class="nav-link"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.4"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.4"/><path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/></svg></span> Daftar Stasiun</a>
+                <a href="/prediksi.html" class="nav-link"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 14.9"/><path d="M12 12v6"/><path d="M8 18l4 4 4-4"/></svg></span> Prediksi Curah Hujan</a>
+                <a href="/verifikasi.html" class="nav-link"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg></span> Verifikasi Prediksi</a>
+                <a href="/tentang.html" class="nav-link"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></span> Tentang Sistem</a>
+            </nav>
+            <div class="system-live">
+                <div class="live-dot"></div>
+                <div class="system-live-text">
+                    <strong>SYSTEM LIVE</strong>
+                    Monitoring & Prediksi Curah Hujan<br>
+                    ARG, AWS, & AAWS Jawa Barat
+                </div>
+            </div>
+        </aside>
+
+        <div class="main-content">
+            <header class="top-header">
+                <button class="mobile-menu-btn">☰</button>
+                <div class="header-title" style="display:flex;align-items:center;gap:14px;">
+                    <img src="/img/stmkg-logo.png" alt="STMKG"
+                        style="height:46px;width:auto;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.1))">
+                    <div>
+                        <h1>Detail Stasiun & Prediksi curah hujan</h1>
+                        <span>Meteorological Observation & Forecasting</span>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-icon" id="themeToggle" title="Toggle Theme">🌙</button>
+                    <div class="notif-wrapper">
+                        <button class="btn-icon" title="Notifikasi Hujan" id="notifBtn">🔔</button>
+                        <span class="notif-badge" id="notifBadge" style="display:none">0</span>
+                        <div class="notif-dropdown" id="notifDropdown">
+                            <div class="notif-header">
+                                <strong>⚠️ Peringatan Hujan Lebat</strong>
+                                <button class="notif-close"
+                                    onclick="document.getElementById('notifDropdown').classList.remove('show')">✕</button>
+                            </div>
+                            <div class="notif-body" id="notifBody">
+                                <div class="notif-empty">Tidak ada peringatan saat ini</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <main class="page-content">
+                <!-- Print Header (only visible when printing) -->
+                <div class="print-header">
+                    <h1>Laporan Monitoring Stasiun - STMKG Jawa Barat</h1>
+                    <p id="printSubtitle">Data Real-time Curah Hujan dan Parameter Meteorologi</p>
+                </div>
+
+                <!-- Breadcrumb -->
+                <div class="breadcrumb">
+                    <a href="/index.html">Dashboard</a> <span>›</span>
+                    <a href="/stasiun.html">Daftar Stasiun</a> <span>›</span>
+                    <span class="current" id="breadcrumbName">Loading...</span>
+                </div>
+
+                <!-- Detail 3-Card Header Layout -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 24px;">
+                    <!-- Card 1: Device Information -->
+                    <div class="card" style="padding: 24px; margin-bottom: 0;">
+                        <h3 style="font-size: 1.1rem; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                            <span style="color: var(--primary);">🔵</span> Device Information
+                        </h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 12px; font-size: 0.9rem;">
+                            <div style="color: var(--text-muted);">Station Name</div>
+                            <div style="font-weight: 600;" id="devStationName">Loading...</div>
+                            <div style="color: var(--text-muted);">Station Code</div>
+                            <div style="font-weight: 600; color: var(--primary);" id="devStationCode">-</div>
+                            <div style="color: var(--text-muted);">Device Model</div>
+                            <div style="font-weight: 600;" id="devModel">-</div>
+                            <div style="color: var(--text-muted);">Device Type</div>
+                            <div style="font-weight: 600;" id="devType">-</div>
+                        </div>
+                    </div>
+
+                    <!-- Card 2: Live Status & Location -->
+                    <div class="card" style="padding: 24px; margin-bottom: 0;">
+                        <h3 style="font-size: 1.1rem; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                            <span style="color: var(--primary);">📡</span> Live Status & Location
+                        </h3>
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px; background: rgba(34, 197, 94, 0.1); padding: 8px 16px; border-radius: 8px; width: fit-content;">
+                            <span class="status-dot online" id="statusDot" style="width:10px;height:10px"></span>
+                            <span style="color: #22c55e; font-weight: 700; font-size: 0.85rem;" id="liveStatusText">ONLINE</span>
+                            <span style="color: var(--text-muted); font-size: 0.75rem; margin-left: 12px;" id="lastUpdateText">-</span>
+                        </div>
+                        <div style="font-size: 0.9rem; margin-bottom: 6px; color: var(--text-muted);">Coordinates</div>
+                        <div style="font-weight: 600; font-family: monospace; font-size: 1rem; margin-bottom: 12px;" id="devCoords">-</div>
+                        <div style="font-size: 0.9rem; margin-bottom: 6px; color: var(--text-muted);">Location Address</div>
+                        <div style="font-weight: 600; font-size: 0.95rem; line-height: 1.4;" id="devAddress">-</div>
+                    </div>
+
+                    <!-- Card 3: Map -->
+                    <div class="card" style="padding: 0; margin-bottom: 0; overflow: hidden; position: relative; min-height: 200px;">
+                        <div id="stationMap" style="width: 100%; height: 100%; position: absolute; inset: 0;"></div>
+                    </div>
+                </div>
+                
+                <!-- Device Health & Power Analytics (Feature 5) -->
+                <div id="healthSection" class="card" style="display: none; margin-bottom: 24px; padding: 20px; border-left: 4px solid #10b981;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="font-size: 2rem;">🛡️</div>
+                            <div>
+                                <h3 style="font-size: 1.1rem; margin-bottom: 2px;">Device Health & Power Analytics</h3>
+                                <p style="font-size: 0.8rem; color: var(--text-muted);">Monitoring logger stability and battery performance</p>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 16px;">
+                            <div style="text-align: right;">
+                                <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Health Score</div>
+                                <div style="font-size: 1.4rem; font-weight: 800; color: #10b981;" id="healthScore">--%</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Status</div>
+                                <div id="healthStatusBadge" style="padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; background: rgba(16, 185, 129, 0.1); color: #10b981; margin-top: 4px;">EXCELLENT</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color); display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                        <div>
+                            <div style="font-size: 0.8rem; font-weight: 600; margin-bottom: 8px; color: var(--text-secondary);">Maintenance Recommendation</div>
+                            <div id="healthMessage" style="font-size: 0.85rem; line-height: 1.5; color: var(--text-muted);">Semua sistem beroperasi normal. Tidak ada tindakan pemeliharaan yang diperlukan saat ini.</div>
+                        </div>
+                        <div style="background: rgba(0,0,0,0.1); padding: 12px; border-radius: 8px;">
+                            <div style="font-size: 0.75rem; font-weight: 600; margin-bottom: 6px; color: var(--text-muted);">Battery Trend (24h)</div>
+                            <div style="display: flex; align-items: baseline; gap: 8px;">
+                                <div style="font-size: 1.2rem; font-weight: 700;" id="battAvg">-- V</div>
+                                <div style="font-size: 0.7rem; color: #22c55e;" id="battDelta">↑ 0.2V</div>
+                            </div>
+                            <div style="height: 4px; background: rgba(148,163,184,0.1); border-radius: 2px; margin-top: 8px; overflow: hidden;">
+                                <div id="battBar" style="width: 0%; height: 100%; background: #10b981; transition: width 1s ease;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Parameter Status Grid -->
+                <div class="metrics-grid" id="metricsGrid" style="margin-top: 16px; margin-bottom: 24px;">
+                    <div
+                        style="padding: 40px; text-align: center; color: var(--text-muted); width: 100%; grid-column: 1 / -1;">
+                        <span style="font-size: 2rem;">⏳</span><br>
+                        Memuat data parameter...
+                    </div>
+                </div>
+
+                <!-- 24-Hour History Chart with Controls -->
+                <div class="card chart-card" style="margin-bottom: 24px; padding: 24px;">
+                    <div class="card-header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; border-bottom: none; margin-bottom: 16px; padding-bottom: 0;">
+                        <div>
+                            <h3 style="font-size: 1.2rem;">Meteorological Parameters</h3>
+                            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 4px;">Detailed historical readings for the past 24 hours</p>
+                        </div>
+                        <div style="display: flex; gap: 12px; align-items: center;">
+                            <button onclick="exportCSV()" class="btn-sm" style="background:var(--bg-main);border:1px solid var(--border-color);color:var(--text-secondary);padding:6px 12px;border-radius:6px;font-size:0.85rem;cursor:pointer;">📥 Export CSV</button>
+                            <button onclick="printReport()" class="btn-sm" style="background:var(--bg-main);border:1px solid var(--border-color);color:var(--text-secondary);padding:6px 12px;border-radius:6px;font-size:0.85rem;cursor:pointer;">🖨️ Cetak Laporan</button>
+                            <select id="chartParamSelect" class="filter-select" style="padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-primary);">
+                                <option value="all">Semua Parameter Utama</option>
+                                <option value="temp">Suhu Udara (°C)</option>
+                                <option value="rh">Kelembapan (%)</option>
+                                <option value="rr">Curah Hujan (mm)</option>
+                                <option value="press">Tekanan (hPa)</option>
+                                <option value="ws">Kecepatan Angin (m/s)</option>
+                                <option value="wd">Arah Angin (°)</option>
+                                <option value="sr">Radiasi Matahari (W/m²)</option>
+                                <option value="batt">Baterai / Voltage (V)</option>
+                            </select>
+                            <select id="chartTimeSelect" class="filter-select" style="padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-primary);">
+                                <option value="0.083">5 Menit Terakhir</option>
+                                <option value="0.25">15 Menit Terakhir</option>
+                                <option value="1">1 Jam Terakhir</option>
+                                <option value="3">3 Jam Terakhir</option>
+                                <option value="6">6 Jam Terakhir</option>
+                                <option value="12">12 Jam Terakhir</option>
+                                <option value="24" selected>24 Jam Terakhir</option>
+                                <option value="48">2 Hari Terakhir</option>
+                                <option value="168">7 Hari Terakhir</option>
+                                <option value="720">30 Hari Terakhir</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="chart-container" style="height: 350px;">
+                        <canvas id="mainChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- 7-Day Prediction Section -->
+                <div class="card chart-card" id="predictionSection">
+                    <div class="card-header">
+                        <div>
+                            <h3>🌧️ Prediksi Curah Hujan 7 Hari Kedepan</h3>
+                            <p>Hasil analisis model LSTM untuk stasiun ini</p>
+                        </div>
+                    </div>
+                    <!-- Flood Risk Alert -->
+                    <div id="floodRiskAlert"
+                        style="margin:0 16px 12px;padding:14px 18px;border-radius:10px;font-size:0.85rem;display:flex;align-items:center;gap:10px">
+                        <span style="font-size:1.4rem" id="floodIcon">⏳</span>
+                        <div>
+                            <div style="font-weight:700" id="floodTitle">Memuat data prediksi...</div>
+                            <div style="font-size:0.78rem;margin-top:2px;opacity:0.85" id="floodDetail"></div>
+                        </div>
+                    </div>
+                    <!-- Prediction Chart -->
+                    <div class="chart-container" style="height:260px">
+                        <canvas id="predictionChart"></canvas>
+                    </div>
+                    <!-- Prediction Table -->
+                    <div style="padding:12px 16px">
+                        <table style="width:100%;font-size:0.78rem;border-collapse:collapse" id="predDayTable">
+                            <thead>
+                                <tr style="border-bottom:1px solid var(--border-color);color:var(--text-muted)">
+                                    <th style="padding:8px;text-align:left">HARI</th>
+                                    <th style="padding:8px;text-align:center">PREDIKSI</th>
+                                    <th style="padding:8px;text-align:center">KATEGORI</th>
+                                    <th style="padding:8px;text-align:center">CONFIDENCE</th>
+                                </tr>
+                            </thead>
+                            <tbody id="predDayBody">
+                                <tr>
+                                    <td colspan="4" style="padding:16px;text-align:center;color:var(--text-muted)">
+                                        Memuat...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+
+            <footer class="app-footer">&copy; 2026 STMKG Jawa Barat | Integrated Climatology Monitoring System v1.0
+            </footer>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="/js/app.js"></script>
+    <script src="/js/detail.js"></script>
+</body>
+
+</html>

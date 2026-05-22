@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/img/stmkg-logo.png">
+    <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||'dark')</script>
+    <title>Tentang Sistem - STMKG Monitoring</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css?v=3">
+    <style>
+        .arch-diagram { background: var(--bg-main); border-radius: 12px; padding: 32px; border: 1px solid var(--border-color); margin: 24px 0; font-family: 'Courier New', monospace; font-size: 0.8rem; line-height: 1.8; overflow-x: auto; white-space: pre; }
+        .tech-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin: 24px 0; }
+        .tech-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; transition: transform 0.2s; }
+        .tech-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+        .tech-card h4 { font-size: 1rem; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+        .tech-card p { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; }
+        .flow-step { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 20px; }
+        .flow-num { width: 36px; height: 36px; border-radius: 50%; background: var(--primary-500); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.9rem; flex-shrink: 0; }
+        .flow-content h4 { font-size: 0.95rem; margin-bottom: 4px; }
+        .flow-content p { font-size: 0.85rem; color: var(--text-secondary); }
+        .stat-row { display: flex; gap: 16px; flex-wrap: wrap; margin: 20px 0; }
+        .stat-box { flex: 1; min-width: 120px; background: var(--bg-main); border-radius: 8px; padding: 16px; text-align: center; border: 1px solid var(--border-color); }
+        .stat-box .num { font-size: 1.8rem; font-weight: 800; color: var(--primary-500); }
+        .stat-box .label { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
+    </style>
+</head>
+<body>
+    <div class="app-layout">
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-icon"><img src="/img/stmkg-logo.png" alt="STMKG Logo" style="width:36px;height:36px;object-fit:contain"></div>
+                <div class="brand-text"><h2>STMKG</h2><span>Jawa Barat</span></div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/index.html" class="nav-link"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span> Dashboard</a>
+                <a href="/peta-hujan.html" class="nav-link"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 14.9"/><path d="M16 14v6"/><path d="M8 14v6"/><path d="M12 12v6"/></svg></span> Peta Curah Hujan</a>
+                <a href="/stasiun.html" class="nav-link"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.4"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.4"/><path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/></svg></span> Daftar Stasiun</a>
+                <a href="/prediksi.html" class="nav-link"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 14.9"/><path d="M12 12v6"/><path d="M8 18l4 4 4-4"/></svg></span> Prediksi Curah Hujan</a>
+                <a href="/verifikasi.html" class="nav-link"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg></span> Verifikasi Prediksi</a>
+                <a href="/tentang.html" class="nav-link active"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></span> Tentang Sistem</a>
+            </nav>
+            <div class="system-live">
+                <div class="live-dot"></div>
+                <div class="system-live-text"><strong>SYSTEM LIVE</strong>Monitoring & Prediksi Curah Hujan<br>ARG, AWS, & AAWS Jawa Barat</div>
+            </div>
+        </aside>
+
+        <div class="main-content">
+            <header class="top-header">
+                <button class="mobile-menu-btn">☰</button>
+                <div class="header-title" style="display:flex;align-items:center;gap:14px;">
+                    <img src="/img/stmkg-logo.png" alt="STMKG" style="height:46px;width:auto;object-fit:contain">
+                    <div><h1>Tentang Sistem</h1><span>Arsitektur & Teknologi</span></div>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-icon" id="themeToggle" title="Toggle Theme">🌙</button>
+                </div>
+            </header>
+
+            <main class="page-content">
+                <!-- Overview -->
+                <div class="card" style="padding: 32px; margin-bottom: 24px;">
+                    <h2 style="font-size: 1.4rem; margin-bottom: 12px;">🌦️ Sistem Monitoring dan Prediksi Curah Hujan</h2>
+                    <p style="color: var(--text-secondary); line-height: 1.7; max-width: 800px;">
+                        Sistem terintegrasi untuk pemantauan kondisi cuaca secara real-time dan prediksi curah hujan 7 hari ke depan 
+                        menggunakan model Deep Learning (Bidirectional LSTM) berbasis data dari jaringan stasiun meteorologi 
+                        AWS, ARG, dan AAWS di Provinsi Jawa Barat.
+                    </p>
+                    <div class="stat-row">
+                        <div class="stat-box"><div class="num">50</div><div class="label">Stasiun Aktif</div></div>
+                        <div class="stat-box"><div class="num">3</div><div class="label">Tipe Sensor</div></div>
+                        <div class="stat-box"><div class="num">7</div><div class="label">Hari Prediksi</div></div>
+                        <div class="stat-box"><div class="num">10</div><div class="label">Menit Interval</div></div>
+                        <div class="stat-box"><div class="num">24/7</div><div class="label">Real-time</div></div>
+                    </div>
+                </div>
+
+                <!-- Architecture -->
+                <div class="card" style="padding: 32px; margin-bottom: 24px;">
+                    <h3 style="font-size: 1.2rem; margin-bottom: 16px;">🏗️ Arsitektur Sistem</h3>
+                    <div class="arch-diagram">
+┌─────────────────────────────────────────────────────────────────────┐
+│                         SUMBER DATA (50 Stasiun)                     │
+│  ┌───────────┐    ┌───────────┐    ┌───────────┐                   │
+│  │  AWS (11) │    │  ARG (30) │    │ AAWS (9)  │                   │
+│  │ 7 Param   │    │ 3 Param   │    │ 7 Param   │                   │
+│  └─────┬─────┘    └─────┬─────┘    └─────┬─────┘                   │
+└────────┼────────────────┼────────────────┼──────────────────────────┘
+         │                │                │
+         ▼                ▼                ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│              MQTT Broker (BMKG - 202.90.198.159:1883)                │
+│              Protocol: MQTT v5 | QoS: 0 | Interval: 10 min         │
+└────────────────────────────────┬────────────────────────────────────┘
+                                 │
+                                 ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                    APPLICATION SERVER (Node.js)                       │
+│  ┌──────────┐  ┌───────────┐  ┌───────────┐  ┌──────────────────┐  │
+│  │ Express  │  │MQTT Client│  │ WebSocket │  │ Prediction Cron  │  │
+│  │  REST API│  │ Subscriber│  │  Server   │  │  (Python Bridge) │  │
+│  └────┬─────┘  └─────┬─────┘  └─────┬─────┘  └────────┬─────────┘  │
+└───────┼──────────────┼──────────────┼──────────────────┼────────────┘
+        │              │              │                   │
+        ▼              ▼              ▼                   ▼
+┌──────────────┐ ┌────────────┐ ┌──────────┐  ┌──────────────────────┐
+│   SQLite     │ │  InfluxDB  │ │ Browser  │  │   Python Engine      │
+│  (Metadata,  │ │(Time-Series│ │(Frontend)│  │  Bi-LSTM / Fallback  │
+│  Predictions)│ │   Data)    │ │          │  │  TensorFlow + Keras  │
+└──────────────┘ └────────────┘ └──────────┘  └──────────────────────┘</div>
+                </div>
+
+                <!-- Data Flow -->
+                <div class="card" style="padding: 32px; margin-bottom: 24px;">
+                    <h3 style="font-size: 1.2rem; margin-bottom: 20px;">🔄 Alur Data (Data Flow)</h3>
+                    <div class="flow-step">
+                        <div class="flow-num">1</div>
+                        <div class="flow-content">
+                            <h4>Akuisisi Data (MQTT)</h4>
+                            <p>Datalogger di setiap stasiun mengirim data sensor setiap 10 menit ke broker MQTT BMKG. Server subscribe ke topic yang relevan dan menerima data secara real-time.</p>
+                        </div>
+                    </div>
+                    <div class="flow-step">
+                        <div class="flow-num">2</div>
+                        <div class="flow-content">
+                            <h4>Penyimpanan (InfluxDB + SQLite)</h4>
+                            <p>Data time-series (suhu, kelembapan, curah hujan, dll) disimpan di InfluxDB untuk query cepat. Metadata stasiun dan prediksi disimpan di SQLite.</p>
+                        </div>
+                    </div>
+                    <div class="flow-step">
+                        <div class="flow-num">3</div>
+                        <div class="flow-content">
+                            <h4>Prediksi (Bi-LSTM)</h4>
+                            <p>Setiap 6 jam, model Bidirectional LSTM menganalisis 60 hari data historis dan menghasilkan prediksi curah hujan untuk 7 hari ke depan per stasiun.</p>
+                        </div>
+                    </div>
+                    <div class="flow-step">
+                        <div class="flow-num">4</div>
+                        <div class="flow-content">
+                            <h4>Visualisasi & Alert (WebSocket)</h4>
+                            <p>Dashboard menampilkan data real-time via WebSocket. Jika curah hujan melebihi 50mm, sistem otomatis mengirim peringatan ke semua client yang terhubung.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tech Stack -->
+                <div class="card" style="padding: 32px; margin-bottom: 24px;">
+                    <h3 style="font-size: 1.2rem; margin-bottom: 20px;">⚙️ Technology Stack</h3>
+                    <div class="tech-grid">
+                        <div class="tech-card">
+                            <h4>🟢 Node.js</h4>
+                            <p>Runtime server utama. Menangani REST API, MQTT subscription, WebSocket broadcasting, dan bridge ke Python prediction engine.</p>
+                        </div>
+                        <div class="tech-card">
+                            <h4>📊 InfluxDB</h4>
+                            <p>Database time-series untuk menyimpan data sensor dengan performa query tinggi. Mendukung retention policy dan downsampling.</p>
+                        </div>
+                        <div class="tech-card">
+                            <h4>🗄️ SQLite</h4>
+                            <p>Database ringan untuk metadata stasiun, hasil prediksi, peringatan, dan performa model. Zero-configuration.</p>
+                        </div>
+                        <div class="tech-card">
+                            <h4>📡 MQTT</h4>
+                            <p>Protokol IoT lightweight untuk komunikasi real-time antara datalogger stasiun dan server. QoS 0 untuk efisiensi bandwidth.</p>
+                        </div>
+                        <div class="tech-card">
+                            <h4>🧠 TensorFlow / Keras</h4>
+                            <p>Framework Deep Learning untuk model Bidirectional LSTM. Dilatih dengan data historis 5 tahun dari stasiun BMKG.</p>
+                        </div>
+                        <div class="tech-card">
+                            <h4>🗺️ Leaflet.js</h4>
+                            <p>Library peta interaktif open-source. Menampilkan lokasi stasiun, heatmap curah hujan, dan marker prediksi.</p>
+                        </div>
+                        <div class="tech-card">
+                            <h4>📈 Chart.js</h4>
+                            <p>Library visualisasi data untuk grafik time-series, bar chart prediksi, dan scatter plot verifikasi model.</p>
+                        </div>
+                        <div class="tech-card">
+                            <h4>🔌 WebSocket</h4>
+                            <p>Koneksi bidirectional untuk push data real-time ke browser tanpa polling. Update instan saat data baru masuk.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Station Types -->
+                <div class="card" style="padding: 32px; margin-bottom: 24px;">
+                    <h3 style="font-size: 1.2rem; margin-bottom: 20px;">📡 Tipe Stasiun</h3>
+                    <div class="tech-grid">
+                        <div class="tech-card" style="border-left: 4px solid #2563eb;">
+                            <h4>🔷 AWS (Automatic Weather Station)</h4>
+                            <p><strong>11 stasiun</strong> — Mengukur 7 parameter utama: suhu, kelembapan, tekanan, kecepatan angin, arah angin, curah hujan, dan radiasi matahari. Interval 10 menit.</p>
+                        </div>
+                        <div class="tech-card" style="border-left: 4px solid #22c55e;">
+                            <h4>🟢 ARG (Automatic Rain Gauge)</h4>
+                            <p><strong>30 stasiun</strong> — Fokus pengukuran curah hujan dengan presisi tinggi. Parameter: curah hujan, suhu logger, dan tegangan baterai.</p>
+                        </div>
+                        <div class="tech-card" style="border-left: 4px solid #f97316;">
+                            <h4>🔶 AAWS (Automatic Agro Weather Station)</h4>
+                            <p><strong>9 stasiun</strong> — Stasiun agroklimatologi dengan parameter lengkap seperti AWS, ditambah parameter khusus pertanian.</p>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <footer class="app-footer">&copy; 2026 STMKG Jawa Barat | Integrated Climatology Monitoring System v1.0</footer>
+        </div>
+    </div>
+    <script src="/js/app.js"></script>
+</body>
+</html>

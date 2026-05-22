@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/img/stmkg-logo.png">
+    <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||'dark')</script>
+    <title>Prediksi Curah Hujan - STMKG Monitoring</title>
+    <link rel="icon" href="/img/stmkg-logo.png" type="image/png">
+    <meta name="description" content="Prediksi curah hujan 7 hari menggunakan model LSTM">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="/css/style.css?v=3">
+    <style>
+        /* ─── Prediction Page Specific Styles ──────── */
+
+        .forecast-banner {
+            background: linear-gradient(135deg, #1e3a5f 0%, #0f2240 60%, #0a1628 100%);
+            border-radius: var(--border-radius);
+            padding: 28px 32px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(37, 99, 235, 0.2);
+        }
+
+        .forecast-banner::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -15%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(37, 99, 235, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .forecast-banner h2 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .forecast-banner p {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* ─── Controls Bar ──────────────────────── */
+        .prediction-controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .control-group label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .control-input {
+            padding: 9px 14px;
+            border-radius: var(--border-radius-xs);
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            transition: border-color var(--transition-fast);
+            min-width: 140px;
+        }
+
+        .control-input:focus {
+            border-color: var(--primary-400);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        select.control-input {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M6 8L1 3h10z' fill='%2394a3b8'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            padding-right: 30px;
+            cursor: pointer;
+        }
+
+        /* ─── Summary Stat Cards ──────────────── */
+        .prediction-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .pred-stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 16px 18px;
+            text-align: center;
+            transition: all var(--transition-normal);
+        }
+
+        .pred-stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .pred-stat-card .stat-icon {
+            font-size: 1.5rem;
+            margin-bottom: 6px;
+        }
+
+        .pred-stat-card .stat-value {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        .pred-stat-card .stat-label {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* ─── Map + Table Grid ───────────────── */
+        .prediction-main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        #predictionMap {
+            width: 100%;
+            min-height: 460px;
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+            z-index: 1;
+        }
+
+        .map-legend-box {
+            display: flex;
+            gap: 14px;
+            justify-content: center;
+            padding: 12px 16px;
+            flex-wrap: wrap;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .legend-item-pred {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .legend-dot-pred {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* ─── Prediction Table ───────────────── */
+        .pred-table-wrapper {
+            max-height: 460px;
+            overflow-y: auto;
+        }
+
+        .prediction-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.82rem;
+        }
+
+        .prediction-table thead {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+
+        .prediction-table th {
+            background: var(--primary-800);
+            color: rgba(255, 255, 255, 0.85);
+            padding: 10px 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .prediction-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+
+        .prediction-table tbody tr:hover {
+            background: var(--bg-card-hover);
+        }
+
+        .rainfall-value {
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .rainfall-value.ringan {
+            color: var(--ringan);
+        }
+
+        .rainfall-value.sedang {
+            color: var(--sedang);
+        }
+
+        .rainfall-value.lebat {
+            color: var(--danger);
+        }
+
+        .rainfall-value.sangat-lebat {
+            color: var(--sangat-lebat);
+        }
+
+        .confidence-bar {
+            width: 60px;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(148, 163, 184, 0.15);
+            overflow: hidden;
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 6px;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        /* ─── Day Tabs ───────────────────────── */
+        .day-tabs {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            flex: 1;
+        }
+
+        .day-tab {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            white-space: nowrap;
+        }
+
+        .day-tab:hover {
+            border-color: var(--primary-400);
+            color: var(--primary-400);
+        }
+
+        .day-tab.active {
+            background: var(--primary-500);
+            color: #fff;
+            border-color: var(--primary-500);
+        }
+
+        /* ─── Model Performance ──────────────── */
+        .perf-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
+        }
+
+        .perf-item {
+            text-align: center;
+            padding: 16px;
+            background: var(--bg-main);
+            border-radius: var(--border-radius-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        .perf-label {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-bottom: 8px;
+        }
+
+        .perf-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        .perf-unit {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .perf-change {
+            font-size: 0.72rem;
+            color: var(--success);
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        .accuracy-gauge {
+            grid-column: span 1;
+        }
+
+        .accuracy-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--success);
+        }
+
+        .accuracy-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(148, 163, 184, 0.15);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .accuracy-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success), #06b6d4);
+            border-radius: 4px;
+            transition: width 1s ease;
+        }
+
+        /* ─── Chart Card ─────────────────────── */
+        .pred-chart-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .chart-container-pred {
+            height: 280px;
+            position: relative;
+        }
+
+        .category-distribution {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 8px 0;
+        }
+
+        .cat-dist-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .cat-dist-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .cat-dist-info {
+            flex: 1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cat-dist-name {
+            font-size: 0.82rem;
+            font-weight: 600;
+        }
+
+        .cat-dist-count {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+
+        .cat-dist-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(148, 163, 184, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .cat-dist-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.8s ease;
+        }
+
+        @media (max-width: 1024px) {
+            .prediction-main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .prediction-summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .perf-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .pred-chart-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .prediction-summary-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .perf-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-layout">
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-icon">
+                    <img src="/img/stmkg-logo.png" alt="STMKG Logo" style="width:36px;height:36px;object-fit:contain">
+                </div>
+                <div class="brand-text">
+                    <h2>STMKG</h2><span>Jawa Barat</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/index.html" class="nav-link"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span> Dashboard</a>
+                <a href="/peta-hujan.html" class="nav-link"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 14.9"/><path d="M16 14v6"/><path d="M8 14v6"/><path d="M12 12v6"/></svg></span> Peta Curah Hujan</a>
+                <a href="/stasiun.html" class="nav-link"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.4"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.4"/><path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/></svg></span> Daftar Stasiun</a>
+                <a href="/prediksi.html" class="nav-link active"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 14.9"/><path d="M12 12v6"/><path d="M8 18l4 4 4-4"/></svg></span> Prediksi Curah Hujan</a>
+                <a href="/verifikasi.html" class="nav-link"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg></span> Verifikasi Prediksi</a>
+                <a href="/tentang.html" class="nav-link"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></span> Tentang Sistem</a>
+            </nav>
+            <div class="system-live">
+                <div class="live-dot"></div>
+                <div class="system-live-text">
+                    <strong>SYSTEM LIVE</strong>
+                    Monitoring & Prediksi Curah Hujan<br>
+                    ARG, AWS, & AAWS Jawa Barat
+                </div>
+            </div>
+        </aside>
+
+        <div class="main-content">
+            <header class="top-header">
+                <button class="mobile-menu-btn">☰</button>
+                <div class="header-title" style="display:flex;align-items:center;gap:14px;">
+                    <img src="/img/stmkg-logo.png" alt="STMKG"
+                        style="height:46px;width:auto;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.1))">
+                    <div>
+                        <h1>Prediksi Curah Hujan 7 Hari</h1>
+                        <span>Model Prediksi Deep Learning (Bi-LSTM) Jawa Barat</span>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-icon" id="themeToggle" title="Toggle Theme">🌙</button>
+                    <div class="notif-wrapper">
+                        <button class="btn-icon" title="Notifikasi Hujan" id="notifBtn">🔔</button>
+                        <span class="notif-badge" id="notifBadge" style="display:none">0</span>
+                        <div class="notif-dropdown" id="notifDropdown">
+                            <div class="notif-header">
+                                <strong>⚠️ Peringatan Hujan Lebat</strong>
+                                <button class="notif-close"
+                                    onclick="document.getElementById('notifDropdown').classList.remove('show')">✕</button>
+                            </div>
+                            <div class="notif-body" id="notifBody">
+                                <div class="notif-empty">Tidak ada peringatan saat ini</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <main class="page-content">
+                <!-- Banner -->
+                <div class="forecast-banner">
+                    <h2>🌧️ Prediksi Curah Hujan – Jawa Barat</h2>
+                    <p>Hasil Analisis Model LSTM & Machine Learning Berbasis Data 50 Stasiun (AWS, ARG, AAWS)</p>
+                </div>
+
+                <!-- Controls Bar: Date Picker + Filters + Day Tabs -->
+                <div class="prediction-controls" style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end">
+                    <div class="control-group" style="min-width:140px">
+                        <label>📅 Tanggal</label>
+                        <input type="date" class="control-input" id="datePicker">
+                    </div>
+                    <div class="control-group" style="min-width:120px">
+                        <label>📡 Tipe</label>
+                        <select class="control-input" id="typeFilter">
+                            <option value="all">Semua Tipe</option>
+                            <option value="AWS">AWS</option>
+                            <option value="ARG">ARG</option>
+                            <option value="AAWS">AAWS</option>
+                        </select>
+                    </div>
+                    <div class="control-group" style="min-width:140px">
+                        <label>📍 Wilayah</label>
+                        <select class="control-input" id="regionFilter">
+                            <option value="all">Semua Wilayah</option>
+                        </select>
+                    </div>
+                    <div class="day-tabs" id="dayTabs" style="margin-left:auto;display:flex;flex-wrap:wrap;gap:4px">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Summary Stat Cards -->
+                <div class="prediction-summary-grid" id="summaryGrid">
+                    <div class="pred-stat-card">
+                        <div class="stat-icon">📡</div>
+                        <div class="stat-value" id="sumStations">--</div>
+                        <div class="stat-label">Total Stasiun</div>
+                    </div>
+                    <div class="pred-stat-card">
+                        <div class="stat-icon">⚠️</div>
+                        <div class="stat-value" id="sumHighRisk">--</div>
+                        <div class="stat-label">Lebat / Sangat Lebat</div>
+                    </div>
+                    <div class="pred-stat-card">
+                        <div class="stat-icon">🌧️</div>
+                        <div class="stat-value" id="sumMaxRainfall">--</div>
+                        <div class="stat-label">Prediksi Tertinggi (mm)</div>
+                    </div>
+                    <div class="pred-stat-card">
+                        <div class="stat-icon">📍</div>
+                        <div class="stat-value" id="sumAffectedRegions">--</div>
+                        <div class="stat-label">Wilayah Terancam Hujan Lebat</div>
+                    </div>
+                </div>
+
+                <!-- Prediction Map + Table -->
+                <div class="prediction-main-grid">
+                    <!-- Interactive Map -->
+                    <div class="card" style="overflow:hidden">
+                        <div class="card-header">
+                            <div>
+                                <h3>🗺️ Peta Sebaran Intensitas Hujan</h3>
+                                <p>Klik marker untuk melihat detail prediksi stasiun</p>
+                            </div>
+                        </div>
+                        <div id="predictionMap"></div>
+                        <div class="map-legend-box">
+                            <span class="legend-item-pred"><span class="legend-dot-pred"
+                                    style="background:#22c55e"></span> Ringan (0-20mm)</span>
+                            <span class="legend-item-pred"><span class="legend-dot-pred"
+                                    style="background:#f97316"></span> Sedang (20-50mm)</span>
+                            <span class="legend-item-pred"><span class="legend-dot-pred"
+                                    style="background:#ef4444"></span> Lebat (50-100mm)</span>
+                            <span class="legend-item-pred"><span class="legend-dot-pred"
+                                    style="background:#7c3aed"></span> Sangat Lebat (>100mm)</span>
+                        </div>
+                    </div>
+
+                    <!-- Station Prediction Table -->
+                    <div class="card" style="overflow:hidden">
+                        <div class="card-header">
+                            <div>
+                                <h3>📊 Detail Prediksi per Stasiun</h3>
+                                <p id="tableSubtitle">Data prediksi harian</p>
+                            </div>
+                            <span></span>
+                        </div>
+                        <div class="pred-table-wrapper">
+                            <table class="prediction-table" id="predictionTable">
+                                <thead>
+                                    <tr>
+                                        <th>NO</th>
+                                        <th>STASIUN</th>
+                                        <th>TIPE</th>
+                                        <th>PREDIKSI</th>
+                                        <th>KATEGORI</th>
+                                        <th>CONFIDENCE</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="predictionBody">
+                                    <!-- Populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rainfall Chart + Category Distribution -->
+                <div class="pred-chart-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h3>📈 Distribusi Prediksi Curah Hujan</h3>
+                                <p>Perbandingan prediksi antar stasiun (diurutkan)</p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container-pred">
+                                <canvas id="rainfallBarChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h3>🎯 Distribusi Kategori</h3>
+                                <p>Intensitas hujan per kategori</p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="category-distribution" id="categoryDist">
+                                <!-- Populated by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Model Performance -->
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <h3>🧠 Model Performance Analytics</h3>
+                            <p>Evaluasi model LSTM prediksi curah hujan</p>
+                        </div>
+                        <span style="font-size:0.72rem;color:var(--text-muted)">Model Version: LSTM-v1.0</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="perf-grid" id="perfGrid">
+                            <div class="perf-item">
+                                <div class="perf-label">Root Mean Square Error</div>
+                                <div class="perf-value" id="perfRmse">--</div>
+                                <div class="perf-unit">mm</div>
+                            </div>
+                            <div class="perf-item">
+                                <div class="perf-label">Mean Absolute Error</div>
+                                <div class="perf-value" id="perfMae">--</div>
+                                <div class="perf-unit">mm</div>
+                            </div>
+                            <div class="perf-item">
+                                <div class="perf-label">R-Squared Score</div>
+                                <div class="perf-value" id="perfR2">--</div>
+                                <div class="perf-change" id="perfR2Change"></div>
+                            </div>
+                            <div class="perf-item">
+                                <div class="perf-label">Last Prediction</div>
+                                <div class="perf-value" id="perfDate" style="font-size:1.2rem">--</div>
+                                <div class="perf-unit" id="perfNotes"></div>
+                            </div>
+                            <div class="perf-item accuracy-gauge">
+                                <div class="perf-label">Overall Accuracy</div>
+                                <div class="accuracy-value" id="perfAccuracy">--%</div>
+                                <div class="accuracy-bar">
+                                    <div class="accuracy-fill" id="accuracyFill" style="width:0%"></div>
+                                </div>
+                                <div style="font-size:0.72rem;color:var(--text-muted);margin-top:6px"
+                                    id="confidenceText">Model Confidence: --</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <footer class="app-footer">&copy; 2026 STMKG Jawa Barat | Integrated Climatology Monitoring System v1.0
+            </footer>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="/js/app.js"></script>
+    <script src="/js/prediksi.js"></script>
+</body>
+
+</html>

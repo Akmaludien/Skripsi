@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/img/stmkg-logo.png">
+    <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||'dark')</script>
+    <title>Daftar Stasiun - STMKG Monitoring System</title>
+    <link rel="icon" href="/img/stmkg-logo.png" type="image/png">
+    <meta name="description" content="Daftar stasiun meteorologi Jawa Barat - AWS, ARG, AAWS">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css?v=3">
+    <style>
+        /* ─── Station Table Styles ──────────────── */
+        .station-table-wrapper {
+            background: var(--bg-card);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .station-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .station-table thead {
+            background: var(--primary-900);
+            color: #fff;
+        }
+
+        [data-theme="light"] .station-table thead {
+            background: var(--primary-700);
+        }
+
+        .station-table th {
+            padding: 10px 8px;
+            text-align: left;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            border-bottom: 2px solid var(--primary-500);
+        }
+
+        .station-table th.sortable {
+            cursor: pointer;
+            user-select: none;
+            transition: background var(--transition-fast);
+        }
+
+        .station-table th.sortable:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .station-table th .sort-icon {
+            margin-left: 4px;
+            opacity: 0.4;
+            font-size: 0.65rem;
+        }
+
+        .station-table th.sorted .sort-icon {
+            opacity: 1;
+        }
+
+        .station-table tbody tr {
+            border-bottom: 1px solid var(--border-color);
+            transition: background var(--transition-fast);
+        }
+
+        .station-table tbody tr:hover {
+            background: var(--bg-card-hover);
+        }
+
+        .station-table tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        .station-table td {
+            padding: 10px 8px;
+            font-size: 0.85rem;
+            vertical-align: middle;
+        }
+
+        .station-table .row-num {
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.82rem;
+            width: 50px;
+        }
+
+        .station-table .station-id {
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            background: var(--bg-main);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .station-table .station-name-cell {
+            font-weight: 600;
+        }
+
+        .station-table .station-name-cell a {
+            color: var(--text-primary);
+            transition: color var(--transition-fast);
+        }
+
+        .station-table .station-name-cell a:hover {
+            color: var(--primary-400);
+        }
+
+        .station-table .location-cell {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .station-table .location-cell .loc-icon {
+            margin-right: 4px;
+        }
+
+        .station-table .elevation-cell {
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .station-table .coords-cell {
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Status Badges */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+        }
+
+        .status-badge .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+        }
+
+        .status-badge.status-normal {
+            background: rgba(34, 197, 94, 0.12);
+            color: #22c55e;
+        }
+
+        .status-badge.status-normal .dot {
+            background: #22c55e;
+            box-shadow: 0 0 6px #22c55e;
+        }
+
+        .status-badge.status-alert {
+            background: rgba(239, 68, 68, 0.12);
+            color: #ef4444;
+        }
+
+        .status-badge.status-alert .dot {
+            background: #ef4444;
+            box-shadow: 0 0 6px #ef4444;
+            animation: pulse 1.5s infinite;
+        }
+
+        .status-badge.status-warning {
+            background: rgba(234, 179, 8, 0.12);
+            color: #eab308;
+        }
+
+        .status-badge.status-warning .dot {
+            background: #eab308;
+            box-shadow: 0 0 6px #eab308;
+            animation: pulse 2s infinite;
+        }
+
+        .status-badge.status-offline {
+            background: rgba(148, 163, 184, 0.12);
+            color: #94a3b8;
+        }
+
+        .status-badge.status-offline .dot {
+            background: #94a3b8;
+        }
+
+        /* Table summary bar */
+        .table-summary {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: var(--bg-main);
+            border-bottom: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .table-summary .stat-pills {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .stat-pill {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-pill .count {
+            font-weight: 800;
+        }
+
+        .stat-pill.normal {
+            border-color: rgba(34, 197, 94, 0.3);
+        }
+
+        .stat-pill.normal .count {
+            color: #22c55e;
+        }
+
+        .stat-pill.alert {
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .stat-pill.alert .count {
+            color: #ef4444;
+        }
+
+        .stat-pill.warning {
+            border-color: rgba(234, 179, 8, 0.3);
+        }
+
+        .stat-pill.warning .count {
+            color: #eab308;
+        }
+
+        .stat-pill.offline {
+            border-color: rgba(148, 163, 184, 0.3);
+        }
+
+        .stat-pill.offline .count {
+            color: #94a3b8;
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-sm {
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            transition: all var(--transition-fast);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-sm:hover {
+            border-color: var(--primary-400);
+            color: var(--primary-400);
+        }
+
+        /* Pagination styled */
+        .table-pagination {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border-color);
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+        }
+
+        .rows-per-page {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+        }
+
+        .rows-per-page select {
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-main);
+            color: var(--text-primary);
+            font-size: 0.82rem;
+        }
+
+        /* Action link in table */
+        .action-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--primary-400);
+            background: rgba(37, 99, 235, 0.08);
+            transition: all var(--transition-fast);
+        }
+
+        .action-link:hover {
+            background: var(--primary-500);
+            color: #fff;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+            color: var(--text-muted);
+        }
+
+        .empty-state .icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        @media (max-width: 900px) {
+            .station-table th:nth-child(6),
+            .station-table td:nth-child(6) {
+                display: none;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .station-table th:nth-child(4),
+            .station-table td:nth-child(4),
+            .station-table th:nth-child(5),
+            .station-table td:nth-child(5) {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-layout">
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-icon">
+                    <img src="/img/stmkg-logo.png" alt="STMKG Logo" style="width:36px;height:36px;object-fit:contain">
+                </div>
+                <div class="brand-text">
+                    <h2>STMKG</h2><span>Jawa Barat</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/index.html" class="nav-link"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span> Dashboard</a>
+                <a href="/peta-hujan.html" class="nav-link"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 14.9"/><path d="M16 14v6"/><path d="M8 14v6"/><path d="M12 12v6"/></svg></span> Peta Curah Hujan</a>
+                <a href="/stasiun.html" class="nav-link active"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.4"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.4"/><path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/></svg></span> Daftar Stasiun</a>
+                <a href="/prediksi.html" class="nav-link"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 14.9"/><path d="M12 12v6"/><path d="M8 18l4 4 4-4"/></svg></span> Prediksi Curah Hujan</a>
+                <a href="/verifikasi.html" class="nav-link"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg></span> Verifikasi Prediksi</a>
+                <a href="/tentang.html" class="nav-link"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></span> Tentang Sistem</a>
+            </nav>
+            <div class="system-live">
+                <div class="live-dot"></div>
+                <div class="system-live-text">
+                    <strong>SYSTEM LIVE</strong>
+                    Monitoring & Prediksi Curah Hujan<br>
+                    ARG, AWS, & AAWS Jawa Barat
+                </div>
+            </div>
+        </aside>
+
+        <div class="main-content">
+            <header class="top-header">
+                <button class="mobile-menu-btn">☰</button>
+                <div class="header-title" style="display:flex;align-items:center;gap:14px;">
+                    <img src="/img/stmkg-logo.png" alt="STMKG"
+                        style="height:46px;width:auto;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.1))">
+                    <div>
+                        <h1>Daftar Stasiun Observasi</h1>
+                        <span>Network Peralatan ARG, AWS, dan AAWS Provinsi Jawa Barat</span>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-icon" id="themeToggle" title="Toggle Theme">🌙</button>
+                    <div class="notif-wrapper">
+                        <button class="btn-icon" title="Notifikasi Hujan" id="notifBtn">🔔</button>
+                        <span class="notif-badge" id="notifBadge" style="display:none">0</span>
+                        <div class="notif-dropdown" id="notifDropdown">
+                            <div class="notif-header">
+                                <strong>⚠️ Peringatan Hujan Lebat</strong>
+                                <button class="notif-close"
+                                    onclick="document.getElementById('notifDropdown').classList.remove('show')">✕</button>
+                            </div>
+                            <div class="notif-body" id="notifBody">
+                                <div class="notif-empty">Tidak ada peringatan saat ini</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <main class="page-content">
+                <div class="page-title">
+                    <h2>Daftar Stasiun</h2>
+                    <p>Monitoring real-time data curah hujan dan kondisi stasiun di seluruh wilayah Jawa Barat.</p>
+                </div>
+
+                <!-- Search & Filters -->
+                <div class="search-filter-bar">
+                    <div class="search-wrapper">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" class="search-input" id="searchInput"
+                            placeholder="Cari nama stasiun atau ID...">
+                    </div>
+                    <select class="filter-select" id="typeFilter">
+                        <option value="all">Semua Tipe (AWS/ARG/AAWS)</option>
+                        <option value="AWS">AWS</option>
+                        <option value="ARG">ARG</option>
+                        <option value="AAWS">AAWS</option>
+                    </select>
+                    <select class="filter-select" id="statusFilter">
+                        <option value="all">Semua Status</option>
+                        <option value="Active / Normal">Active / Normal</option>
+                        <option value="Active / Alert">Active / Alert</option>
+                        <option value="Active / Warning">Active / Warning</option>
+                        <option value="Offline">Offline</option>
+                    </select>
+                </div>
+
+                <!-- Station Table -->
+                <div class="station-table-wrapper">
+                    <div class="table-summary">
+                        <div class="stat-pills" id="statusSummary">
+                            <!-- Populated by JS -->
+                        </div>
+                        <div class="table-actions">
+                            <a href="/index.html" class="btn-sm">🗺️ Lihat di Peta</a>
+                        </div>
+                    </div>
+
+                    <div style="overflow-x:auto">
+                        <table class="station-table" id="stationTable">
+                            <thead>
+                                <tr>
+                                    <th class="row-num">No</th>
+                                    <th>Station ID</th>
+                                    <th>Station Name</th>
+                                    <th>Type</th>
+                                    <th>Regency/City</th>
+                                    <th>Lat, Long</th>
+                                    <th>Status</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="stationTableBody">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="table-pagination">
+                        <div class="rows-per-page">
+                            <span>Tampilkan</span>
+                            <select id="rowsPerPage" onchange="changeRowsPerPage()">
+                                <option value="10" selected>10</option>
+                                <option value="15">15</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                            </select>
+                            <span>baris</span>
+                        </div>
+                        <div class="info" id="paginationInfo"></div>
+                        <div class="pages" id="paginationPages"></div>
+                    </div>
+                </div>
+            </main>
+
+            <footer class="app-footer">&copy; 2026 STMKG Jawa Barat | Integrated Climatology Monitoring System v1.0
+            </footer>
+        </div>
+    </div>
+
+    <script src="/js/app.js"></script>
+    <script src="/js/stasiun.js"></script>
+</body>
+
+</html>

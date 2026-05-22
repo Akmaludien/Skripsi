@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/img/stmkg-logo.png">
+    <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||'dark')</script>
+    <title>Dashboard - STMKG Monitoring System</title>
+    <link rel="icon" href="/img/stmkg-logo.png" type="image/png">
+    <meta name="description" content="Sistem Monitoring dan Prediksi Curah Hujan ARG, AWS, dan AAWS Jawa Barat">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="/css/style.css?v=3">
+</head>
+
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-icon">
+                    <img src="/img/stmkg-logo.png" alt="STMKG Logo" style="width:36px;height:36px;object-fit:contain">
+                </div>
+                <div class="brand-text">
+                    <h2>STMKG</h2>
+                    <span>Jawa Barat</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/index.html" class="nav-link active">
+                    <span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span> Dashboard
+                </a>
+                <a href="/peta-hujan.html" class="nav-link">
+                    <span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 14.9"/><path d="M16 14v6"/><path d="M8 14v6"/><path d="M12 12v6"/></svg></span> Peta Curah Hujan
+                </a>
+                <a href="/stasiun.html" class="nav-link">
+                    <span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.4"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.4"/><path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/></svg></span> Daftar Stasiun
+                </a>
+                <a href="/prediksi.html" class="nav-link">
+                    <span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 14.9"/><path d="M12 12v6"/><path d="M8 18l4 4 4-4"/></svg></span> Prediksi Curah Hujan
+                </a>
+                <a href="/verifikasi.html" class="nav-link">
+                    <span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg></span> Verifikasi Prediksi
+                </a>
+                <a href="/tentang.html" class="nav-link">
+                    <span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></span> Tentang Sistem
+                </a>
+            </nav>
+            <div class="system-live">
+                <div class="live-dot"></div>
+                <div class="system-live-text">
+                    <strong>SYSTEM LIVE</strong>
+                    Monitoring & Prediksi Curah Hujan<br>
+                    ARG, AWS, & AAWS Jawa Barat
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <header class="top-header">
+                <button class="mobile-menu-btn">☰</button>
+                <div class="header-title" style="display:flex;align-items:center;gap:14px;">
+                    <img src="/img/stmkg-logo.png" alt="STMKG" style="height:46px;width:auto;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.1))">
+                    <div>
+                        <h1>Sistem Monitoring dan Prediksi Curah Hujan</h1>
+                        <span>Integrated Climatology System – Provinsi Jawa Barat</span>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-icon" id="themeToggle" title="Toggle Theme">🌙</button>
+                    <div class="notif-wrapper">
+                        <button class="btn-icon" title="Notifikasi Hujan" id="notifBtn">🔔</button>
+                        <span class="notif-badge" id="notifBadge" style="display:none">0</span>
+                        <div class="notif-dropdown" id="notifDropdown">
+                            <div class="notif-header">
+                                <strong>⚠️ Peringatan Hujan Lebat</strong>
+                                <button class="notif-close"
+                                    onclick="document.getElementById('notifDropdown').classList.remove('show')">✕</button>
+                            </div>
+                            <div class="notif-body" id="notifBody">
+                                <div class="notif-empty">Tidak ada peringatan saat ini</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <main class="page-content">
+                <!-- Live Clock Header -->
+                <div class="home-clock-container stagger" style="margin-bottom: 24px; padding: 16px 24px; background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+                    <div style="display: flex; flex-direction: column;">
+                        <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;">Waktu Pemantauan Sistem</span>
+                        <div id="homeLiveDate" style="font-weight: 600; font-size: 1.05rem; color: var(--text-primary); margin-top: 2px;">Memuat Tanggal...</div>
+                    </div>
+                    <div id="homeLiveTime" style="font-size: 2.2rem; font-weight: 800; font-family: 'Inter', monospace; color: var(--primary); letter-spacing: 1px; text-shadow: 0 0 15px rgba(37,99,235,0.2);">
+                        --:--:-- WIB
+                    </div>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="summary-grid stagger" id="summaryGrid">
+                    <div class="summary-card">
+                        <div class="card-icon blue">📡</div>
+                        <div class="card-info">
+                            <div class="card-label">Total Stasiun Aktif <span class="badge badge-success"
+                                    id="onlineBadge">Online 100%</span></div>
+                            <div class="card-value" id="totalStations">--/--</div>
+                            <div class="card-sub" id="onlineText">Loading...</div>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="card-icon orange">⚠️</div>
+                        <div class="card-info">
+                            <div class="card-label">Peringatan Aktif <span class="badge badge-warning"
+                                    id="alertBadge">--</span></div>
+                            <div class="card-value" id="alertCount">--</div>
+                            <div class="card-sub" id="alertSub">Peringatan</div>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="card-icon cyan">🌧️</div>
+                        <div class="card-info">
+                            <div class="card-label">Hujan Tertinggi Saat Ini</div>
+                            <div class="card-value" id="maxRainfall">-- <span
+                                    style="font-size:0.9rem;font-weight:400">mm</span></div>
+                            <div class="card-sub" id="maxRainfallStation">--</div>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="card-icon green">📈</div>
+                        <div class="card-info">
+                            <div class="card-label">Prediksi Hujan Lebat Hari Ini</div>
+                            <div class="card-value" id="predHeavy">--</div>
+                            <div class="card-sub" id="predHeavySub">Stasiun diprediksi hujan lebat</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Map & Chart Row -->
+                <div class="dashboard-grid">
+                    <div class="card map-container" style="grid-column: 1 / -1;">
+                        <div id="map"></div>
+                    </div>
+                </div>
+
+                <!-- Station Cards -->
+                <div class="station-cards-section">
+                    <div class="section-header">
+                        <h3>📡 Monitor Stasiun <span id="stationCountLabel"
+                                style="font-size:0.8rem;font-weight:400;color:var(--text-secondary)"></span></h3>
+                        <div class="filter-pills">
+                            <button class="filter-pill active" data-filter="all">Semua Lokasi</button>
+                            <button class="filter-pill" data-filter="AWS">AWS</button>
+                            <button class="filter-pill" data-filter="ARG">ARG</button>
+                            <button class="filter-pill" data-filter="AAWS">AAWS</button>
+                        </div>
+                    </div>
+                    <div class="station-cards-grid stagger" id="stationCardsGrid">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </main>
+
+            <footer class="app-footer">
+                &copy; 2026 STMKG Jawa Barat | Integrated Climatology Monitoring System v1.0
+            </footer>
+        </div>
+    </div>
+
+    <script src="/js/app.js"></script>
+    <script src="/js/dashboard.js"></script>
+</body>
+
+</html>
