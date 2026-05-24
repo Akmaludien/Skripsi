@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # ─── InfluxDB (Time-Series Database) ───
+  # ─── All-in-One: InfluxDB + STMKG App ───
   influxdb:
     image: influxdb:2.7
     container_name: stmkg-influxdb
@@ -24,7 +24,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # ─── STMKG Monitoring App (Node.js + Python) ───
   app:
     build: .
     container_name: stmkg-app
@@ -48,16 +47,14 @@ services:
       - PYTHON_CMD=/app/venv/bin/python3
     volumes:
       - app-data:/app/data
-      - app-models:/app/models
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3001/api/stations"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 30s
+      start_period: 60s
 
 volumes:
   influxdb-data:
   influxdb-config:
   app-data:
-  app-models:
