@@ -7,7 +7,7 @@ services:
     container_name: stmkg-influxdb
     restart: unless-stopped
     ports:
-      - "8086:8086"
+      - "8087:8086"
     volumes:
       - influxdb-data:/var/lib/influxdb2
       - influxdb-config:/etc/influxdb2
