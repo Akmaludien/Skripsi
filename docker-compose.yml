@@ -1,29 +1,6 @@
 version: '3.8'
 
 services:
-  # ─── InfluxDB (Time-Series Database) ───
-  influxdb:
-    image: influxdb:2.7
-    container_name: stmkg-influxdb
-    restart: unless-stopped
-    ports:
-      - "8087:8086"
-    volumes:
-      - influxdb-data:/var/lib/influxdb2
-      - influxdb-config:/etc/influxdb2
-    environment:
-      - DOCKER_INFLUXDB_INIT_MODE=setup
-      - DOCKER_INFLUXDB_INIT_USERNAME=admin
-      - DOCKER_INFLUXDB_INIT_PASSWORD=stmkg2026
-      - DOCKER_INFLUXDB_INIT_ORG=SKRIPSI
-      - DOCKER_INFLUXDB_INIT_BUCKET=skripsi
-      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=stmkg-influx-token-2026
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8086/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   # ─── STMKG Monitoring App (Node.js + Python) ───
   app:
     build: .
@@ -31,13 +8,10 @@ services:
     restart: unless-stopped
     ports:
       - "3001:3001"
-    depends_on:
-      influxdb:
-        condition: service_healthy
     environment:
       - NODE_ENV=production
       - PORT=3001
-      - INFLUX_URL=http://influxdb:8086
+      - INFLUX_URL=http://host.docker.internal:8086
       - INFLUX_TOKEN=stmkg-influx-token-2026
       - INFLUX_ORG=SKRIPSI
       - INFLUX_BUCKET=skripsi
@@ -46,6 +20,8 @@ services:
       - MQTT_USER=bmkg_aws
       - MQTT_PASS=bmkg_aws123
       - PYTHON_CMD=/app/venv/bin/python3
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - app-data:/app/data
       - app-models:/app/models
@@ -57,7 +33,5 @@ services:
       start_period: 30s
 
 volumes:
-  influxdb-data:
-  influxdb-config:
   app-data:
   app-models:
