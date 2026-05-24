@@ -37,7 +37,7 @@ def fetch_data_from_influx(station_id, days_back=60):
         print("[predict.py] InfluxDB Token not set.")
         return pd.DataFrame()
         
-    client = InfluxDBClient(url=INFLUX_URL, token=INFLUX_TOKEN, org=INFLUX_ORG, timeout=2000)
+    client = InfluxDBClient(url=INFLUX_URL, token=INFLUX_TOKEN, org=INFLUX_ORG, timeout=30000)
     query_api = client.query_api()
     
     # Check multiple measurements to support AWS, AAWS, and ARG
@@ -64,10 +64,9 @@ def save_prediction(station_id, prediction_date, predicted_rainfall):
     conn = get_db_connection()
     cursor = conn.cursor()
     
-    # ─── KOREKSI KLASIFIKASI INTENSITAS CURAH HUJAN STANDAR BMKG ───
-    if predicted_rainfall <= 0.5:
-        category = 'TANPA HUJAN'
-    elif predicted_rainfall <= 20:
+    # ─── KLASIFIKASI INTENSITAS CURAH HUJAN STANDAR BMKG ───
+    # Database CHECK constraint: ('RINGAN', 'SEDANG', 'LEBAT', 'SANGAT LEBAT')
+    if predicted_rainfall <= 20:
         category = 'RINGAN'
     elif predicted_rainfall <= 50:
         category = 'SEDANG'
@@ -112,10 +111,11 @@ def run_predictions():
     if HAS_TF:
         print(f"[predict.py] Loading model from {MODEL_PATH}")
         try:
-            model = load_model(MODEL_PATH)
+            model = load_model(MODEL_PATH, compile=False)
+            model.compile(optimizer='adam', loss='mse')
             scaler = joblib.load(SCALER_PATH)
         except Exception as e:
-            print(f"[predict.py] Error loading model: {e}. Falling back to statistical method.")
+            print(f"[predict.py] Error loading model: {e}. Cannot predict.")
             HAS_TF = False
     
     conn = get_db_connection()
@@ -147,43 +147,55 @@ def run_predictions():
         if HAS_TF and model is not None and scaler is not None:
             # ─── Bi-LSTM Prediction with log-transform ───
             try:
-                # Prepare input: need 60 days × 5 features
-                feature_cols = ['rain', 'temp', 'rh', 'press', 'ws']
-                
-                if not df.empty and len(df_daily) >= 60:
-                    # Get multi-feature daily data
-                    df_multi = df.resample('1D').agg({
-                        'rain': 'max', 'temp': 'mean', 'rh': 'mean', 
-                        'press': 'mean', 'ws': 'mean'
-                    }).tail(60).fillna(method='ffill').fillna(0)
+                if not df.empty:
+                    # Resample rain to daily (max = total akumulasi harian)
+                    df_rain = df['rain'].resample('1D').max() if 'rain' in df.columns else pd.Series(dtype=float)
+                    
+                    if len(df_rain) < 60:
+                        print(f"  -> Not enough daily data ({len(df_rain)}/60). Skipping.")
+                        continue
+                    
+                    # Build multi-feature daily dataframe
+                    df_daily_multi = pd.DataFrame({'rain': df_rain.tail(60)})
+                    
+                    # Add other features (use mean for AWS/AAWS, defaults for ARG)
+                    for col in ['temp', 'rh', 'press', 'ws']:
+                        if col in df.columns and df[col].notna().any():
+                            df_daily_multi[col] = df[col].resample('1D').mean().tail(60).values
+                        else:
+                            # ARG doesn't have these - use climatological defaults
+                            defaults = {'temp': 26.0, 'rh': 80.0, 'press': 1010.0, 'ws': 2.0}
+                            df_daily_multi[col] = defaults[col]
+                    
+                    df_daily_multi = df_daily_multi.ffill().bfill().fillna(0)
                     
                     # Log-transform rain
-                    df_multi['rain'] = np.log1p(df_multi['rain'])
+                    df_daily_multi['rain'] = np.log1p(df_daily_multi['rain'])
                     
-                    # Rename to match scaler columns
-                    df_multi.columns = ['rain_log', 'temp', 'rh', 'press', 'ws']
+                    # Reorder to match scaler: [rain_log, temp, rh, press, ws]
+                    df_daily_multi.columns = ['rain_log', 'temp', 'rh', 'press', 'ws']
                     
                     # Scale
-                    input_scaled = scaler.transform(df_multi.values)
+                    input_scaled = scaler.transform(df_daily_multi.values)
                     input_seq = input_scaled.reshape(1, 60, 5)
                     
                     # Predict
                     pred_log = model.predict(input_seq, verbose=0)[0]
                     predicted_rain_7days = list(np.clip(np.expm1(pred_log), 0, 200))
                 else:
-                    print(f"  -> Not enough data for Bi-LSTM (need 60 days, got {len(df_daily) if not df.empty else 0}). Skipping.")
+                    print(f"  -> No data for {station_id}. Skipping.")
                     continue
                     
             except Exception as e:
                 print(f"  -> Bi-LSTM prediction failed: {e}. Skipping station.")
                 continue
         else:
-            print(f"  -> TensorFlow not available. Skipping prediction.")
+            print(f"  -> TensorFlow/model not available. Skipping.")
             continue
 
         # Save predictions
         for i in range(7):
-            pred_val = predicted_rain_7days[i]
+            pred_val = float(round(predicted_rain_7days[i], 1))
             target_date = (datetime.now() + timedelta(days=i)).strftime('%Y-%m-%d')
             save_prediction(station_id, target_date, pred_val)
             
@@ -192,4 +204,85 @@ def run_predictions():
 if __name__ == "__main__":
     print("Starting prediction task...")
     run_predictions()
+    
+    # ─── Auto-update model metrics from yesterday's verification ───
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Get yesterday's predictions
+        yesterday = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
+        preds = cursor.execute('''
+            SELECT p.station_id, p.predicted_rainfall 
+            FROM predictions p WHERE p.prediction_date = ?
+        ''', (yesterday,)).fetchall()
+        
+        if preds and INFLUX_TOKEN:
+            # Get actual rainfall from InfluxDB for yesterday
+            from influxdb_client import InfluxDBClient as IC
+            ic = IC(url=INFLUX_URL, token=INFLUX_TOKEN, org=INFLUX_ORG, timeout=30000)
+            qa = ic.query_api()
+            
+            query = f'''from(bucket: "{INFLUX_BUCKET}")
+              |> range(start: {yesterday}T00:00:00Z, stop: {yesterday}T23:59:59Z)
+              |> filter(fn: (r) => (r["_measurement"] == "AWS" or r["_measurement"] == "ARG" or r["_measurement"] == "AAWS") and r["_field"] == "rain")
+              |> group(columns: ["id"])
+              |> max()'''
+            
+            rows = qa.collect_rows(query)
+            actual_map = {r['id']: r['_value'] or 0 for r in rows}
+            
+            # Calculate metrics
+            errors = []
+            for station_id, pred_val in preds:
+                if station_id in actual_map:
+                    errors.append((pred_val, actual_map[station_id]))
+            
+            if len(errors) >= 5:
+                import math
+                y_pred = [e[0] for e in errors]
+                y_actual = [e[1] for e in errors]
+                
+                n = len(errors)
+                mse = sum((p - a) ** 2 for p, a in errors) / n
+                rmse = math.sqrt(mse)
+                mae = sum(abs(p - a) for p, a in errors) / n
+                
+                ss_res = sum((a - p) ** 2 for p, a in errors)
+                mean_actual = sum(y_actual) / n
+                ss_tot = sum((a - mean_actual) ** 2 for a in y_actual)
+                r2 = 1 - (ss_res / ss_tot) if ss_tot > 0 else 0
+                
+                accuracy = max(0, min(100, r2 * 100))
+                
+                conn.execute('''
+                    UPDATE model_performance 
+                    SET rmse = ?, mae = ?, r_squared = ?, accuracy = ?,
+                        training_date = ?, model_version = 'BiLSTM-v2.0',
+                        notes = ?
+                    WHERE id = (SELECT id FROM model_performance ORDER BY id DESC LIMIT 1)
+                ''', (round(rmse, 3), round(mae, 3), round(r2, 4), round(accuracy, 1),
+                      datetime.now().strftime('%Y-%m-%d'),
+                      f'Auto-verified against {len(errors)} stations on {yesterday}'))
+                
+                print(f"[Metrics] Updated: RMSE={rmse:.2f}, MAE={mae:.2f}, R²={r2:.3f}")
+            else:
+                # Not enough verification data yet, just update timestamp
+                conn.execute('''
+                    UPDATE model_performance 
+                    SET training_date = ?, model_version = 'BiLSTM-v2.0'
+                    WHERE id = (SELECT id FROM model_performance ORDER BY id DESC LIMIT 1)
+                ''', (datetime.now().strftime('%Y-%m-%d'),))
+        else:
+            conn.execute('''
+                UPDATE model_performance 
+                SET training_date = ?, model_version = 'BiLSTM-v2.0'
+                WHERE id = (SELECT id FROM model_performance ORDER BY id DESC LIMIT 1)
+            ''', (datetime.now().strftime('%Y-%m-%d'),))
+        
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print(f"[Metrics] Update failed: {e}")
+    
     print("Prediction task completed.")

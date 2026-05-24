@@ -1,0 +1,10 @@
+node_modules
+.venv
+venv312
+.git
+.vscode
+*.log
+*.whl
+data/monitoring.db
+data/monitoring.db-shm
+data/monitoring.db-wal

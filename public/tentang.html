@@ -79,36 +79,9 @@
                 <!-- Architecture -->
                 <div class="card" style="padding: 32px; margin-bottom: 24px;">
                     <h3 style="font-size: 1.2rem; margin-bottom: 16px;">🏗️ Arsitektur Sistem</h3>
-                    <div class="arch-diagram">
-┌─────────────────────────────────────────────────────────────────────┐
-│                         SUMBER DATA (50 Stasiun)                     │
-│  ┌───────────┐    ┌───────────┐    ┌───────────┐                   │
-│  │  AWS (11) │    │  ARG (30) │    │ AAWS (9)  │                   │
-│  │ 7 Param   │    │ 3 Param   │    │ 7 Param   │                   │
-│  └─────┬─────┘    └─────┬─────┘    └─────┬─────┘                   │
-└────────┼────────────────┼────────────────┼──────────────────────────┘
-         │                │                │
-         ▼                ▼                ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│              MQTT Broker (BMKG - 202.90.198.159:1883)                │
-│              Protocol: MQTT v5 | QoS: 0 | Interval: 10 min         │
-└────────────────────────────────┬────────────────────────────────────┘
-                                 │
-                                 ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                    APPLICATION SERVER (Node.js)                       │
-│  ┌──────────┐  ┌───────────┐  ┌───────────┐  ┌──────────────────┐  │
-│  │ Express  │  │MQTT Client│  │ WebSocket │  │ Prediction Cron  │  │
-│  │  REST API│  │ Subscriber│  │  Server   │  │  (Python Bridge) │  │
-│  └────┬─────┘  └─────┬─────┘  └─────┬─────┘  └────────┬─────────┘  │
-└───────┼──────────────┼──────────────┼──────────────────┼────────────┘
-        │              │              │                   │
-        ▼              ▼              ▼                   ▼
-┌──────────────┐ ┌────────────┐ ┌──────────┐  ┌──────────────────────┐
-│   SQLite     │ │  InfluxDB  │ │ Browser  │  │   Python Engine      │
-│  (Metadata,  │ │(Time-Series│ │(Frontend)│  │  Bi-LSTM / Fallback  │
-│  Predictions)│ │   Data)    │ │          │  │  TensorFlow + Keras  │
-└──────────────┘ └────────────┘ └──────────┘  └──────────────────────┘</div>
+                    <div style="width: 100%; overflow-x: auto; border-radius: 12px; border: 1px solid var(--border-color);">
+                        <img src="/img/arsitektur-sistem.svg" alt="Arsitektur Sistem" style="width: 100%; min-width: 800px; height: auto; display: block;">
+                    </div>
                 </div>
 
                 <!-- Data Flow -->
@@ -118,7 +91,7 @@
                         <div class="flow-num">1</div>
                         <div class="flow-content">
                             <h4>Akuisisi Data (MQTT)</h4>
-                            <p>Datalogger di setiap stasiun mengirim data sensor setiap 10 menit ke broker MQTT BMKG. Server subscribe ke topic yang relevan dan menerima data secara real-time.</p>
+                            <p>Datalogger di setiap stasiun mengirim data sensor setiap menit untuk AWS dan ARG serta 10 menit untuk AAWS ke broker MQTT BMKG. Server subscribe ke topic yang relevan dan menerima data secara real-time.</p>
                         </div>
                     </div>
                     <div class="flow-step">
@@ -189,7 +162,7 @@
                     <div class="tech-grid">
                         <div class="tech-card" style="border-left: 4px solid #2563eb;">
                             <h4>🔷 AWS (Automatic Weather Station)</h4>
-                            <p><strong>11 stasiun</strong> — Mengukur 7 parameter utama: suhu, kelembapan, tekanan, kecepatan angin, arah angin, curah hujan, dan radiasi matahari. Interval 10 menit.</p>
+                            <p><strong>11 stasiun</strong> — Mengukur 7 parameter utama: suhu, kelembapan, tekanan, kecepatan angin, arah angin, curah hujan, dan radiasi matahari.</p>
                         </div>
                         <div class="tech-card" style="border-left: 4px solid #22c55e;">
                             <h4>🟢 ARG (Automatic Rain Gauge)</h4>
