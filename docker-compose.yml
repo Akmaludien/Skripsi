@@ -12,7 +12,7 @@ services:
       - NODE_ENV=production
       - PORT=3001
       - INFLUX_URL=http://host.docker.internal:8086
-      - INFLUX_TOKEN=stmkg-influx-token-2026
+      - INFLUX_TOKEN=myUb_QRFhHYHhWxY07tJFl4eiG2hQOyQQaFGfSTfeFh_IyoOo5ZUBUXNYqvyhM1T9mgdzn32T6ArK_WmeTo0FA==
       - INFLUX_ORG=SKRIPSI
       - INFLUX_BUCKET=skripsi
       - INFLUX_TIMEOUT=60000
