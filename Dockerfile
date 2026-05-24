@@ -26,8 +26,8 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # ─── Copy application code ───
 COPY . .
 
-# ─── Ensure data directory exists ───
-RUN mkdir -p /app/data
+# ─── Ensure data directory exists & seed database ───
+RUN mkdir -p /app/data && node database/seed.js
 
 # ─── Environment ───
 ENV NODE_ENV=production

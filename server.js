@@ -15,7 +15,7 @@ const { InfluxDB, Point } = require('@influxdata/influxdb-client');
 // ─── InfluxDB Config ────────────────────────────────
 const INFLUX_URL = process.env.INFLUX_URL || 'http://localhost:8086';
 const INFLUX_TOKEN = process.env.INFLUX_TOKEN;
-const INFLUX_ORG = process.env.INFLUX_ORG || 'akmaldnrmdhn SKRIPSI';
+const INFLUX_ORG = process.env.INFLUX_ORG || 'SKRIPSI';
 const INFLUX_BUCKET = process.env.INFLUX_BUCKET || 'skripsi';
 
 const influxClient = INFLUX_TOKEN ? new InfluxDB({ url: INFLUX_URL, token: INFLUX_TOKEN, timeout: parseInt(process.env.INFLUX_TIMEOUT) || 60000 }) : null;
@@ -101,6 +101,83 @@ if (!dbExists) {
         const schema = fs.readFileSync(schemaPath, 'utf-8');
         db.exec(schema);
         console.log('✓ Database schema initialized');
+    }
+}
+
+// Auto-seed stations if table is empty (e.g., fresh Docker volume)
+const stationCount = db.prepare('SELECT COUNT(*) as cnt FROM stations').get();
+if (stationCount && stationCount.cnt === 0) {
+    console.log('[DB] No stations found, running inline seed...');
+    try {
+        const schemaPath2 = path.join(__dirname, 'database', 'schema.sql');
+        if (fs.existsSync(schemaPath2)) {
+            const schema2 = fs.readFileSync(schemaPath2, 'utf-8');
+            db.exec(schema2);
+        }
+        // Inline seed: insert all 50 stations directly
+        const seedStations = [
+            { id: 'AAWS3010', name: 'AAWS Dramaga', type: 'AAWS', location: 'Kab. Bogor', lat: -6.55324, lng: 106.74283, elevation: 180 },
+            { id: 'STA3008', name: 'AAWS Pelabuhan Ratu', type: 'AAWS', location: 'Kab. Sukabumi', lat: -7.00589, lng: 106.562, elevation: 10 },
+            { id: 'STA3005', name: 'AAWS Ujung Genteng', type: 'AAWS', location: 'Kab. Sukabumi', lat: -7.32476, lng: 106.41298, elevation: 10 },
+            { id: 'STA2043', name: 'AWS Jagorawi', type: 'AWS', location: 'Kab. Bogor', lat: -6.46052, lng: 106.86946, elevation: 0 },
+            { id: 'STA3009', name: 'AAWS Indramayu', type: 'AAWS', location: 'Kab. Indramayu', lat: -6.4904, lng: 107.92409, elevation: 0 },
+            { id: 'STA3006', name: 'AAWS Banjarsari Ciamis', type: 'AAWS', location: 'Kab. Ciamis', lat: -7.49796, lng: 108.61577, elevation: 0 },
+            { id: 'AAWS0354', name: 'AAWS Jatinangor ITB', type: 'AAWS', location: 'Kab. Sumedang', lat: -6.92924, lng: 107.76995, elevation: 0 },
+            { id: 'STA3004', name: 'AAWS Sumedang', type: 'AAWS', location: 'Kab. Sumedang', lat: -6.82425, lng: 107.84493, elevation: 0 },
+            { id: 'AAWS0348', name: 'AAWS Lemah Abang', type: 'AAWS', location: 'Kab. Cirebon', lat: -6.82313, lng: 108.61802, elevation: 0 },
+            { id: '160033', name: 'AWS UI', type: 'AWS', location: 'Kota Depok', lat: -6.37191, lng: 106.82762, elevation: 0 },
+            { id: 'STA2045', name: 'AWS IPB', type: 'AWS', location: 'Kab. Bogor', lat: -7, lng: 106.8054, elevation: 0 },
+            { id: 'STA2064', name: 'AWS Cibeureum', type: 'AWS', location: 'Kab. Bogor', lat: -6.600471, lng: 106.95029, elevation: 0 },
+            { id: 'STA2042', name: 'AWS SMPK Bojong Pucung', type: 'AWS', location: 'Kab. Cianjur', lat: -6.83688, lng: 107.27382, elevation: 0 },
+            { id: 'STA2115', name: 'AWS Stageof Bandung', type: 'AWS', location: 'Kota Bandung', lat: -6.88351, lng: 107.59731, elevation: 0 },
+            { id: 'STA2083', name: 'AWS Sukamandi', type: 'AWS', location: 'Kab. Subang', lat: -6.37032, lng: 107.62513, elevation: 0 },
+            { id: 'STA2084', name: 'AWS Losarang', type: 'AWS', location: 'Kab. Indramayu', lat: -6.42064, lng: 108.16681, elevation: 0 },
+            { id: 'STA2086', name: 'AWS Tasikmalaya', type: 'AWS', location: 'Kota Tasikmalaya', lat: -7.368, lng: 108.11336, elevation: 0 },
+            { id: 'STA2085', name: 'AWS Kadugede', type: 'AWS', location: 'Kab. Kuningan', lat: -6.99982, lng: 108.45685, elevation: 0 },
+            { id: 'STA2087', name: 'AWS Cimalaka', type: 'AWS', location: 'Kab. Sumedang', lat: -6.81536, lng: 107.94875, elevation: 0 },
+            { id: 'STA2116', name: 'AWS Cisolok', type: 'AWS', location: 'Kab. Sukabumi', lat: -6.95955, lng: 106.47628, elevation: 0 },
+            { id: 'STA3254', name: 'ARG Cimahi', type: 'ARG', location: 'Kota Cimahi', lat: -6.86876, lng: 107.5557, elevation: 0 },
+            { id: 'STA0145', name: 'ARG Ciwidey', type: 'ARG', location: 'Kab. Bandung', lat: -7.09838, lng: 107.43417, elevation: 0 },
+            { id: 'STA9010', name: 'ARG Rekayasa Cisadane', type: 'ARG', location: 'Kab. Bogor', lat: -6.60785, lng: 106.79298, elevation: 0 },
+            { id: 'STA0038', name: 'ARG Jampang Kulon', type: 'ARG', location: 'Kab. Sukabumi', lat: -7.25618, lng: 106.62553, elevation: 0 },
+            { id: '30005', name: 'ARG PH Digital Bekasi Timur', type: 'ARG', location: 'Kota Bekasi', lat: -6.24974, lng: 106.99718, elevation: 0 },
+            { id: 'STA0239', name: 'ARG Rekayasa Cibinong', type: 'ARG', location: 'Kab. Bogor', lat: -6.48438, lng: 106.83848, elevation: 0 },
+            { id: '150066', name: 'ARG Sukaraja', type: 'ARG', location: 'Kab. Sukabumi', lat: -6.991103, lng: 106.9811, elevation: 0 },
+            { id: '150067', name: 'ARG Sukanegara', type: 'ARG', location: 'Kab. Cianjur', lat: -6.104323, lng: 107.1215, elevation: 0 },
+            { id: '150068', name: 'ARG Cikalong Kulon', type: 'ARG', location: 'Kab. Cianjur', lat: -6.71335, lng: 107.21174, elevation: 0 },
+            { id: '150070', name: 'ARG Cibiuk', type: 'ARG', location: 'Kab. Garut', lat: -7.06965, lng: 107.96429, elevation: 0 },
+            { id: '150072', name: 'ARG Kawali', type: 'ARG', location: 'Kab. Ciamis', lat: -7.18908, lng: 108.3747, elevation: 0 },
+            { id: '150071', name: 'ARG Salopa', type: 'ARG', location: 'Kab. Tasikmalaya', lat: -7.43416, lng: 108.27877, elevation: 0 },
+            { id: 'STG1030', name: 'ARG Salawu', type: 'ARG', location: 'Kab. Tasikmalaya', lat: -7.368527, lng: 108.00318, elevation: 0 },
+            { id: '150300', name: 'ARG Cisompet', type: 'ARG', location: 'Kab. Garut', lat: -7.54493, lng: 107.81774, elevation: 0 },
+            { id: '150074', name: 'ARG Subang', type: 'ARG', location: 'Kab. Subang', lat: -6.55248, lng: 107.75367, elevation: 0 },
+            { id: 'STAL132', name: 'ARG Pabrik Gula Subang', type: 'ARG', location: 'Kab. Subang', lat: -6.41892, lng: 107.69408, elevation: 0 },
+            { id: '150297', name: 'ARG Setu Patok', type: 'ARG', location: 'Kab. Cirebon', lat: -6.786663, lng: 108.572838, elevation: 0 },
+            { id: 'STA0263', name: 'ARG Sidamulih', type: 'ARG', location: 'Kab. Pangandaran', lat: -7.6424, lng: 108.60611, elevation: 0 },
+            { id: '150295', name: 'ARG Purwakarta', type: 'ARG', location: 'Kab. Purwakarta', lat: -6.52493, lng: 107.44752, elevation: 0 },
+            { id: '150073', name: 'ARG Rengasdengklok', type: 'ARG', location: 'Kab. Karawang', lat: -6.14625, lng: 107.3025333, elevation: 0 },
+            { id: '30017', name: 'ARG PJT II Muara (PH)', type: 'ARG', location: 'Kab. Bekasi', lat: -6.12492, lng: 107.06328, elevation: 0 },
+            { id: 'STG1007', name: 'ARG Sumedang Selatan', type: 'ARG', location: 'Kab. Sumedang', lat: -6.928741, lng: 107.97398, elevation: 0 },
+            { id: 'STAL131', name: 'ARG Kebun Raya Bogor', type: 'ARG', location: 'Kota Bogor', lat: -6.60036, lng: 106.7962, elevation: 0 },
+            { id: '30004', name: 'ARG PH Digital Sukatani', type: 'ARG', location: 'Kab. Bekasi', lat: -6.17247, lng: 107.18012, elevation: 0 },
+            { id: 'STA0040', name: 'ARG Pasir Malang', type: 'ARG', location: 'Kab. Cianjur', lat: -7.222, lng: 107.54124, elevation: 0 },
+            { id: 'STG1029', name: 'ARG Jatibarang', type: 'ARG', location: 'Kab. Indramayu', lat: -6.4894305, lng: 108.3093485, elevation: 0 },
+            { id: '150075', name: 'ARG Sukahaji', type: 'ARG', location: 'Kab. Majalengka', lat: -6.82484, lng: 108.28847, elevation: 0 },
+            { id: '150298', name: 'ARG Ciberes', type: 'ARG', location: 'Kab. Cirebon', lat: -6.89001, lng: 108.61966, elevation: 0 },
+            { id: '14032801', name: 'ARG Cidaun', type: 'ARG', location: 'Kab. Cianjur', lat: -7.49112, lng: 107.36078, elevation: 0 },
+            { id: 'STA0254', name: 'ARG Rekayasa Sukajaya', type: 'ARG', location: 'Kab. Bogor', lat: -6.62387, lng: 106.49531, elevation: 0 }
+        ];
+        const insertSt = db.prepare(`INSERT OR REPLACE INTO stations (id, name, type, location, region, elevation, latitude, longitude, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Active / Normal')`);
+        const seedTx = db.transaction(() => {
+            for (const s of seedStations) {
+                const region = s.location.replace('Kab. ', '').replace('Kota ', '');
+                insertSt.run(s.id, s.name, s.type, s.location, region, s.elevation, s.lat, s.lng);
+            }
+        });
+        seedTx();
+        console.log(`[DB] ✓ ${seedStations.length} stations seeded inline`);
+    } catch (e) {
+        console.error('[DB] Auto-seed failed:', e.message);
     }
 }
 
@@ -643,7 +720,9 @@ async function getLatestInfluxData() {
     
     // Get our station IDs to filter
     const ourStations = db.prepare('SELECT id FROM stations').all().map(s => s.id);
+    if (ourStations.length === 0) return {};
     const idFilter = ourStations.map(id => `r["id"] == "${id}"`).join(' or ');
+    if (!idFilter) return {};
     
     // Query each field's last value, filtered to only our stations
     const query = `
@@ -943,7 +1022,13 @@ app.get('/api/predictions', (req, res) => {
 
     query += ' ORDER BY p.predicted_rainfall DESC';
     const predictions = db.prepare(query).all(...params);
-    res.json(predictions);
+    // Round all numeric values to 1 decimal
+    const rounded = predictions.map(p => ({
+        ...p,
+        predicted_rainfall: Math.round(p.predicted_rainfall * 10) / 10,
+        confidence: Math.round(p.confidence * 10) / 10
+    }));
+    res.json(rounded);
 });
 
 // Model Performance
@@ -997,8 +1082,9 @@ app.get('/api/verification', async (req, res) => {
             .filter(p => validIds.has(p.station_id))
             .map(p => {
                 const actual = actualMap[p.station_id] || 0;
-                const error = p.predicted_rainfall - actual;
-                return { ...p, actual_rainfall: actual, error: Math.round(error * 10) / 10 };
+                const predicted = Math.round(p.predicted_rainfall * 10) / 10;
+                const error = Math.round((predicted - actual) * 10) / 10;
+                return { ...p, predicted_rainfall: predicted, actual_rainfall: Math.round(actual * 10) / 10, error };
             });
 
         let sumSqErr = 0; let sumAbsErr = 0;
