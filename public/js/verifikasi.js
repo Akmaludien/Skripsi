@@ -125,8 +125,8 @@ function initErrorMap(data) {
             <div style="font-family: 'Inter', sans-serif;">
                 <h4 style="margin:0 0 8px 0">${d.station_name}</h4>
                 <div style="font-size:0.85rem">
-                    Prediksi: <b>${d.predicted_rainfall} mm</b> (<span style="color:${catPred.color}">${catPred.label}</span>)<br>
-                    Aktual: <b>${d.actual_rainfall} mm</b> (<span style="color:${catAct.color}">${catAct.label}</span>)<br>
+                    Prediksi: <b>${parseFloat(d.predicted_rainfall).toFixed(1)} mm</b> (<span style="color:${catPred.color}">${catPred.label}</span>)<br>
+                    Aktual: <b>${parseFloat(d.actual_rainfall).toFixed(1)} mm</b> (<span style="color:${catAct.color}">${catAct.label}</span>)<br>
                     <hr style="margin:8px 0; border:0; border-top:1px solid #eee">
                     Error: <b style="color:${color}">${d.error > 0 ? '+' : ''}${d.error} mm</b>
                 </div>
@@ -228,7 +228,7 @@ function renderCharts(data) {
                     callbacks: {
                         label: function(context) {
                             const d = data[context.dataIndex];
-                            return `${d.station_name}: Pred ${d.predicted_rainfall}mm vs Act ${d.actual_rainfall}mm (Err: ${d.error}mm)`;
+                            return `${d.station_name}: Pred ${parseFloat(d.predicted_rainfall).toFixed(1)}mm vs Act ${parseFloat(d.actual_rainfall).toFixed(1)}mm (Err: ${parseFloat(d.error).toFixed(1)}mm)`;
                         }
                     }
                 }
@@ -261,9 +261,9 @@ function updateTable(data) {
         
         tr.innerHTML = `
             <td><strong>${d.station_name}</strong><br><small>${d.station_type}</small></td>
-            <td>${d.predicted_rainfall} mm</td>
-            <td>${d.actual_rainfall} mm<br><span style="font-size:0.7rem; color:${catAct.color}; font-weight:700">${catAct.label}</span></td>
-            <td class="${diffClass}">${d.error > 0 ? '+' : ''}${d.error} mm</td>
+            <td>${parseFloat(d.predicted_rainfall).toFixed(1)} mm</td>
+            <td>${parseFloat(d.actual_rainfall).toFixed(1)} mm<br><span style="font-size:0.7rem; color:${catAct.color}; font-weight:700">${catAct.label}</span></td>
+            <td class="${diffClass}">${d.error > 0 ? '+' : ''}${parseFloat(d.error).toFixed(1)} mm</td>
         `;
         body.appendChild(tr);
     });

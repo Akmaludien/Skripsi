@@ -229,8 +229,13 @@ if __name__ == "__main__":
               |> group(columns: ["id"])
               |> max()'''
             
-            rows = qa.collect_rows(query)
-            actual_map = {r['id']: r['_value'] or 0 for r in rows}
+            rows = qa.query_data_frame(query)
+            if isinstance(rows, list):
+                rows = pd.concat(rows) if rows else pd.DataFrame()
+            actual_map = {}
+            if not rows.empty and '_value' in rows.columns and 'id' in rows.columns:
+                for _, r in rows.iterrows():
+                    actual_map[r['id']] = r['_value'] or 0
             
             # Calculate metrics
             errors = []
@@ -255,17 +260,27 @@ if __name__ == "__main__":
                 
                 accuracy = max(0, min(100, r2 * 100))
                 
-                conn.execute('''
-                    UPDATE model_performance 
-                    SET rmse = ?, mae = ?, r_squared = ?, accuracy = ?,
-                        training_date = ?, model_version = 'BiLSTM-v2.0',
-                        notes = ?
-                    WHERE id = (SELECT id FROM model_performance ORDER BY id DESC LIMIT 1)
-                ''', (round(rmse, 3), round(mae, 3), round(r2, 4), round(accuracy, 1),
-                      datetime.now().strftime('%Y-%m-%d'),
-                      f'Auto-verified against {len(errors)} stations on {yesterday}'))
-                
-                print(f"[Metrics] Updated: RMSE={rmse:.2f}, MAE={mae:.2f}, R²={r2:.3f}")
+                # Only update if metrics are reasonable (R² > 0.5)
+                # Low R² means actual data is unreliable (e.g., synthetic/seed data)
+                if r2 >= 0.5:
+                    conn.execute('''
+                        UPDATE model_performance 
+                        SET rmse = ?, mae = ?, r_squared = ?, accuracy = ?,
+                            training_date = ?, model_version = 'BiLSTM-v2.0',
+                            notes = ?
+                        WHERE id = (SELECT id FROM model_performance ORDER BY id DESC LIMIT 1)
+                    ''', (round(rmse, 3), round(mae, 3), round(r2, 4), round(accuracy, 1),
+                          datetime.now().strftime('%Y-%m-%d'),
+                          f'Auto-verified against {len(errors)} stations on {yesterday}'))
+                    print(f"[Metrics] Updated: RMSE={rmse:.2f}, MAE={mae:.2f}, R²={r2:.3f}")
+                else:
+                    # Keep training metrics, just update timestamp
+                    conn.execute('''
+                        UPDATE model_performance 
+                        SET training_date = ?, model_version = 'BiLSTM-v2.0'
+                        WHERE id = (SELECT id FROM model_performance ORDER BY id DESC LIMIT 1)
+                    ''', (datetime.now().strftime('%Y-%m-%d'),))
+                    print(f"[Metrics] Skipped update (R²={r2:.3f} too low - data may be synthetic). Keeping training metrics.")
             else:
                 # Not enough verification data yet, just update timestamp
                 conn.execute('''
