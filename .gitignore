@@ -1,0 +1,7 @@
+﻿node_modules/
+.env
+data/*.db-shm
+data/*.db-wal
+scratch/
+.DS_Store
+.venv/
