@@ -238,7 +238,7 @@ function connectMQTT() {
     console.log(`[MQTT] Connecting to ${MQTT_BROKER}...`);
     
     // Stable Client ID instead of Date.now() to avoid "Client ID Churn"
-    const clientId = `stmkg_srv_jabar_01`;
+    const clientId = process.env.MQTT_CLIENT_ID || `stmkg_srv_jabar_local_$(Math.floor(Math.random() * 10000))`;
 
     mqttClient = mqtt.connect(MQTT_BROKER, {
         clientId: clientId,
