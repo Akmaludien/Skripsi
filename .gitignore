@@ -5,3 +5,4 @@ data/*.db-wal
 scratch/
 .DS_Store
 .venv/
+data/monitoring.db
