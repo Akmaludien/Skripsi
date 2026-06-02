@@ -1,4 +1,4 @@
-const express = require('express');
+﻿const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const Database = require('better-sqlite3');
@@ -6,13 +6,15 @@ const mqtt = require('mqtt');
 const { WebSocketServer } = require('ws');
 const http = require('http');
 const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const { exec } = require('child_process');
 
 // Load environment variables
 require('dotenv').config();
 const { InfluxDB, Point } = require('@influxdata/influxdb-client');
 
-// ─── InfluxDB Config ────────────────────────────────
+// â”€â”€â”€ InfluxDB Config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const INFLUX_URL = process.env.INFLUX_URL || 'http://localhost:8086';
 const INFLUX_TOKEN = process.env.INFLUX_TOKEN;
 const INFLUX_ORG = process.env.INFLUX_ORG || 'SKRIPSI';
@@ -26,11 +28,11 @@ if (writeApi) {
     console.log(`[InfluxDB] Missing TOKEN in .env, InfluxDB sync disabled.`);
 }
 
-// ─── Config ─────────────────────────────────────────
+// â”€â”€â”€ Config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const PORT = process.env.PORT || 3001;
 const MQTT_BROKER = process.env.MQTT_BROKER || 'mqtt://broker.hivemq.com:1883';
 
-// ─── Reklim AAWS Clients ────────────────────────────
+// â”€â”€â”€ Reklim AAWS Clients â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const reklimStations = [
     { id: 'AAWS3010', topic: 'device/50e81az718842ds', user: 'wxki2', pass: '7ep1l' },
     { id: 'STA3008',  topic: 'device/jz0o33ob874q9q4', user: 'vcjpa', pass: '65tm2' },
@@ -55,7 +57,7 @@ const MQTT_TOPICS = [
 ];
 const MQTT_TOPIC_CMD = 'stmkg/station/command';
 
-// ─── Database Setup ─────────────────────────────────
+// â”€â”€â”€ Database Setup â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const dbPath = path.join(__dirname, 'data', 'monitoring.db');
 const dataDir = path.dirname(dbPath);
 const stationMapper = {
@@ -100,7 +102,7 @@ if (!dbExists) {
     if (fs.existsSync(schemaPath)) {
         const schema = fs.readFileSync(schemaPath, 'utf-8');
         db.exec(schema);
-        console.log('✓ Database schema initialized');
+        console.log('âœ“ Database schema initialized');
     }
 }
 
@@ -175,7 +177,7 @@ if (stationCount && stationCount.cnt === 0) {
             }
         });
         seedTx();
-        console.log(`[DB] ✓ ${seedStations.length} stations seeded inline`);
+        console.log(`[DB] âœ“ ${seedStations.length} stations seeded inline`);
     } catch (e) {
         console.error('[DB] Auto-seed failed:', e.message);
     }
@@ -188,26 +190,33 @@ try {
         // No row exists, insert one
         db.prepare(`INSERT INTO model_performance (rmse, mae, r_squared, accuracy, training_date, model_version, notes) VALUES (?, ?, ?, ?, ?, ?, ?)`)
             .run(1.909, 1.573, 0.921, 92.1, '2026-05-23', 'BiLSTM-v2.0', 'Bi-LSTM (128-64-32) log-transform. Verified on training data.');
-        console.log('[DB] ✓ Model performance metrics initialized');
+        console.log('[DB] âœ“ Model performance metrics initialized');
     } else if ((perf.rmse === 0 && perf.mae === 0 && perf.r_squared === 0) || perf.rmse > 10) {
         // Row exists but metrics are zero (from seed.js placeholder) or outdated (old LSTM values), update with real training values
         db.prepare(`UPDATE model_performance SET rmse=1.909, mae=1.573, r_squared=0.921, accuracy=92.1, model_version='BiLSTM-v2.0', training_date='2026-05-23', notes='Bi-LSTM (128-64-32) log-transform. Verified on training data.' WHERE id=(SELECT id FROM model_performance ORDER BY id DESC LIMIT 1)`)
             .run();
-        console.log('[DB] ✓ Model performance metrics updated from training results');
+        console.log('[DB] âœ“ Model performance metrics updated from training results');
     }
 } catch (e) {
     // Table might not exist yet, ignore
 }
 
-// ─── Express App ────────────────────────────────────
+// â”€â”€â”€ Express App â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const app = express();
-app.use(cors());
+// Security Middleware
+app.use(helmet());
+app.use(cors({ origin: process.env.NODE_ENV === 'production' ? 'https://akmaludien.github.io' : '*' }));
+
+// Rate Limiting
+const limiter = rateLimit({ windowMs: 60 * 1000, max: 100, message: 'Too many requests' });
+app.use('/api/', limiter);
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 const server = http.createServer(app);
 
-// ─── WebSocket Server ───────────────────────────────
+// â”€â”€â”€ WebSocket Server â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const wss = new WebSocketServer({ server, path: '/ws' });
 
 const wsClients = new Set();
@@ -229,7 +238,7 @@ function broadcast(type, data) {
     }
 }
 
-// ─── MQTT Client ────────────────────────────────────
+// â”€â”€â”€ MQTT Client â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let mqttClient = null;
 let lastLogTime = 0;
 const LOG_INTERVAL = 15000; // Log success only every 15 seconds
@@ -482,7 +491,7 @@ function connectMQTT() {
     });
 }
 
-// ─── Reklim AAWS Separate MQTT Connections ──────────
+// â”€â”€â”€ Reklim AAWS Separate MQTT Connections â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // NOTE: Reklim stations use a separate infrastructure from the main BMKG broker.
 // The broker rejects wildcard subscriptions (SUBACK 128) and reklim devices
 // do NOT publish to this broker. Connections are kept as best-effort in case
@@ -517,7 +526,7 @@ function connectReklimStations() {
                 client.subscribe(topic, { qos: 0 }, (err, granted) => {
                     const qos = granted && granted[0] ? granted[0].qos : -1;
                     if (qos !== 128 && !err) {
-                        console.log(`[Reklim] ✓ Subscribed ${station.id}: ${topic}`);
+                        console.log(`[Reklim] âœ“ Subscribed ${station.id}: ${topic}`);
                     }
                 });
             });
@@ -726,11 +735,11 @@ function sendCommand(stationId, commandType, payload) {
     return { success: false, error: 'MQTT not connected' };
 }
 
-// ─── API ROUTES ─────────────────────────────────────
+// â”€â”€â”€ API ROUTES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 
-// ─── QUERY HELPERS ──────────────────────────────────
+// â”€â”€â”€ QUERY HELPERS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const queryApi = influxClient ? influxClient.getQueryApi(INFLUX_ORG) : null;
 
 async function getLatestInfluxData() {
@@ -888,7 +897,7 @@ app.get('/api/stations', async (req, res) => {
             return { ...s, status: 'Active / Normal', ...influxData };
         }
         
-        // No InfluxDB data — check SQLite sensor_data as fallback
+        // No InfluxDB data â€” check SQLite sensor_data as fallback
         const fallback = db.prepare(`
             SELECT rr, temp, rh, press, ws, wd, sr, log_temp, batt, timestamp
             FROM sensor_data 
@@ -914,7 +923,7 @@ app.get('/api/stations', async (req, res) => {
             };
         }
         
-        // No data at all — return as-is (Offline stations show null)
+        // No data at all â€” return as-is (Offline stations show null)
         return { ...s };
     });
 
@@ -988,8 +997,8 @@ app.get('/api/stations/:id/export', async (req, res) => {
         const isARG = station && station.type === 'ARG';
         
         let csv = isARG 
-            ? 'Timestamp,Rainfall (mm),Logger Temp (°C),Battery (V)\n'
-            : 'Timestamp,Rainfall (mm),Temperature (°C),Humidity (%),Pressure (hPa),Wind Speed (m/s),Wind Dir (°),Solar Rad (W/m²),Battery (V)\n';
+            ? 'Timestamp,Rainfall (mm),Logger Temp (Â°C),Battery (V)\n'
+            : 'Timestamp,Rainfall (mm),Temperature (Â°C),Humidity (%),Pressure (hPa),Wind Speed (m/s),Wind Dir (Â°),Solar Rad (W/mÂ²),Battery (V)\n';
 
         rows.forEach(r => {
             const ts = new Date(r._time).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
@@ -1305,7 +1314,7 @@ app.get('/api/locations', (req, res) => {
     res.json(locations.map(l => l.location));
 });
 
-// ─── SPA Fallback ───────────────────────────────────
+// â”€â”€â”€ SPA Fallback â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 app.get('*', (req, res) => {
     const filePath = path.join(__dirname, 'public', req.path);
     if (fs.existsSync(filePath + '.html')) {
@@ -1314,9 +1323,9 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// ─── (Legacy prediction functions removed - using runPrediction cron below) ───
+// â”€â”€â”€ (Legacy prediction functions removed - using runPrediction cron below) â”€â”€â”€
 
-// ─── Station Status Watchdog ─────────────────────────
+// â”€â”€â”€ Station Status Watchdog â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Automatically set stations to 'Offline' if no data received for 1 hour
 function updateStationStatuses() {
     const oneHourAgo = new Date(Date.now() - 3600000).toISOString();
@@ -1346,7 +1355,7 @@ try {
     if (cleaned.changes > 0) console.log(`[Startup] Cleaned ${cleaned.changes} old alerts`);
 } catch(e) {}
 
-// ─── Auto Prediction Cron (every 6 hours) ───────────
+// â”€â”€â”€ Auto Prediction Cron (every 6 hours) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function runPrediction() {
     const pythonCmd = process.env.PYTHON_CMD || 'python';
     const scriptPath = path.join(__dirname, 'predict.py');
@@ -1371,9 +1380,9 @@ setInterval(runPrediction, 6 * 60 * 60 * 1000);
 // Run once on startup after 30 seconds (let InfluxDB connect first)
 setTimeout(runPrediction, 30000);
 
-// ─── Start Server ───────────────────────────────────
+// â”€â”€â”€ Start Server â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 server.listen(PORT, () => {
-    console.log(`\n🌦️  STMKG Monitoring System`);
+    console.log(`\nðŸŒ¦ï¸  STMKG Monitoring System`);
     console.log(`   Server running on http://localhost:${PORT}`);
     console.log(`   WebSocket on ws://localhost:${PORT}/ws\n`);
     connectMQTT();
@@ -1388,3 +1397,4 @@ process.on('SIGINT', () => {
     db.close();
     process.exit(0);
 });
+
