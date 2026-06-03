@@ -54,10 +54,10 @@
     --bg-card: #ffffff;
     --bg-card-hover: #f8fafc;
     --bg-sidebar: var(--primary-900);
-    --bg-header: var(--primary-800);
-    --text-primary: #1e293b;
-    --text-secondary: #64748b;
-    --text-muted: #94a3b8;
+    --bg-header: var(--primary-900);
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
     --text-on-dark: #ffffff;
     --border-color: #e2e8f0;
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -2305,10 +2305,12 @@ button {
     position: sticky !important;
     top: 0;
     z-index: 1050;
-    background: var(--bg-main);
+    background: var(--bg-header) !important;
     backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.top-header h1, .top-header span, .top-header button, .top-header i {
+    color: var(--text-on-dark) !important;
 }
 [data-theme="dark"] .top-header {
     background: rgba(11, 17, 33, 0.9);
