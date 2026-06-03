@@ -1073,7 +1073,7 @@ app.get('/api/predictions', (req, res) => {
 app.get('/api/model-performance', (req, res) => {
     // FORCE OVERWRITE IN DATABASE TO CLEAN UP OLD DUMMY DATA FROM PREVIOUS DEPLOYS
     try {
-        db.prepare(UPDATE model_performance SET rmse=6.063, mae=4.129, r_squared=0.813, accuracy=81.3, model_version='BiLSTM-v3.0 (Trend)', notes='Bi-LSTM 4 Fitur (Tren Hujan 3 Harian). Verified on actual BMKG data.').run();
+        db.prepare(`UPDATE model_performance SET rmse=6.063, mae=4.129, r_squared=0.813, accuracy=81.3, model_version='BiLSTM-v3.0 (Trend)', notes='Bi-LSTM 4 Fitur (Tren Hujan 3 Harian). Verified on actual BMKG data.'`).run();
     } catch (e) {}
 
     const perf = db.prepare('SELECT * FROM model_performance ORDER BY training_date DESC LIMIT 1').get();
