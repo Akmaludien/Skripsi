@@ -205,9 +205,9 @@ function initMap(stations) {
         const div = L.DomUtil.create('div', 'map-legend');
         div.innerHTML = `
             <h4>Tipe Stasiun <span style="font-size:0.7rem;font-weight:normal;color:#64748b">(Klik Filter)</span></h4>
-            <div class="legend-item filter-click" id="filter-aws" style="display:flex;align-items:center;cursor:pointer;user-select:none;transition:opacity 0.2s"><svg width="12" height="12" style="margin-right:8px;overflow:visible"><polygon points="6,0 12,12 0,12" style="fill:var(--aws-color)"/></svg> AWS</div>
-            <div class="legend-item filter-click" id="filter-arg" style="display:flex;align-items:center;cursor:pointer;user-select:none;transition:opacity 0.2s"><svg width="12" height="12" style="margin-right:8px;overflow:visible"><circle cx="6" cy="6" r="6" style="fill:var(--arg-color)"/></svg> ARG</div>
-            <div class="legend-item filter-click" id="filter-aaws" style="display:flex;align-items:center;cursor:pointer;user-select:none;transition:opacity 0.2s"><svg width="12" height="12" style="margin-right:8px;overflow:visible"><polygon points="6,0 12,6 6,12 0,6" style="fill:var(--aaws-color)"/></svg> AAWS</div>
+            <div class="legend-item filter-click" id="filter-aws" style="display:flex;align-items:center;cursor:pointer;user-select:none;transition:opacity 0.2s"><svg width="12" height="12" style="margin-right:8px;overflow:visible"><polygon points="6,0 12,12 0,12" style="fill:#cbd5e1"/></svg> AWS</div>
+            <div class="legend-item filter-click" id="filter-arg" style="display:flex;align-items:center;cursor:pointer;user-select:none;transition:opacity 0.2s"><svg width="12" height="12" style="margin-right:8px;overflow:visible"><circle cx="6" cy="6" r="6" style="fill:#cbd5e1"/></svg> ARG</div>
+            <div class="legend-item filter-click" id="filter-aaws" style="display:flex;align-items:center;cursor:pointer;user-select:none;transition:opacity 0.2s"><svg width="12" height="12" style="margin-right:8px;overflow:visible"><polygon points="6,0 12,6 6,12 0,6" style="fill:#cbd5e1"/></svg> AAWS</div>
     <hr style="border:0;border-top:1px solid rgba(255,255,255,0.1);margin:8px 0">
     <h4>Status Data <span style="font-size:0.7rem;font-weight:normal;color:#64748b">(Freshness)</span></h4>
     <div class="legend-item" style="display:flex;align-items:center"><svg width="10" height="10" style="margin-right:8px"><circle cx="5" cy="5" r="5" fill="#22c55e"/></svg> &le; 30 Menit</div>
