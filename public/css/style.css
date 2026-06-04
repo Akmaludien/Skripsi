@@ -298,6 +298,7 @@ button {
 .main-content {
     flex: 1;
     margin-left: var(--sidebar-width);
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     flex-direction: column;
     min-height: 100vh;
@@ -387,6 +388,8 @@ button {
 }
 
 .mobile-menu-btn {
+        color: var(--text-primary) !important;
+        font-family: inherit;
     display: none;
     background: none;
     border: none;
@@ -1560,6 +1563,8 @@ button {
     }
 
     .mobile-menu-btn {
+        color: var(--text-primary) !important;
+        font-family: inherit;
         display: block;
     }
 
@@ -2318,6 +2323,8 @@ button {
 
 /* ===== SIDEBAR COLLAPSIBLE ===== */
 .sidebar-toggle {
+    color: var(--text-primary) !important;
+    font-family: inherit;
     display: none;
     background: var(--bg-card);
     border: 1px solid var(--border-color);
@@ -2339,7 +2346,9 @@ button {
 }
 
 @media (min-width: 769px) {
-    .sidebar-toggle { display: flex; }
+    .sidebar-toggle {
+    color: var(--text-primary) !important;
+    font-family: inherit; display: flex; }
     
     .sidebar {
         transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), min-width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -2349,6 +2358,10 @@ button {
     .sidebar.collapsed {
         width: 70px;
         min-width: 70px;
+    }
+    
+    .sidebar.collapsed ~ .main-content {
+        margin-left: 70px;
     }
     
     .sidebar.collapsed .sidebar-brand {
@@ -2361,6 +2374,7 @@ button {
     }
     
     .sidebar.collapsed .nav-link {
+        gap: 0;
         justify-content: center;
         padding: 12px 8px;
         font-size: 0;
