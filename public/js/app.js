@@ -1,4 +1,4 @@
-/**
+﻿/**
  * STMKG Monitoring System - Shared Utilities
  */
 
@@ -496,3 +496,25 @@ function initTelegramButton() {
 }
 
 initTelegramButton();
+
+// ===== SIDEBAR TOGGLE =====
+function toggleSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    if (!sidebar) return;
+    sidebar.classList.toggle('collapsed');
+    localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+}
+
+// Restore sidebar state on load
+document.addEventListener('DOMContentLoaded', () => {
+    const sidebar = document.querySelector('.sidebar');
+    if (sidebar && localStorage.getItem('sidebarCollapsed') === 'true') {
+        sidebar.classList.add('collapsed');
+    }
+    
+    // Bind toggle button
+    const toggleBtn = document.querySelector('.sidebar-toggle');
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', toggleSidebar);
+    }
+});

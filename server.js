@@ -128,7 +128,7 @@ if (stationCount && stationCount.cnt === 0) {
             { id: 'STA3004', name: 'AAWS Sumedang', type: 'AAWS', location: 'Kab. Sumedang', lat: -6.82425, lng: 107.84493, elevation: 0 },
             { id: 'AAWS0348', name: 'AAWS Lemah Abang', type: 'AAWS', location: 'Kab. Cirebon', lat: -6.82313, lng: 108.61802, elevation: 0 },
             { id: '160033', name: 'AWS UI', type: 'AWS', location: 'Kota Depok', lat: -6.37191, lng: 106.82762, elevation: 0 },
-            { id: 'STA2045', name: 'AWS IPB', type: 'AWS', location: 'Kab. Bogor', lat: -7, lng: 106.8054, elevation: 0 },
+            { id: 'STA2045', name: 'AWS IPB', type: 'AWS', location: 'Kab. Bogor', lat: -6.600471, lng: 106.8054, elevation: 0 },
             { id: 'STA2064', name: 'AWS Cibeureum', type: 'AWS', location: 'Kab. Bogor', lat: -6.600471, lng: 106.95029, elevation: 0 },
             { id: 'STA2042', name: 'AWS SMPK Bojong Pucung', type: 'AWS', location: 'Kab. Cianjur', lat: -6.83688, lng: 107.27382, elevation: 0 },
             { id: 'STA2115', name: 'AWS Stageof Bandung', type: 'AWS', location: 'Kota Bandung', lat: -6.88351, lng: 107.59731, elevation: 0 },
@@ -216,7 +216,7 @@ app.use(helmet({
         },
     },
 }));
-app.use(cors({ origin: process.env.NODE_ENV === 'production' ? 'https://akmaludien.github.io' : '*' }));
+app.use(cors({ origin: process.env.NODE_ENV === 'production' ? ['https://simprech-jabar.my.id', 'https://akmaludien.github.io'] : '*' }));
 
 // Rate Limiting
 const limiter = rateLimit({ windowMs: 60 * 1000, max: 100, message: 'Too many requests' });

@@ -1,7 +1,5 @@
-numpy
+﻿numpy
 pandas
 scikit-learn
 tensorflow
 influxdb-client
-joblib
-python-dotenv

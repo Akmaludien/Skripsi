@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -48,7 +48,7 @@
 
         <div class="main-content">
             <header class="top-header">
-                <button class="mobile-menu-btn">☰</button>
+                <button class="mobile-menu-btn">☰</button><button class="sidebar-toggle" title="Toggle Sidebar">☰</button>
                 <div class="header-title" style="display:flex;align-items:center;gap:14px;">
                     <img src="/img/stmkg-logo.png" alt="STMKG" style="height:46px;width:auto;object-fit:contain">
                     <div><h1>Tentang Sistem</h1><span>Arsitektur & Teknologi</span></div>
@@ -80,7 +80,106 @@
                 <div class="card" style="padding: 32px; margin-bottom: 24px;">
                     <h3 style="font-size: 1.2rem; margin-bottom: 16px;">🏗️ Arsitektur Sistem</h3>
                     <div style="width: 100%; overflow-x: auto; border-radius: 12px; border: 1px solid var(--border-color);">
-                        <img src="/img/arsitektur-sistem.svg" alt="Arsitektur Sistem" style="width: 100%; min-width: 800px; height: auto; display: block;">
+                        <div style="overflow-x:auto; margin: 24px 0;">
+<svg width="1200" height="1000" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1000">
+  <defs>
+    <style>
+      .layer-title { font-size: 24px; font-weight: bold; fill: #ffffff; text-anchor: middle; }
+      .box-title { font-size: 16px; font-weight: bold; fill: #ffffff; text-anchor: middle; }
+      .box-text { font-size: 13px; fill: #ffffff; text-anchor: middle; }
+      .arrow { stroke: #888888; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+      .layer-bg { filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3)); }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#888888" />
+    </marker>
+  </defs>
+  <rect width="1200" height="1000" fill="#f8f9fa"/>
+  <text x="600" y="40" class="layer-title" style="font-size: 32px; fill: #333;">Arsitektur Sistem Monitoring dan Prediksi Curah Hujan</text>
+  <text x="600" y="70" class="box-text" style="text-anchor: middle; fill: #666; font-size: 14px;">STMKG Jawa Barat &#x2014; Data Integration &#x2022; Bi-LSTM Deep Learning &#x2022; Real-time Monitoring</text>
+  <g class="layer-bg">
+    <rect x="50" y="120" width="1100" height="160" fill="#E3F2FD" stroke="#1976D2" stroke-width="2" rx="10"/>
+    <text x="70" y="150" class="layer-title" style="fill: #1976D2; text-anchor: start; font-size: 18px;">LAYER 1: Sumber Data Sensor (50 Stasiun Jawa Barat)</text>
+    <rect x="100" y="170" width="280" height="90" fill="#1976D2" rx="8" class="layer-bg"/>
+    <text x="240" y="195" class="box-title">AWS (12 Stasiun)</text>
+    <text x="240" y="215" class="box-text">Automatic Weather Station</text>
+    <text x="240" y="235" class="box-text" style="font-size: 11px;">9 Parameter | Interval: 1 menit</text>
+    <text x="240" y="250" class="box-text" style="font-size: 10px; font-style: italic;">Temp, RH, Press, WS, WD, Rain, SR</text>
+    <rect x="460" y="170" width="280" height="90" fill="#22c55e" rx="8" class="layer-bg"/>
+    <text x="600" y="195" class="box-title">ARG (30 Stasiun)</text>
+    <text x="600" y="215" class="box-text">Automatic Rain Gauge</text>
+    <text x="600" y="235" class="box-text" style="font-size: 11px;">3 Parameter | Interval: 1 menit</text>
+    <text x="600" y="250" class="box-text" style="font-size: 10px; font-style: italic;">Rain, Logger Temp, Battery</text>
+    <rect x="820" y="170" width="280" height="90" fill="#f59e0b" rx="8" class="layer-bg"/>
+    <text x="960" y="195" class="box-title">AAWS (8 Stasiun)</text>
+    <text x="960" y="215" class="box-text">Automatic Agro Weather Station</text>
+    <text x="960" y="235" class="box-text" style="font-size: 11px;">9 Parameter | Interval: 10 menit</text>
+    <text x="960" y="250" class="box-text" style="font-size: 10px; font-style: italic;">AWS params + Agroklimat</text>
+  </g>
+  <path d="M 240 260 L 240 310" class="arrow"/><path d="M 600 260 L 600 310" class="arrow"/><path d="M 960 260 L 960 310" class="arrow"/>
+  <g class="layer-bg">
+    <rect x="50" y="310" width="1100" height="120" fill="#F3E5F5" stroke="#7B1FA2" stroke-width="2" rx="10"/>
+    <text x="70" y="340" class="layer-title" style="fill: #7B1FA2; text-anchor: start; font-size: 18px;">LAYER 2: Message Broker (MQTT)</text>
+    <rect x="150" y="360" width="900" height="60" fill="#7B1FA2" rx="8" class="layer-bg"/>
+    <text x="600" y="385" class="box-title" style="font-size: 14px;">MQTT Broker BMKG (202.90.198.159:1883)</text>
+    <text x="600" y="410" class="box-text" style="font-size: 12px;">Protocol: MQTT v5 | QoS: 0 | Publish-Subscribe | Real-time Data Stream</text>
+  </g>
+  <path d="M 600 430 L 600 480" class="arrow"/>
+  <g class="layer-bg">
+    <rect x="50" y="480" width="1100" height="200" fill="#E0F2F1" stroke="#00796B" stroke-width="2" rx="10"/>
+    <text x="70" y="510" class="layer-title" style="fill: #00796B; text-anchor: start; font-size: 18px;">LAYER 3: Application Server (Node.js + Express)</text>
+    <rect x="100" y="530" width="230" height="130" fill="#00897B" rx="8" class="layer-bg"/>
+    <text x="215" y="555" class="box-title" style="font-size: 14px;">Express REST API</text>
+    <text x="215" y="580" class="box-text">HTTP Endpoints</text>
+    <text x="215" y="600" class="box-text" style="font-size: 11px;">Data Query &amp; Serve</text>
+    <text x="215" y="620" class="box-text" style="font-size: 11px; font-style: italic;">Port 3001</text>
+    <rect x="360" y="530" width="230" height="130" fill="#00897B" rx="8" class="layer-bg"/>
+    <text x="475" y="555" class="box-title" style="font-size: 14px;">MQTT Subscriber</text>
+    <text x="475" y="580" class="box-text">Receive Sensor Data</text>
+    <text x="475" y="600" class="box-text" style="font-size: 11px;">Parse &amp; Store</text>
+    <text x="475" y="620" class="box-text" style="font-size: 11px; font-style: italic;">50 Station Filter</text>
+    <rect x="620" y="530" width="230" height="130" fill="#00897B" rx="8" class="layer-bg"/>
+    <text x="735" y="555" class="box-title" style="font-size: 14px;">WebSocket Server</text>
+    <text x="735" y="580" class="box-text">Real-time Push</text>
+    <text x="735" y="600" class="box-text" style="font-size: 11px;">Live Dashboard Update</text>
+    <text x="735" y="620" class="box-text" style="font-size: 11px; font-style: italic;">Bidirectional</text>
+    <rect x="880" y="530" width="250" height="130" fill="#00897B" rx="8" class="layer-bg"/>
+    <text x="1005" y="555" class="box-title" style="font-size: 14px;">Prediction Cron</text>
+    <text x="1005" y="580" class="box-text">Python Bridge</text>
+    <text x="1005" y="600" class="box-text" style="font-size: 11px;">Every 6 Hours</text>
+    <text x="1005" y="620" class="box-text" style="font-size: 11px; font-style: italic;">predict.py</text>
+  </g>
+  <path d="M 215 660 L 215 710" class="arrow"/><path d="M 475 660 L 475 710" class="arrow"/><path d="M 735 660 L 735 710" class="arrow"/><path d="M 1005 660 L 1005 710" class="arrow"/>
+  <g class="layer-bg">
+    <rect x="50" y="710" width="1100" height="200" fill="#FCE4EC" stroke="#C2185B" stroke-width="2" rx="10"/>
+    <text x="70" y="740" class="layer-title" style="fill: #C2185B; text-anchor: start; font-size: 18px;">LAYER 4: Storage, Database &amp; Interfaces</text>
+    <rect x="100" y="760" width="230" height="130" fill="#C2185B" rx="8" class="layer-bg"/>
+    <text x="215" y="790" class="box-title" style="font-size: 14px;">SQLite</text>
+    <text x="215" y="815" class="box-text">Local Database</text>
+    <text x="215" y="835" class="box-text" style="font-size: 11px;">Metadata &#x2022; Predictions</text>
+    <text x="215" y="855" class="box-text" style="font-size: 11px;">Model Performance</text>
+    <rect x="360" y="760" width="230" height="130" fill="#C2185B" rx="8" class="layer-bg"/>
+    <text x="475" y="790" class="box-title" style="font-size: 14px;">InfluxDB</text>
+    <text x="475" y="815" class="box-text">Time-Series DB</text>
+    <text x="475" y="835" class="box-text" style="font-size: 11px;">Historical Data &#x2022; Analytics</text>
+    <text x="475" y="855" class="box-text" style="font-size: 11px;">Model Validation</text>
+    <rect x="620" y="760" width="230" height="130" fill="#C2185B" rx="8" class="layer-bg"/>
+    <text x="735" y="790" class="box-title" style="font-size: 14px;">Browser</text>
+    <text x="735" y="815" class="box-text">Frontend Dashboard</text>
+    <text x="735" y="835" class="box-text" style="font-size: 11px;">Visualisasi &#x2022; Monitoring</text>
+    <text x="735" y="855" class="box-text" style="font-size: 11px;">Data Analysis</text>
+    <rect x="880" y="760" width="250" height="130" fill="#C2185B" rx="8" class="layer-bg"/>
+    <text x="1005" y="790" class="box-title" style="font-size: 14px;">Python Engine</text>
+    <text x="1005" y="815" class="box-text">Bi-LSTM Model</text>
+    <text x="1005" y="835" class="box-text" style="font-size: 11px;">TensorFlow / Keras</text>
+    <text x="1005" y="855" class="box-text" style="font-size: 11px;">predict.py</text>
+  </g>
+  <g>
+    <rect x="50" y="950" width="1100" height="40" fill="#E8E8E8" stroke="#999" stroke-width="1" rx="5"/>
+    <text x="600" y="975" class="box-text" style="fill: #333; text-anchor: middle; font-size: 12px;">50 Stasiun Aktif | 3 Tipe Sensor | 7 Hari Prediksi | Real-time MQTT | 24/7 Monitoring</text>
+  </g>
+</svg>
+</div>
                     </div>
                 </div>
 
@@ -162,7 +261,7 @@
                     <div class="tech-grid">
                         <div class="tech-card" style="border-left: 4px solid #2563eb;">
                             <h4>🔷 AWS (Automatic Weather Station)</h4>
-                            <p><strong>11 stasiun</strong> — Mengukur 7 parameter utama: suhu, kelembapan, tekanan, kecepatan angin, arah angin, curah hujan, dan radiasi matahari.</p>
+                            <p><strong>12 stasiun</strong> — Mengukur 7 parameter utama: suhu, kelembapan, tekanan, kecepatan angin, arah angin, curah hujan, dan radiasi matahari.</p>
                         </div>
                         <div class="tech-card" style="border-left: 4px solid #22c55e;">
                             <h4>🟢 ARG (Automatic Rain Gauge)</h4>
@@ -170,7 +269,7 @@
                         </div>
                         <div class="tech-card" style="border-left: 4px solid #f97316;">
                             <h4>🔶 AAWS (Automatic Agro Weather Station)</h4>
-                            <p><strong>9 stasiun</strong> — Stasiun agroklimatologi dengan parameter lengkap seperti AWS, ditambah parameter khusus pertanian.</p>
+                            <p><strong>8 stasiun</strong> — Stasiun agroklimatologi dengan parameter lengkap seperti AWS, ditambah parameter khusus pertanian.</p>
                         </div>
                     </div>
                 </div>
@@ -179,6 +278,6 @@
             <footer class="app-footer">&copy; 2026 STMKG Jawa Barat | Integrated Climatology Monitoring System v1.0</footer>
         </div>
     </div>
-    <script src="/js/app.js"></script>
+    <script src="/js/app.js?v=3"></script>
 </body>
 </html>

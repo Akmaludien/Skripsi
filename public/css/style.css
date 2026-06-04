@@ -1,4 +1,4 @@
-/* ═══════════════════════════════════════════════════
+﻿/* ═══════════════════════════════════════════════════
    STMKG Monitoring System - Design System
    Sistem Monitoring Curah Hujan Jawa Barat
    ═══════════════════════════════════════════════════ */
@@ -2314,4 +2314,68 @@ button {
 }
 [data-theme="dark"] .top-header {
     background: rgba(11, 17, 33, 0.9);
+}
+
+/* ===== SIDEBAR COLLAPSIBLE ===== */
+.sidebar-toggle {
+    display: none;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-primary);
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+.sidebar-toggle:hover {
+    background: var(--primary);
+    color: #fff;
+    transform: scale(1.05);
+}
+
+@media (min-width: 769px) {
+    .sidebar-toggle { display: flex; }
+    
+    .sidebar {
+        transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), min-width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: hidden;
+    }
+    
+    .sidebar.collapsed {
+        width: 70px;
+        min-width: 70px;
+    }
+    
+    .sidebar.collapsed .sidebar-brand {
+        justify-content: center;
+        padding: 16px 8px;
+    }
+    
+    .sidebar.collapsed .brand-text {
+        display: none;
+    }
+    
+    .sidebar.collapsed .nav-link {
+        justify-content: center;
+        padding: 12px 8px;
+        font-size: 0;
+    }
+    
+    .sidebar.collapsed .nav-link .icon {
+        margin-right: 0;
+        font-size: 1.2rem;
+    }
+    
+    .sidebar.collapsed .sidebar-footer {
+        display: none;
+    }
+    
+    .sidebar.collapsed + .main-area {
+        margin-left: 0;
+    }
 }
