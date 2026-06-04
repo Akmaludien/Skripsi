@@ -28,8 +28,10 @@ INFLUX_ORG = os.getenv("INFLUX_ORG", "SKRIPSI")
 INFLUX_BUCKET = os.getenv("INFLUX_BUCKET", "skripsi")
 
 DB_PATH = os.path.join(os.path.dirname(__file__), 'data', 'monitoring.db')
-MODEL_PATH = os.path.join(os.path.dirname(__file__), 'models', 'aws', 'model_aws.h5')
-SCALER_PATH = os.path.join(os.path.dirname(__file__), 'models', 'aws', 'scaler_aws.json')
+MODEL_AWS_PATH = os.path.join(os.path.dirname(__file__), 'models', 'aws', 'model_aws.h5')
+SCALER_AWS_PATH = os.path.join(os.path.dirname(__file__), 'models', 'aws', 'scaler_aws.json')
+MODEL_ARG_PATH = os.path.join(os.path.dirname(__file__), 'models', 'arg', 'model_arg.h5')
+SCALER_ARG_PATH = os.path.join(os.path.dirname(__file__), 'models', 'arg', 'scaler_arg.json')
 
 def get_db_connection():
     return sqlite3.connect(DB_PATH)
@@ -134,8 +136,10 @@ def save_prediction(station_id, prediction_date, predicted_rainfall, day_horizon
 
 def run_predictions():
     global HAS_TF, model_rmse
-    model = None
-    scaler = None
+    model_aws = None
+    scaler_aws = None
+    model_arg = None
+    scaler_arg = None
 
     # Load RMSE from model_performance for confidence calculation
     try:
@@ -159,7 +163,7 @@ def run_predictions():
             HAS_TF = False
     
     conn = get_db_connection()
-    stations = pd.read_sql_query("SELECT id FROM stations WHERE type IN ('AWS', 'AAWS', 'ARG')", conn)
+    stations = pd.read_sql_query("SELECT id, type FROM stations WHERE type IN ('AWS', 'AAWS', 'ARG')", conn)
     conn.close()
     
     print(f"[predict.py] Found {len(stations)} stations.")
