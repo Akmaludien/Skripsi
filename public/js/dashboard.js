@@ -347,7 +347,7 @@ function renderStationCards(stations) {
         const battQC = checkDataQC('batt', s.latest_batt);
 
         return `
-        <div class="station-card type-${s.type.toLowerCase()}" onclick="window.focusStation('${s.id}')" data-type="${s.type}" data-status="${s.status || 'Unknown'}">
+        <div class="station-card type-${s.type.toLowerCase()}" onclick="location.href='/detail.html?id=${s.id}'" data-type="${s.type}" data-status="${s.status || 'Unknown'}">
             <div class="station-card-header">
                 <span class="badge-type ${s.type.toLowerCase()}">${s.type}</span>
                 <span class="slc-status">
