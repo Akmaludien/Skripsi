@@ -388,7 +388,7 @@ button {
 }
 
 .mobile-menu-btn {
-        color: var(--text-primary) !important;
+        color: #ffffff !important;
         font-family: inherit;
     display: none;
     background: none;
@@ -1563,7 +1563,7 @@ button {
     }
 
     .mobile-menu-btn {
-        color: var(--text-primary) !important;
+        color: #ffffff !important;
         font-family: inherit;
         display: block;
     }
@@ -2323,7 +2323,7 @@ button {
 
 /* ===== SIDEBAR COLLAPSIBLE ===== */
 .sidebar-toggle {
-    color: var(--text-primary) !important;
+    color: #ffffff !important;
     font-family: inherit;
     display: none;
     background: var(--bg-card);
@@ -2347,7 +2347,7 @@ button {
 
 @media (min-width: 769px) {
     .sidebar-toggle {
-    color: var(--text-primary) !important;
+    color: #ffffff !important;
     font-family: inherit; display: flex; }
     
     .sidebar {
@@ -2392,4 +2392,8 @@ button {
     .sidebar.collapsed + .main-area {
         margin-left: 0;
     }
+}
+
+.leaflet-popup-content, .leaflet-popup-content-wrapper, .leaflet-popup-content * {
+    color: #1e293b !important;
 }
