@@ -1,11 +1,11 @@
 ﻿window.stationMarkers = {};
 window.focusStation = function(id) {
     const marker = window.stationMarkers[id];
-    if (marker && window.appMap) {
+    if (marker && map) {
         window.scrollTo({ top: 0, behavior: 'smooth' });
         // Slight delay to allow smooth scroll
         setTimeout(() => {
-            window.appMap.flyTo(marker.getLatLng(), 13, { duration: 1.5 });
+            map.flyTo(marker.getLatLng(), 13, { duration: 1.5 });
             marker.openPopup();
         }, 300);
     }
