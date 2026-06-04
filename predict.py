@@ -28,8 +28,8 @@ INFLUX_ORG = os.getenv("INFLUX_ORG", "SKRIPSI")
 INFLUX_BUCKET = os.getenv("INFLUX_BUCKET", "skripsi")
 
 DB_PATH = os.path.join(os.path.dirname(__file__), 'data', 'monitoring.db')
-MODEL_AWS_PATH = os.path.join(os.path.dirname(__file__), 'models', 'aws', 'model_aws.h5')
-SCALER_AWS_PATH = os.path.join(os.path.dirname(__file__), 'models', 'aws', 'scaler_aws.json')
+MODEL_AWS_PATH = os.path.join(os.path.dirname(__file__), 'models', 'aws_aaws', 'model_aws_aaws.h5')
+SCALER_AWS_PATH = os.path.join(os.path.dirname(__file__), 'models', 'aws_aaws', 'scaler_aws_aaws.json')
 MODEL_ARG_PATH = os.path.join(os.path.dirname(__file__), 'models', 'arg', 'model_arg.h5')
 SCALER_ARG_PATH = os.path.join(os.path.dirname(__file__), 'models', 'arg', 'scaler_arg.json')
 
