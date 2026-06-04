@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Dashboard Page Logic
  */
 
@@ -77,7 +77,19 @@ function renderSummary(data, stations) {
     let maxStationName = '-';
 
     if (stations && stations.length > 0) {
-        stations.forEach(s => {
+        // Warna marker berdasarkan freshness data (mirip AWS Center BMKG)
+    function getStatusColor(lastUpdate) {
+        if (!lastUpdate) return '#6b7280'; // Abu-abu: belum pernah ada data
+        const diffMs = Date.now() - new Date(lastUpdate).getTime();
+        const diffMin = diffMs / 60000;
+        if (diffMin <= 30) return '#22c55e';    // Hijau: <= 30 menit
+        if (diffMin <= 60) return '#eab308';    // Kuning: 31-60 menit
+        if (diffMin <= 1440) return '#f97316';  // Oranye: 1-24 jam
+        if (diffMin <= 43200) return '#ef4444'; // Merah: 1-30 hari
+        return '#6b7280';                        // Abu-abu: > 30 hari
+    }
+
+    stations.forEach(s => {
             const rr = s.realtime_rr || 0;
             if (rr >= maxRain) {
                 maxRain = rr;
@@ -130,8 +142,20 @@ function initMap(stations) {
     const argGroup = L.layerGroup().addTo(map);
     const aawsGroup = L.layerGroup().addTo(map);
 
+    // Warna marker berdasarkan freshness data (mirip AWS Center BMKG)
+    function getStatusColor(lastUpdate) {
+        if (!lastUpdate) return '#6b7280'; // Abu-abu: belum pernah ada data
+        const diffMs = Date.now() - new Date(lastUpdate).getTime();
+        const diffMin = diffMs / 60000;
+        if (diffMin <= 30) return '#22c55e';    // Hijau: <= 30 menit
+        if (diffMin <= 60) return '#eab308';    // Kuning: 31-60 menit
+        if (diffMin <= 1440) return '#f97316';  // Oranye: 1-24 jam
+        if (diffMin <= 43200) return '#ef4444'; // Merah: 1-30 hari
+        return '#6b7280';                        // Abu-abu: > 30 hari
+    }
+
     stations.forEach(s => {
-        const color = getTypeColor(s.type);
+        const color = getStatusColor(s.latest_data_time || s.last_update);
         const size = 18;
         const half = size / 2;
         const radius = 7;
@@ -184,6 +208,13 @@ function initMap(stations) {
             <div class="legend-item filter-click" id="filter-aws" style="display:flex;align-items:center;cursor:pointer;user-select:none;transition:opacity 0.2s"><svg width="12" height="12" style="margin-right:8px;overflow:visible"><polygon points="6,0 12,12 0,12" style="fill:var(--aws-color)"/></svg> AWS</div>
             <div class="legend-item filter-click" id="filter-arg" style="display:flex;align-items:center;cursor:pointer;user-select:none;transition:opacity 0.2s"><svg width="12" height="12" style="margin-right:8px;overflow:visible"><circle cx="6" cy="6" r="6" style="fill:var(--arg-color)"/></svg> ARG</div>
             <div class="legend-item filter-click" id="filter-aaws" style="display:flex;align-items:center;cursor:pointer;user-select:none;transition:opacity 0.2s"><svg width="12" height="12" style="margin-right:8px;overflow:visible"><polygon points="6,0 12,6 6,12 0,6" style="fill:var(--aaws-color)"/></svg> AAWS</div>
+    <hr style="border:0;border-top:1px solid rgba(255,255,255,0.1);margin:8px 0">
+    <h4>Status Data <span style="font-size:0.7rem;font-weight:normal;color:#64748b">(Freshness)</span></h4>
+    <div class="legend-item" style="display:flex;align-items:center"><svg width="10" height="10" style="margin-right:8px"><circle cx="5" cy="5" r="5" fill="#22c55e"/></svg> &le; 30 Menit</div>
+    <div class="legend-item" style="display:flex;align-items:center"><svg width="10" height="10" style="margin-right:8px"><circle cx="5" cy="5" r="5" fill="#eab308"/></svg> 31 - 60 Menit</div>
+    <div class="legend-item" style="display:flex;align-items:center"><svg width="10" height="10" style="margin-right:8px"><circle cx="5" cy="5" r="5" fill="#f97316"/></svg> 1 - 24 Jam</div>
+    <div class="legend-item" style="display:flex;align-items:center"><svg width="10" height="10" style="margin-right:8px"><circle cx="5" cy="5" r="5" fill="#ef4444"/></svg> 1 - 30 Hari</div>
+    <div class="legend-item" style="display:flex;align-items:center"><svg width="10" height="10" style="margin-right:8px"><circle cx="5" cy="5" r="5" fill="#6b7280"/></svg> > 30 Hari</div>
         `;
 
         setTimeout(() => {

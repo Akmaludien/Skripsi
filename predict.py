@@ -1,4 +1,6 @@
-import os
+﻿import os
+os.environ['CUDA_VISIBLE_DEVICES'] = ''
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import sqlite3
 import numpy as np
 import pandas as pd
@@ -60,7 +62,34 @@ def fetch_data_from_influx(station_id, days_back=60):
         print(f"[predict.py] Error querying InfluxDB: {e}")
         return pd.DataFrame()
 
-def save_prediction(station_id, prediction_date, predicted_rainfall):
+def calculate_confidence(predicted_rainfall, day_horizon, rmse):
+    """
+    Confidence berbasis RMSE historis model.
+    - RMSE dari tabel model_performance sebagai basis error
+    - Horizon penalty: error membesar seiring hari (auto-regressive)
+    - Intensity penalty: curah hujan tinggi lebih sulit diprediksi
+    """
+    if rmse is None or rmse <= 0:
+        rmse = 5.0  # Default jika belum ada metrik
+
+    # Error meningkat seiring horizon (+8% per hari)
+    horizon_factor = 1.0 + (day_horizon * 0.08)
+    adjusted_rmse = rmse * horizon_factor
+
+    # Intensity penalty
+    intensity_factor = 1.0 + (predicted_rainfall / 200.0)
+    adjusted_rmse *= intensity_factor
+
+    # Confidence = 100% - (error_ratio * 100), capped [50, 95]
+    max_tolerable = 50.0
+    confidence = max(50.0, min(95.0, (1.0 - adjusted_rmse / max_tolerable) * 100.0))
+
+    return round(confidence, 1)
+
+# Global variable for model RMSE, loaded once in run_predictions()
+model_rmse = 5.0
+
+def save_prediction(station_id, prediction_date, predicted_rainfall, day_horizon=0):
     conn = get_db_connection()
     cursor = conn.cursor()
     
@@ -104,9 +133,20 @@ def save_prediction(station_id, prediction_date, predicted_rainfall):
     conn.close()
 
 def run_predictions():
-    global HAS_TF # Declare global at the start
+    global HAS_TF, model_rmse
     model = None
     scaler = None
+
+    # Load RMSE from model_performance for confidence calculation
+    try:
+        conn_tmp = get_db_connection()
+        perf = conn_tmp.execute('SELECT rmse FROM model_performance ORDER BY id DESC LIMIT 1').fetchone()
+        if perf and perf[0] and perf[0] > 0:
+            model_rmse = perf[0]
+            print(f"[predict.py] Using RMSE={model_rmse} for confidence calculation")
+        conn_tmp.close()
+    except:
+        pass
     
     if HAS_TF:
         print(f"[predict.py] Loading model from {MODEL_PATH}")
