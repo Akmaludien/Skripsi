@@ -178,7 +178,6 @@ function initMap(stations) {
         });
 
         const marker = L.marker([s.latitude, s.longitude], { icon: customIcon });
-        window.stationMarkers[s.id] = marker;
 
         if (s.type === 'AWS') marker.addTo(awsGroup);
         else if (s.type === 'ARG') marker.addTo(argGroup);

@@ -2371,7 +2371,7 @@ button {
         font-size: 1.2rem;
     }
     
-    .sidebar.collapsed .sidebar-footer {
+    .sidebar.collapsed .system-live {
         display: none;
     }
     
