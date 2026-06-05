@@ -390,6 +390,10 @@ button {
 .mobile-menu-btn {
         color: #ffffff !important;
         font-family: inherit;
+        background: rgba(255, 255, 255, 0.1) !important;
+        border-radius: 6px;
+        padding: 4px 8px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
     display: none;
     background: none;
     border: none;
@@ -1565,6 +1569,10 @@ button {
     .mobile-menu-btn {
         color: #ffffff !important;
         font-family: inherit;
+        background: rgba(255, 255, 255, 0.1) !important;
+        border-radius: 6px;
+        padding: 4px 8px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
         display: block;
     }
 
@@ -2325,6 +2333,10 @@ button {
 .sidebar-toggle {
     color: #ffffff !important;
     font-family: inherit;
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-radius: 6px;
+    padding: 4px 8px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
     display: none;
     background: var(--bg-card);
     border: 1px solid var(--border-color);
@@ -2348,7 +2360,11 @@ button {
 @media (min-width: 769px) {
     .sidebar-toggle {
     color: #ffffff !important;
-    font-family: inherit; display: flex; }
+    font-family: inherit;
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-radius: 6px;
+    padding: 4px 8px;
+    border: 1px solid rgba(255, 255, 255, 0.15); display: flex; }
     
     .sidebar {
         transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), min-width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
