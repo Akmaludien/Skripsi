@@ -757,20 +757,20 @@ function handleDeviceHealth(station, history) {
 
 
 // ─── Export CSV ────────────────────────────────────
-function exportCSV() {
+window.exportCSV = function() {
     const params = new URLSearchParams(window.location.search);
     const stId = params.get('id');
     const hours = currentChartTime || 24;
     window.open(`/api/stations/${stId}/export?hours=${Math.ceil(hours)}`, '_blank');
-}
+};
 
 
 // ─── Print Report ─────────────────────────────────
-function printReport() {
+window.printReport = function() {
     const name = document.getElementById('devStationName').textContent || 'Stasiun';
     const subtitle = document.getElementById('printSubtitle');
     if (subtitle) {
         subtitle.textContent = `${name} — Dicetak pada ${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })} WIB`;
     }
     window.print();
-}
+};
