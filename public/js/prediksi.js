@@ -249,7 +249,7 @@ function getRainfallClass(rainfall) {
     return 'ringan';
 }
 
-function focusStation(lat, lng) {
+window.focusStation = function(lat, lng) {
     if (predMap && lat && lng) {
         predMap.setView([lat, lng], 12, { animate: true });
         
@@ -266,10 +266,11 @@ function focusStation(lat, lng) {
         // Scroll smoothly to map so mobile users see the map
         const mapEl = document.getElementById('predictionMap');
         if (mapEl) {
-            mapEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            const y = mapEl.getBoundingClientRect().top + window.scrollY - 100;
+            window.scrollTo({ top: y, behavior: 'smooth' });
         }
     }
-}
+};
 
 // ─── Rainfall Bar Chart ────────────────────────────
 function renderRainfallBarChart(predictions) {
