@@ -252,6 +252,22 @@ function getRainfallClass(rainfall) {
 function focusStation(lat, lng) {
     if (predMap && lat && lng) {
         predMap.setView([lat, lng], 12, { animate: true });
+        
+        // Find marker with this lat/lng and open popup
+        if (mapMarkers) {
+            mapMarkers.forEach(m => {
+                const pos = m.getLatLng();
+                if (Math.abs(pos.lat - lat) < 0.0001 && Math.abs(pos.lng - lng) < 0.0001) {
+                    m.openPopup();
+                }
+            });
+        }
+
+        // Scroll smoothly to map so mobile users see the map
+        const mapEl = document.getElementById('predictionMap');
+        if (mapEl) {
+            mapEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
     }
 }
 

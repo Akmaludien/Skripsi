@@ -1,4 +1,4 @@
-﻿
+
 /**
  * Dashboard Page Logic
  */
@@ -128,6 +128,7 @@ async function loadPredictionSummary() {
     }
 }
 
+let appMarkers = {};
 function initMap(stations) {
     map = L.map('map', {
         zoomControl: true,
@@ -182,6 +183,8 @@ function initMap(stations) {
         if (s.type === 'AWS') marker.addTo(awsGroup);
         else if (s.type === 'ARG') marker.addTo(argGroup);
         else if (s.type === 'AAWS') marker.addTo(aawsGroup);
+
+        appMarkers[s.id] = marker;
 
         marker.bindPopup(`
             <div class="map-popup">
@@ -335,7 +338,7 @@ function renderStationCards(stations) {
         const battQC = checkDataQC('batt', s.latest_batt);
 
         return `
-        <div class="station-card type-${s.type.toLowerCase()}" onclick="location.href='/detail.html?id=${s.id}'" data-type="${s.type}" data-status="${s.status || 'Unknown'}">
+        <div class="station-card type-${s.type.toLowerCase()}" onclick="focusStationOnMap(${s.latitude}, ${s.longitude}, '${s.id}')" data-type="${s.type}" data-status="${s.status || 'Unknown'}">
             <div class="station-card-header">
                 <span class="badge-type ${s.type.toLowerCase()}">${s.type}</span>
                 <span class="slc-status">
@@ -387,6 +390,19 @@ function setupFilters() {
         });
     });
 }
+
+window.focusStationOnMap = function(lat, lng, id) {
+    if (map && lat && lng) {
+        map.setView([lat, lng], 13, { animate: true });
+        if (appMarkers[id]) {
+            appMarkers[id].openPopup();
+        }
+        const mapEl = document.getElementById('map');
+        if (mapEl) {
+            mapEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+};
 
 let isDashboardDirty = false;
 
