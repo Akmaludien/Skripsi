@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <link rel="stylesheet" href="/css/style.css?v=3">
+    <link rel="stylesheet" href="/css/style.css?v=5">
     <style>
         .verification-grid {
             display: grid;
@@ -92,7 +92,7 @@
 
         <div class="main-content">
             <header class="top-header">
-                <button class="mobile-menu-btn">☰</button><button class="sidebar-toggle" title="Toggle Sidebar">☰</button>
+                <button class="mobile-menu-btn">?</button><button class="sidebar-toggle" title="Toggle Sidebar">?</button>
                 <div class="header-title" style="display:flex;align-items:center;gap:14px;">
                     <img src="/img/stmkg-logo.png" alt="STMKG" style="height:46px;width:auto;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.1))">
                     <div>
@@ -101,15 +101,15 @@
                     </div>
                 </div>
                 <div class="header-actions">
-                    <button class="btn-icon" id="themeToggle" title="Toggle Theme">🌙</button>
+                    <button class="btn-icon" id="themeToggle" title="Toggle Theme">??</button>
                     <div class="notif-wrapper">
-                        <button class="btn-icon" title="Notifikasi Hujan" id="notifBtn">🔔</button>
+                        <button class="btn-icon" title="Notifikasi Hujan" id="notifBtn">??</button>
                         <span class="notif-badge" id="notifBadge" style="display:none">0</span>
                         <div class="notif-dropdown" id="notifDropdown">
                             <div class="notif-header">
-                                <strong>⚠️ Peringatan Hujan Lebat</strong>
+                                <strong>?? Peringatan Hujan Lebat</strong>
                                 <button class="notif-close"
-                                    onclick="document.getElementById('notifDropdown').classList.remove('show')">✕</button>
+                                    onclick="document.getElementById('notifDropdown').classList.remove('show')">?</button>
                             </div>
                             <div class="notif-body" id="notifBody">
                                 <div class="notif-empty">Tidak ada peringatan saat ini</div>
@@ -141,7 +141,7 @@
 
                 <div class="card" style="padding: 24px; margin-bottom: 24px;">
                     <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                        <h2 style="font-size: 1.2rem;">🗺️ Sebaran Spasial Error Prediksi</h2>
+                        <h2 style="font-size: 1.2rem;">??? Sebaran Spasial Error Prediksi</h2>
                         <span style="font-size: 0.8rem; color: var(--text-muted);">Warna mewakili selisih (Error) | Ukuran mewakili besarnya selisih</span>
                     </div>
                     <div id="errorMap" style="height: 450px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color);"></div>
@@ -149,7 +149,7 @@
 
                 <div class="card" style="padding: 24px; margin-bottom: 24px;">
                     <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                        <h2 style="font-size: 1.2rem;">📈 Grafik Perbandingan Prediksi vs Aktual</h2>
+                        <h2 style="font-size: 1.2rem;">?? Grafik Perbandingan Prediksi vs Aktual</h2>
                         <div style="display: flex; gap: 12px;">
                             <select id="stationFilter" class="btn-sm" style="background: var(--bg-body); border: 1px solid var(--border-color); color: var(--text-main); padding: 8px 12px; border-radius: 8px;">
                                 <option value="all">Semua Stasiun</option>
@@ -163,14 +163,14 @@
 
                 <div class="verification-grid">
                     <div class="card" style="padding: 24px;">
-                        <h2 style="font-size: 1.1rem; margin-bottom: 16px;">📊 Error Distribution</h2>
+                        <h2 style="font-size: 1.1rem; margin-bottom: 16px;">?? Error Distribution</h2>
                         <div style="height: 300px;">
                             <canvas id="errorDistChart"></canvas>
                         </div>
                     </div>
                     <div class="card" style="padding: 24px;">
                         <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                            <h2 style="font-size: 1.1rem;">📋 Log Verifikasi Terakhir</h2>
+                            <h2 style="font-size: 1.1rem;">?? Log Verifikasi Terakhir</h2>
                             <input type="text" id="verifySearch" placeholder="Cari stasiun..." style="padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-body); color: var(--text-main); font-size: 0.85rem;">
                         </div>
                         <div style="overflow-x: auto; max-height: 400px; overflow-y: auto;">
@@ -198,7 +198,7 @@
         </div>
     </div>
 
-    <script src="/js/app.js?v=3"></script>
+    <script src="/js/app.js?v=5"></script>
     <script src="/js/verifikasi.js?v=2"></script>
 </body>
 </html>

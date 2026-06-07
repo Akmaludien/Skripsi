@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -8,7 +8,7 @@
     <title>Peta Curah Hujan - STMKG Monitoring</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="/css/style.css?v=3">
+    <link rel="stylesheet" href="/css/style.css?v=5">
     <style>
         .rainfall-map-container { position: relative; width: 100%; height: calc(100vh - var(--header-height) - 48px); border-radius: var(--border-radius); overflow: hidden; }
         #rainfallMap { width: 100%; height: 100%; z-index: 1; }
@@ -46,13 +46,13 @@
 
         <div class="main-content">
             <header class="top-header">
-                <button class="mobile-menu-btn">☰</button><button class="sidebar-toggle" title="Toggle Sidebar">☰</button>
+                <button class="mobile-menu-btn">?</button><button class="sidebar-toggle" title="Toggle Sidebar">?</button>
                 <div class="header-title" style="display:flex;align-items:center;gap:14px;">
                     <img src="/img/stmkg-logo.png" alt="STMKG" style="height:46px;width:auto;object-fit:contain">
-                    <div><h1>Peta Sebaran Curah Hujan Real-time</h1><span>Thiessen Polygon — Data Terbaru dari 50 Stasiun</span></div>
+                    <div><h1>Peta Sebaran Curah Hujan Real-time</h1><span>Thiessen Polygon � Data Terbaru dari 50 Stasiun</span></div>
                 </div>
                 <div class="header-actions">
-                    <button class="btn-icon" id="themeToggle" title="Toggle Theme">🌙</button>
+                    <button class="btn-icon" id="themeToggle" title="Toggle Theme">??</button>
                 </div>
             </header>
 
@@ -64,9 +64,9 @@
                         <h4>Intensitas Curah Hujan (mm)</h4>
                         <div class="legend-scale">
                             <div class="legend-scale-item"><div class="legend-scale-color" style="background:#E53E3E"></div> > 100 (Sangat Lebat)</div>
-                            <div class="legend-scale-item"><div class="legend-scale-color" style="background:#ED8936"></div> 50 – 100 (Lebat)</div>
-                            <div class="legend-scale-item"><div class="legend-scale-color" style="background:#ECC94B"></div> 20 – 50 (Sedang)</div>
-                            <div class="legend-scale-item"><div class="legend-scale-color" style="background:#38A169"></div> 0.5 – 20 (Ringan)</div>
+                            <div class="legend-scale-item"><div class="legend-scale-color" style="background:#ED8936"></div> 50 � 100 (Lebat)</div>
+                            <div class="legend-scale-item"><div class="legend-scale-color" style="background:#ECC94B"></div> 20 � 50 (Sedang)</div>
+                            <div class="legend-scale-item"><div class="legend-scale-color" style="background:#38A169"></div> 0.5 � 20 (Ringan)</div>
                             <div class="legend-scale-item"><div class="legend-scale-color" style="background:#E2E8F0"></div> < 0.5 (Tidak Hujan)</div>
                         </div>
                     </div>
@@ -83,9 +83,9 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/d3-delaunay@6.0.4/dist/d3-delaunay.min.js"></script>
-    <script src="/js/app.js?v=3"></script>
+    <script src="/js/app.js?v=5"></script>
     <script>
-    // ─── Peta Curah Hujan dengan Thiessen Polygon ───────
+    // --- Peta Curah Hujan dengan Thiessen Polygon -------
     let rfMap;
 
     document.addEventListener('DOMContentLoaded', async () => {
@@ -176,7 +176,7 @@
                             <strong style="font-size:0.85rem">${names[i]}</strong>
                         </div>
                         <div style="font-size:0.9rem;margin-top:8px">
-                            🌧️ Curah Hujan: <strong style="color:${color}">${rr.toFixed(1)} mm</strong>
+                            ??? Curah Hujan: <strong style="color:${color}">${rr.toFixed(1)} mm</strong>
                         </div>
                         <div style="font-size:0.72rem;color:#94a3b8;margin-top:4px">${getRainfallCategory(rr).label}</div>
                     </div>

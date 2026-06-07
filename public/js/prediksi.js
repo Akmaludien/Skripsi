@@ -266,8 +266,7 @@ window.focusStation = function(lat, lng) {
         // Scroll smoothly to map so mobile users see the map
         const mapEl = document.getElementById('predictionMap');
         if (mapEl) {
-            const y = mapEl.getBoundingClientRect().top + window.scrollY - 100;
-            window.scrollTo({ top: y, behavior: 'smooth' });
+            mapEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     }
 };

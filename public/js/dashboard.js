@@ -399,8 +399,7 @@ window.focusStationOnMap = function(lat, lng, id) {
         }
         const mapEl = document.getElementById('map');
         if (mapEl) {
-            const y = mapEl.getBoundingClientRect().top + window.scrollY - 100;
-            window.scrollTo({ top: y, behavior: 'smooth' });
+            mapEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     }
 };

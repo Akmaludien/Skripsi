@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 
 <head>
@@ -10,9 +10,9 @@
     <link rel="icon" href="/img/stmkg-logo.png" type="image/png">
     <meta name="description" content="Daftar stasiun meteorologi Jawa Barat - AWS, ARG, AAWS">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/style.css?v=3">
+    <link rel="stylesheet" href="/css/style.css?v=5">
     <style>
-        /* ─── Station Table Styles ──────────────── */
+        /* --- Station Table Styles ---------------- */
         .station-table-wrapper {
             background: var(--bg-card);
             border-radius: var(--border-radius);
@@ -393,7 +393,7 @@
 
         <div class="main-content">
             <header class="top-header">
-                <button class="mobile-menu-btn">☰</button><button class="sidebar-toggle" title="Toggle Sidebar">☰</button>
+                <button class="mobile-menu-btn">?</button><button class="sidebar-toggle" title="Toggle Sidebar">?</button>
                 <div class="header-title" style="display:flex;align-items:center;gap:14px;">
                     <img src="/img/stmkg-logo.png" alt="STMKG"
                         style="height:46px;width:auto;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.1))">
@@ -403,15 +403,15 @@
                     </div>
                 </div>
                 <div class="header-actions">
-                    <button class="btn-icon" id="themeToggle" title="Toggle Theme">🌙</button>
+                    <button class="btn-icon" id="themeToggle" title="Toggle Theme">??</button>
                     <div class="notif-wrapper">
-                        <button class="btn-icon" title="Notifikasi Hujan" id="notifBtn">🔔</button>
+                        <button class="btn-icon" title="Notifikasi Hujan" id="notifBtn">??</button>
                         <span class="notif-badge" id="notifBadge" style="display:none">0</span>
                         <div class="notif-dropdown" id="notifDropdown">
                             <div class="notif-header">
-                                <strong>⚠️ Peringatan Hujan Lebat</strong>
+                                <strong>?? Peringatan Hujan Lebat</strong>
                                 <button class="notif-close"
-                                    onclick="document.getElementById('notifDropdown').classList.remove('show')">✕</button>
+                                    onclick="document.getElementById('notifDropdown').classList.remove('show')">?</button>
                             </div>
                             <div class="notif-body" id="notifBody">
                                 <div class="notif-empty">Tidak ada peringatan saat ini</div>
@@ -430,7 +430,7 @@
                 <!-- Search & Filters -->
                 <div class="search-filter-bar">
                     <div class="search-wrapper">
-                        <span class="search-icon">🔍</span>
+                        <span class="search-icon">??</span>
                         <input type="text" class="search-input" id="searchInput"
                             placeholder="Cari nama stasiun atau ID...">
                     </div>
@@ -456,7 +456,7 @@
                             <!-- Populated by JS -->
                         </div>
                         <div class="table-actions">
-                            <a href="/index.html" class="btn-sm">🗺️ Lihat di Peta</a>
+                            <a href="/index.html" class="btn-sm">??? Lihat di Peta</a>
                         </div>
                     </div>
 
@@ -502,8 +502,8 @@
         </div>
     </div>
 
-    <script src="/js/app.js?v=3"></script>
-    <script src="/js/stasiun.js?v=3"></script>
+    <script src="/js/app.js?v=5"></script>
+    <script src="/js/stasiun.js?v=5"></script>
 </body>
 
 </html>

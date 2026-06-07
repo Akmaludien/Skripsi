@@ -586,6 +586,27 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
     
+    const btnExport = document.getElementById('btn-export');
+    if (btnExport) {
+        btnExport.addEventListener('click', () => {
+            const hours = currentChartTime || 24;
+            window.open(`/api/stations/${stationId}/export?hours=${Math.ceil(hours)}`, '_blank');
+        });
+    }
+
+    const btnPrint = document.getElementById('btn-print');
+    if (btnPrint) {
+        btnPrint.addEventListener('click', () => {
+            const nameElement = document.getElementById('devStationName');
+            const name = nameElement ? nameElement.textContent : 'Stasiun';
+            const subtitle = document.getElementById('printSubtitle');
+            if (subtitle) {
+                subtitle.textContent = `${name} — Dicetak pada ${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })} WIB`;
+            }
+            window.print();
+        });
+    }
+    
     loadStationDetail(stationId);
 });
 
@@ -756,21 +777,4 @@ function handleDeviceHealth(station, history) {
 }
 
 
-// ─── Export CSV ────────────────────────────────────
-window.exportCSV = function() {
-    const params = new URLSearchParams(window.location.search);
-    const stId = params.get('id');
-    const hours = currentChartTime || 24;
-    window.open(`/api/stations/${stId}/export?hours=${Math.ceil(hours)}`, '_blank');
-};
-
-
-// ─── Print Report ─────────────────────────────────
-window.printReport = function() {
-    const name = document.getElementById('devStationName').textContent || 'Stasiun';
-    const subtitle = document.getElementById('printSubtitle');
-    if (subtitle) {
-        subtitle.textContent = `${name} — Dicetak pada ${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })} WIB`;
-    }
-    window.print();
-};
+// Fungsi dieksport sebagai EventListener di dalam DOMContentLoaded

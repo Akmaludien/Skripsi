@@ -11,7 +11,7 @@
     <meta name="description" content="Detail monitoring stasiun meteorologi">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="/css/style.css?v=3">
+    <link rel="stylesheet" href="/css/style.css?v=5">
 </head>
 
 <body>
@@ -184,8 +184,8 @@
                             <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 4px;">Detailed historical readings for the past 24 hours</p>
                         </div>
                         <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
-                            <button onclick="exportCSV()" class="btn-sm" style="background:var(--bg-main);border:1px solid var(--border-color);color:var(--text-secondary);padding:6px 12px;border-radius:6px;font-size:0.85rem;cursor:pointer;">📥 Export CSV</button>
-                            <button onclick="printReport()" class="btn-sm" style="background:var(--bg-main);border:1px solid var(--border-color);color:var(--text-secondary);padding:6px 12px;border-radius:6px;font-size:0.85rem;cursor:pointer;">🖨️ Cetak Laporan</button>
+                            <button id="btn-export" class="btn-sm" style="background:var(--bg-main);border:1px solid var(--border-color);color:var(--text-secondary);padding:6px 12px;border-radius:6px;font-size:0.85rem;cursor:pointer;">📥 Export CSV</button>
+                            <button id="btn-print" class="btn-sm" style="background:var(--bg-main);border:1px solid var(--border-color);color:var(--text-secondary);padding:6px 12px;border-radius:6px;font-size:0.85rem;cursor:pointer;">🖨️ Cetak Laporan</button>
                             <select id="chartParamSelect" class="filter-select" style="padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-primary);">
                                 <option value="all">Semua Parameter Utama</option>
                                 <option value="temp">Suhu Udara (°C)</option>
@@ -266,8 +266,8 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script src="/js/app.js?v=3"></script>
-    <script src="/js/detail.js?v=3"></script>
+    <script src="/js/app.js?v=5"></script>
+    <script src="/js/detail.js?v=5"></script>
 </body>
 
 </html>

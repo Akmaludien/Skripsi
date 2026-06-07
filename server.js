@@ -1,4 +1,4 @@
-﻿const express = require('express');
+const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const Database = require('better-sqlite3');
@@ -205,16 +205,7 @@ try {
 const app = express();
 // Security Middleware
 app.use(helmet({
-    contentSecurityPolicy: {
-        directives: {
-            defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "https://unpkg.com", "https://cdn.jsdelivr.net"],
-            styleSrc: ["'self'", "'unsafe-inline'", "https://unpkg.com", "https://fonts.googleapis.com"],
-            fontSrc: ["'self'", "https://fonts.gstatic.com"],
-            imgSrc: ["'self'", "data:", "https://*.tile.openstreetmap.org", "https://*.basemaps.cartocdn.com", "https://unpkg.com"],
-            connectSrc: ["'self'", "ws:", "wss:"],
-        },
-    },
+    contentSecurityPolicy: false,
 }));
 app.use(cors({ origin: process.env.NODE_ENV === 'production' ? ['https://simprech-jabar.my.id', 'https://akmaludien.github.io'] : '*' }));
 
@@ -992,8 +983,40 @@ app.get('/api/stations/:id/export', async (req, res) => {
     const hours = parseInt(req.query.hours) || 24;
     const stationId = req.params.id;
     const station = db.prepare('SELECT name, type FROM stations WHERE id = ?').get(stationId);
+    const isARG = station && station.type === 'ARG';
+    const filename = `${stationId}_${station ? station.name.replace(/\s+/g, '_') : 'data'}_${hours}h.csv`;
+    
+    let csv = isARG 
+        ? 'Timestamp,Rainfall (mm),Logger Temp (°C),Battery (V)\n'
+        : 'Timestamp,Rainfall (mm),Temperature (°C),Humidity (%),Pressure (hPa),Wind Speed (m/s),Wind Dir (°),Solar Rad (W/m²),Battery (V)\n';
 
-    if (!queryApi) return res.status(503).send('InfluxDB not configured');
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+
+    if (!queryApi) {
+        // Fallback to SQLite
+        try {
+            const sqliteRows = db.prepare(`
+                SELECT * FROM sensor_data 
+                WHERE station_id = ? 
+                AND timestamp >= datetime('now', ?)
+                ORDER BY timestamp ASC
+            `).all(stationId, `-${hours} hours`);
+            
+            sqliteRows.forEach(r => {
+                const ts = new Date(r.timestamp).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
+                if (isARG) {
+                    csv += `${ts},${r.rr || 0},${r.log_temp || ''},${r.batt || ''}\n`;
+                } else {
+                    csv += `${ts},${r.rr || 0},${r.temp || ''},${r.rh || ''},${r.press || ''},${r.ws || ''},${r.wd || ''},${r.sr || ''},${r.batt || ''}\n`;
+                }
+            });
+            return res.send(csv);
+        } catch (e) {
+            console.error('[Export Fallback] Error:', e.message);
+            return res.status(500).send('Export failed');
+        }
+    }
 
     const query = `
         from(bucket: "${INFLUX_BUCKET}")
@@ -1005,12 +1028,6 @@ app.get('/api/stations/:id/export', async (req, res) => {
 
     try {
         const rows = await queryApi.collectRows(query);
-        const isARG = station && station.type === 'ARG';
-        
-        let csv = isARG 
-            ? 'Timestamp,Rainfall (mm),Logger Temp (Â°C),Battery (V)\n'
-            : 'Timestamp,Rainfall (mm),Temperature (Â°C),Humidity (%),Pressure (hPa),Wind Speed (m/s),Wind Dir (Â°),Solar Rad (W/mÂ²),Battery (V)\n';
-
         rows.forEach(r => {
             const ts = new Date(r._time).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
             if (isARG) {
@@ -1020,9 +1037,6 @@ app.get('/api/stations/:id/export', async (req, res) => {
             }
         });
 
-        const filename = `${stationId}_${station ? station.name.replace(/\s+/g, '_') : 'data'}_${hours}h.csv`;
-        res.setHeader('Content-Type', 'text/csv');
-        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
         res.send(csv);
     } catch (e) {
         console.error('[Export] Error:', e.message);
