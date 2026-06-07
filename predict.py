@@ -7,10 +7,11 @@ import numpy as np
 import pandas as pd
 from datetime import datetime, timedelta
 from influxdb_client import InfluxDBClient
-from dotenv import load_dotenv
-
-# Load environment variables from .env
-load_dotenv()
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
 try:
     import tensorflow as tf
