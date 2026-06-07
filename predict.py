@@ -198,15 +198,11 @@ def run_predictions():
         df = fetch_data_from_influx(station_id, days_back=65)
 
         if df.empty:
-            print(f"  -> No data found for {station_id}. Using seasonal defaults.")
-            avg_rain = 5.0 + (np.random.random() * 10)
+            print(f"  -> No data found for {station_id}.")
         else:
             df['_time'] = pd.to_datetime(df['_time'])
             df.set_index('_time', inplace=True)
-            agg_dict = {'rain': 'max'}
-            df_daily = df.resample('1D').agg(agg_dict)
-            avg_rain = df_daily['rain'].tail(7).mean()
-            if np.isnan(avg_rain): avg_rain = 2.0
+
 
         predicted_rain_7days = []
 

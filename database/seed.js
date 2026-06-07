@@ -1,4 +1,4 @@
-﻿const Database = require('better-sqlite3');
+const Database = require('better-sqlite3');
 const path = require('path');
 const fs = require('fs');
 
@@ -139,9 +139,9 @@ const predTransaction = db.transaction(() => {
         for (let d = 0; d < 7; d++) {
             const date = new Date(Date.now() + d * 86400000);
             const dateStr = date.toISOString().split('T')[0];
-            const rainfall = Math.round((Math.random() * 120) * 10) / 10;
-            const cat = categories.find(c => rainfall >= c.min && rainfall < c.max) || categories[3];
-            const confidence = Math.round((70 + Math.random() * 25) * 10) / 10;
+            const rainfall = 0.0;
+            const cat = categories[0]; // RINGAN
+            const confidence = 0.0;
             insertPrediction.run(s.id, dateStr, rainfall, cat.name, confidence);
         }
     }
