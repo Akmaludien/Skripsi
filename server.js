@@ -28,11 +28,13 @@ if (writeApi) {
     console.log(`[InfluxDB] Missing TOKEN in .env, InfluxDB sync disabled.`);
 }
 
-// â”€â”€â”€ Config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ——— Config ————————————————————————————————————
 const PORT = process.env.PORT || 3001;
-const MQTT_BROKER = process.env.MQTT_BROKER || 'mqtt://broker.hivemq.com:1883';
+const MQTT_BROKER = 'mqtt://202.90.198.159:1883';
+const MQTT_USER_STATIC = 'bmkg_aws';
+const MQTT_PASS_STATIC = 'bmkg_aws123';
 
-// â”€â”€â”€ Reklim AAWS Clients â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ——— Reklim AAWS Clients ——————————————————————
 const reklimStations = [
     { id: 'AAWS3010', topic: 'device/50e81az718842ds', user: 'wxki2', pass: '7ep1l' },
     { id: 'STA3008',  topic: 'device/jz0o33ob874q9q4', user: 'vcjpa', pass: '65tm2' },
@@ -204,9 +206,9 @@ try {
 // â”€â”€â”€ Express App â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const app = express();
 // Security Middleware
-app.use(helmet({
-    contentSecurityPolicy: false,
-}));
+// app.use(helmet({
+//     contentSecurityPolicy: false,
+// }));
 app.use(cors({ origin: process.env.NODE_ENV === 'production' ? ['https://simprech-jabar.my.id', 'https://akmaludien.github.io'] : '*' }));
 
 // Rate Limiting
@@ -253,8 +255,8 @@ function connectMQTT() {
 
     mqttClient = mqtt.connect(MQTT_BROKER, {
         clientId: clientId,
-        username: process.env.MQTT_USER,
-        password: process.env.MQTT_PASS,
+        username: MQTT_USER_STATIC,
+        password: MQTT_PASS_STATIC,
         clean: true,
         reconnectPeriod: 15000, // Increase to 15s to avoid "hammering" the broker
         connectTimeout: 30000,
