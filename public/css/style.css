@@ -2652,3 +2652,182 @@ button {
         filter: invert(1) hue-rotate(180deg);
     }
 }
+
+/* ─── V2 Modern Metric Cards ──────────────────── */
+.metric-card-v2 {
+    background: var(--bg-card);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+    transition: all var(--transition-normal);
+}
+.metric-card-v2:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+/* Left Accent Border */
+.metric-card-v2::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+}
+.metric-card-v2.accent-orange::before { background: #f97316; }
+.metric-card-v2.accent-green::before { background: #10b981; }
+.metric-card-v2.accent-blue::before { background: #3b82f6; }
+.metric-card-v2.accent-purple::before { background: #8b5cf6; }
+
+.metric-v2-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.metric-v2-value {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 8px 0 2px 0;
+    line-height: 1;
+}
+.metric-v2-value span {
+    font-size: 1rem;
+    font-weight: 500;
+    margin-left: 4px;
+}
+.metric-v2-subtitle {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+}
+/* Progress Bar */
+.metric-v2-progress {
+    height: 4px;
+    background: var(--gray-200);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 6px;
+}
+[data-theme="dark"] .metric-v2-progress { background: rgba(255, 255, 255, 0.1); }
+.metric-v2-progress-fill {
+    height: 100%;
+    border-radius: 2px;
+}
+.metric-v2-progress-fill.orange { background: #f97316; }
+.metric-v2-progress-fill.green { background: #10b981; }
+.metric-v2-progress-fill.blue { background: #3b82f6; }
+.metric-v2-progress-fill.purple { background: #8b5cf6; }
+.metric-v2-range {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+/* Wide Cards layout */
+.metric-card-v2.wide-card {
+    flex-direction: row;
+    gap: 20px;
+    align-items: stretch;
+}
+.metric-v2-left, .metric-v2-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.metric-v2-left { border-right: 1px dashed var(--border-color); padding-right: 16px; align-items: center; }
+
+/* Status Daya List */
+.power-list-v2 {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+.power-item-v2 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+[data-theme="dark"] .power-item-v2 { border-bottom: 1px solid rgba(255,255,255,0.05); }
+.power-item-v2:last-child { border-bottom: none; }
+.power-item-v2 strong { color: var(--text-primary); font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.battery-bar-v2 {
+    width: 60px;
+    height: 8px;
+    background: var(--gray-200);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+[data-theme="dark"] .battery-bar-v2 { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); }
+.battery-bar-fill-v2 { height: 100%; }
+
+/* Detail Button */
+.btn-detail-v2 {
+    width: 100%;
+    padding: 8px;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+.btn-detail-v2:hover { background: var(--bg-main); color: var(--text-primary); border-color: var(--gray-400); }
+
+/* Wind Beaufort scale */
+.beaufort-bars {
+    display: flex;
+    gap: 4px;
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+.b-bar { flex: 1; height: 4px; background: var(--gray-200); border-radius: 2px; }
+[data-theme="dark"] .b-bar { background: rgba(255,255,255,0.1); }
+.b-bar.active { background: #10b981; }
+
+/* Grid systems */
+.metrics-grid-v2-top {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 16px;
+}
+.metrics-grid-v2-bottom {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+.metrics-grid-v2-arg {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+@media (max-width: 1024px) {
+    .metrics-grid-v2-top { grid-template-columns: repeat(2, 1fr); }
+    .metrics-grid-v2-bottom { grid-template-columns: 1fr; }
+    .metrics-grid-v2-arg { grid-template-columns: 1fr; }
+}

@@ -10,301 +10,221 @@ function renderNewWidgets(station, data) {
 
     const fNum = val => val === undefined || val === null ? '--' : Number(val).toFixed(1);
     
+    // Helper functions
     const getCardinalDirection = (angle) => {
         if (angle === undefined || angle === null) return '--';
         const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
         return directions[Math.round(angle / 45) % 8];
     };
     
-    const battPcnt = ((data.batt || 12) / 15 * 100);
-    const battClamped = Math.min(100, Math.max(0, battPcnt)).toFixed(0);
-    
-    const isARG = station.type === 'ARG';
+    const calculateHeatIndex = (temp, rh) => {
+        if (!temp || !rh) return temp;
+        // Simple approximation for UI
+        if (temp < 27) return temp;
+        return temp + ((rh - 50) * 0.05);
+    };
 
+    const getHumidityDesc = (rh) => {
+        if (rh < 40) return 'Kering';
+        if (rh <= 60) return 'Nyaman';
+        if (rh <= 80) return 'Lembab — cukup nyaman';
+        return 'Sangat Lembab';
+    };
+
+    const getPressureDesc = (press) => {
+        if (press < 1005) return 'Rendah';
+        if (press > 1015) return 'Tinggi';
+        return 'Normal — stabil';
+    };
+
+    const getBeaufort = (ms) => {
+        if (ms < 0.5) return { scale: 0, desc: 'Tenang', width: '0%' };
+        if (ms < 1.5) return { scale: 1, desc: 'Udara Mengalir', width: '8%' };
+        if (ms < 3.3) return { scale: 2, desc: 'Sepoi-sepoi', width: '16%' };
+        if (ms < 5.5) return { scale: 3, desc: 'Angin Lemah', width: '25%' };
+        if (ms < 7.9) return { scale: 4, desc: 'Angin Sedang', width: '33%' };
+        if (ms < 10.7) return { scale: 5, desc: 'Angin Segar', width: '41%' };
+        if (ms < 13.8) return { scale: 6, desc: 'Angin Kuat', width: '50%' };
+        if (ms < 17.1) return { scale: 7, desc: 'Kencang', width: '58%' };
+        if (ms < 20.7) return { scale: 8, desc: 'Sangat Kencang', width: '66%' };
+        return { scale: 9, desc: 'Badai', width: '80%' };
+    };
+
+    const getSolarDesc = (sr) => {
+        if (sr < 10) return { cond: 'Malam/Gelap', active: 0 };
+        if (sr < 200) return { cond: 'Berawan/Rendah', active: 1 };
+        if (sr < 600) return { cond: 'Cerah/Sedang', active: 2 };
+        return { cond: 'Terik/Tinggi', active: 3 };
+    };
+
+    const isARG = station.type === 'ARG';
+    const tempVal = Number(data.temp || data.log_temp || 0);
+    const rainVal = Number(data.rr || 0);
+    const battPcnt = Math.min(100, Math.max(0, ((data.batt || 12) - 10.5) / (13.8 - 10.5) * 100));
+    
     let metricsHTML = '';
     
     if (isARG) {
         metricsHTML = `
-        <!-- ARG: Single Row with 3 Widgets -->
-        <div style="grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px;">
+        <div class="metrics-grid-v2-arg">
             <!-- Suhu Widget -->
-            <div class="card chart-card" style="padding: 16px; margin-bottom: 0;">
-                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px;">
-                    <div>
-                        <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Temperature Logger</div>
-                        <div style="font-size: 1.8rem; font-weight: 800; color: ${checkDataQC('temp', data.temp || data.log_temp).valid ? '#f97316' : '#ef4444'}; line-height: 1.1;">
-                            ${fNum(data.temp || data.log_temp)} <span style="font-size: 0.9rem; font-weight: 600;">°C</span>
-                            ${!checkDataQC('temp', data.temp || data.log_temp).valid ? '<span title="' + checkDataQC('temp', data.temp || data.log_temp).message + '">⚠️</span>' : ''}
-                        </div>
-                    </div>
+            <div class="metric-card-v2 accent-orange">
+                <div class="metric-v2-header">🌡️ Suhu Logger</div>
+                <div class="metric-v2-value">${fNum(tempVal)}<span>°C</span></div>
+                <div class="metric-v2-subtitle">Suhu sistem normal</div>
+                <div>
+                    <div class="metric-v2-progress"><div class="metric-v2-progress-fill orange" style="width: ${Math.min(100, tempVal/50*100)}%;"></div></div>
+                    <div class="metric-v2-range"><span>0°</span><span>50°</span></div>
                 </div>
-                <div style="height: 60px; width: 100%; position: relative;"><canvas id="sparkTemp"></canvas></div>
             </div>
             
             <!-- Curah Hujan Widget -->
-            <div class="card chart-card" style="padding: 16px; margin-bottom: 0;">
-                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px;">
-                    <div>
-                        <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Rainfall</div>
-                        <div style="font-size: 1.8rem; font-weight: 800; color: #3b82f6; line-height: 1.1;">${fNum(data.rr)} <span style="font-size: 0.9rem; font-weight: 600;">mm</span></div>
-                        <div style="font-size: 0.7rem; font-weight: 800; color: ${getRainfallCategory(data.rr).color};">${getRainfallCategory(data.rr).label}</div>
-                    </div>
+            <div class="metric-card-v2 accent-blue">
+                <div class="metric-v2-header">🌧️ Curah Hujan</div>
+                <div class="metric-v2-value">${fNum(rainVal)}<span>mm</span></div>
+                <div class="metric-v2-subtitle" style="color: ${getRainfallCategory(rainVal).color};">☀ ${getRainfallCategory(rainVal).label}</div>
+                <div>
+                    <div class="metric-v2-progress"><div class="metric-v2-progress-fill blue" style="width: ${Math.min(100, rainVal)}%;"></div></div>
+                    <div class="metric-v2-range"><span>0</span><span>100mm+</span></div>
                 </div>
-                <div style="height: 60px; width: 100%; position: relative;"><canvas id="sparkRain"></canvas></div>
             </div>
             
             <!-- Power Status -->
-            <div class="card chart-card" style="padding: 20px; margin-bottom: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                <div style="width: 100%; display: flex; justify-content: space-between;">
-                    <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Power Status</div>
-                    <div style="color: #10b981;">🔋</div>
+            <div class="metric-card-v2 accent-green">
+                <div class="metric-v2-header">⚡ Status Daya</div>
+                <div class="power-list-v2" style="margin-top: 10px;">
+                    <div class="power-item-v2"><span>Sumber</span><strong style="color: #10b981;">Panel Surya</strong></div>
+                    <div class="power-item-v2"><span>Tegangan</span><strong>${fNum(data.batt)} V</strong></div>
+                    <div class="power-item-v2"><span>Baterai</span><strong><div class="battery-bar-v2"><div class="battery-bar-fill-v2 green" style="width: ${battPcnt}%; background: #10b981;"></div></div> ${battPcnt.toFixed(0)}%</strong></div>
                 </div>
-                <div style="width: 100%; margin-top: 16px; padding: 16px; background: ${checkDataQC('batt', data.batt).valid ? 'rgba(0,0,0,0.2)' : 'rgba(239, 68, 68, 0.1)'}; border-radius: 8px; text-align: center;">
-                    <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 4px;">Voltage Source</div>
-                    <div style="font-size: 1.4rem; font-weight: 800; color: ${checkDataQC('batt', data.batt).valid ? 'inherit' : '#ef4444'};">
-                        ${fNum(data.batt)} <span style="font-size: 0.9rem; color: #f59e0b;">V</span>
-                        ${!checkDataQC('batt', data.batt).valid ? '⚠️' : ''}
-                    </div>
-                </div>
+                <button class="btn-detail-v2" onclick="document.getElementById('health-card')?.scrollIntoView({behavior: 'smooth', block: 'center'})">ⓘ Detail Diagnostik ↗</button>
             </div>
         </div>
         `;
     } else {
+        const heatIndex = calculateHeatIndex(tempVal, Number(data.rh || 50));
+        const rhVal = Number(data.rh || 0);
+        const pressVal = Number(data.press || 1000);
+        const wsVal = Number(data.ws || 0);
+        const wdVal = Number(data.wd || 0);
+        const srVal = Number(data.sr || 0);
+        
+        const bf = getBeaufort(wsVal);
+        const srDesc = getSolarDesc(srVal);
+
         metricsHTML = `
-        <!-- Top Small Widgets -->
-        <div style="grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
-            <!-- Suhu Widget -->
-            <div class="card chart-card" style="padding: 16px; margin-bottom: 0;">
-                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px;">
-                    <div>
-                        <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Temperature</div>
-                        <div style="font-size: 1.8rem; font-weight: 800; color: ${checkDataQC('temp', data.temp).valid ? '#f97316' : '#ef4444'}; line-height: 1.1;">
-                            ${fNum(data.temp)} <span style="font-size: 0.9rem; font-weight: 600;">°C</span>
-                            ${!checkDataQC('temp', data.temp).valid ? '⚠️' : ''}
-                        </div>
-                    </div>
+        <div class="metrics-grid-v2-top">
+            <!-- Suhu -->
+            <div class="metric-card-v2 accent-orange">
+                <div class="metric-v2-header">🌡️ Suhu</div>
+                <div class="metric-v2-value">${fNum(tempVal)}<span>°C</span></div>
+                <div class="metric-v2-subtitle">Terasa seperti ${fNum(heatIndex)}°C</div>
+                <div>
+                    <div class="metric-v2-progress"><div class="metric-v2-progress-fill orange" style="width: ${Math.min(100, tempVal/50*100)}%;"></div></div>
+                    <div class="metric-v2-range"><span>0°</span><span>50°</span></div>
                 </div>
-                <div style="height: 60px; width: 100%; position: relative;"><canvas id="sparkTemp"></canvas></div>
             </div>
             
-            <!-- Kelembapan Widget -->
-            <div class="card chart-card" style="padding: 16px; margin-bottom: 0;">
-                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px;">
-                    <div>
-                        <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Humidity</div>
-                        <div style="font-size: 1.8rem; font-weight: 800; color: ${checkDataQC('rh', data.rh).valid ? '#10b981' : '#ef4444'}; line-height: 1.1;">
-                            ${fNum(data.rh)} <span style="font-size: 0.9rem; font-weight: 600;">%</span>
-                            ${!checkDataQC('rh', data.rh).valid ? '⚠️' : ''}
-                        </div>
-                    </div>
+            <!-- Kelembaban -->
+            <div class="metric-card-v2 accent-green">
+                <div class="metric-v2-header">💧 Kelembaban</div>
+                <div class="metric-v2-value">${fNum(rhVal)}<span>%</span></div>
+                <div class="metric-v2-subtitle">${getHumidityDesc(rhVal)}</div>
+                <div>
+                    <div class="metric-v2-progress"><div class="metric-v2-progress-fill green" style="width: ${Math.min(100, rhVal)}%;"></div></div>
+                    <div class="metric-v2-range"><span>0%</span><span>100%</span></div>
                 </div>
-                <div style="height: 60px; width: 100%; position: relative;"><canvas id="sparkRh"></canvas></div>
             </div>
             
-            <!-- Curah Hujan Widget -->
-            <div class="card chart-card" style="padding: 16px; margin-bottom: 0;">
-                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px;">
-                    <div>
-                        <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Rainfall</div>
-                        <div style="font-size: 1.8rem; font-weight: 800; color: #3b82f6; line-height: 1.1;">${fNum(data.rr)} <span style="font-size: 0.9rem; font-weight: 600;">mm</span></div>
-                        <div style="font-size: 0.7rem; font-weight: 800; color: ${getRainfallCategory(data.rr).color};">${getRainfallCategory(data.rr).label}</div>
-                    </div>
+            <!-- Curah Hujan -->
+            <div class="metric-card-v2 accent-blue">
+                <div class="metric-v2-header">🌧️ Curah Hujan</div>
+                <div class="metric-v2-value">${fNum(rainVal)}<span>mm</span></div>
+                <div class="metric-v2-subtitle" style="color: ${getRainfallCategory(rainVal).color};">☀ ${getRainfallCategory(rainVal).label}</div>
+                <div>
+                    <div class="metric-v2-progress"><div class="metric-v2-progress-fill blue" style="width: ${Math.min(100, rainVal)}%;"></div></div>
+                    <div class="metric-v2-range"><span>0</span><span>100mm+</span></div>
                 </div>
-                <div style="height: 60px; width: 100%; position: relative;"><canvas id="sparkRain"></canvas></div>
             </div>
             
-            <!-- Tekanan Widget -->
-            <div class="card chart-card" style="padding: 16px; margin-bottom: 0;">
-                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px;">
-                    <div>
-                        <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Pressure</div>
-                        <div style="font-size: 1.8rem; font-weight: 800; color: #8b5cf6; line-height: 1.1;">${fNum(data.press)} <span style="font-size: 0.9rem; font-weight: 600;">hPa</span></div>
-                    </div>
+            <!-- Tekanan -->
+            <div class="metric-card-v2 accent-purple">
+                <div class="metric-v2-header">🎯 Tekanan</div>
+                <div class="metric-v2-value">${fNum(pressVal)}<span>hPa</span></div>
+                <div class="metric-v2-subtitle">${getPressureDesc(pressVal)}</div>
+                <div>
+                    <div class="metric-v2-progress"><div class="metric-v2-progress-fill purple" style="width: ${Math.max(0, Math.min(100, (pressVal-950)/(1050-950)*100))}%;"></div></div>
+                    <div class="metric-v2-range"><span>950</span><span>1050</span></div>
                 </div>
-                <div style="height: 60px; width: 100%; position: relative;"><canvas id="sparkPress"></canvas></div>
             </div>
         </div>
 
-        <!-- Bottom Specialized Widgets -->
-        <div style="grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 0px;">
-            <!-- Wind Speed Gauge -->
-            <div class="card chart-card" style="padding: 20px; margin-bottom: 0; display: flex; flex-direction: column; align-items: center; justify-content: space-between;">
-                <div style="width: 100%; display: flex; justify-content: space-between;">
-                    <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Wind Speed</div>
-                    <div style="color: #3b82f6;">🌬️</div>
+        <div class="metrics-grid-v2-bottom">
+            <!-- Wind -->
+            <div class="metric-card-v2 wide-card">
+                <div class="metric-v2-left" style="flex: 0.8;">
+                    <div class="metric-v2-header" style="position:absolute; top:16px; left:20px;">🌬️ Angin</div>
+                    <div style="width: 80px; height: 80px; border: 2px dashed rgba(148, 163, 184, 0.3); border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center; margin-top: 15px;">
+                        <div style="position: absolute; top: -15px; font-size: 0.7rem; font-weight: 800; color: var(--text-muted);">N</div>
+                        <div style="position: absolute; right: -12px; font-size: 0.7rem; font-weight: 800; color: var(--text-muted);">E</div>
+                        <div style="position: absolute; bottom: -15px; font-size: 0.7rem; font-weight: 800; color: var(--text-muted);">S</div>
+                        <div style="position: absolute; left: -15px; font-size: 0.7rem; font-weight: 800; color: var(--text-muted);">W</div>
+                        <div style="width: 4px; height: 40px; background: linear-gradient(to top, transparent 50%, #f97316 50%); position: absolute; transform: rotate(${wdVal}deg); transition: transform 0.8s; border-radius: 2px; transform-origin: bottom center; top: 0px;"></div>
+                        <div style="width: 8px; height: 8px; background: var(--bg-card); border: 2px solid #f97316; border-radius: 50%; z-index: 2;"></div>
+                    </div>
+                    <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-primary); margin-top: 15px;">${fNum(wdVal)}° ${getCardinalDirection(wdVal)}</div>
                 </div>
-                <div style="height: 120px; width: 100%; position: relative; margin-top: 10px;">
-                    <canvas id="gaugeWindSpeed"></canvas>
-                    <div style="position: absolute; bottom: -5px; left: 50%; transform: translateX(-50%); text-align: center;">
-                        <div style="font-size: 1.4rem; font-weight: 800; line-height: 1; color: #3b82f6;">${fNum(data.ws)}</div>
-                        <div style="font-size: 0.7rem; font-weight: 600; color: var(--text-muted);">m/s</div>
+                <div class="metric-v2-right" style="flex: 1.2;">
+                    <div class="metric-v2-value" style="font-size: 2.4rem;">${fNum(wsVal)}<span style="font-size:1rem;">m/s</span></div>
+                    <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-bottom: 8px;">Maks: ${fNum(data.ws_max || 0)} m/s</div>
+                    <div style="font-size: 0.75rem; color: var(--text-secondary);">Skala Beaufort</div>
+                    <div class="beaufort-bars">
+                        <div class="b-bar ${bf.scale > 0 ? 'active' : ''}"></div>
+                        <div class="b-bar ${bf.scale > 2 ? 'active' : ''}"></div>
+                        <div class="b-bar ${bf.scale > 4 ? 'active' : ''}"></div>
+                        <div class="b-bar ${bf.scale > 6 ? 'active' : ''}"></div>
+                        <div class="b-bar ${bf.scale > 8 ? 'active' : ''}"></div>
+                    </div>
+                    <div style="font-size: 0.75rem; font-weight: 600;">${bf.desc}</div>
+                </div>
+            </div>
+
+            <!-- Solar -->
+            <div class="metric-card-v2 wide-card">
+                <div class="metric-v2-left">
+                    <div class="metric-v2-header" style="position:absolute; top:16px; left:20px;">☀️ Radiasi Matahari</div>
+                    <div style="width: 90px; height: 90px; border-radius: 50%; background: conic-gradient(#f59e0b ${Math.min(100, srVal/1000*100)}%, var(--gray-200) 0); display: flex; align-items: center; justify-content: center; margin-top: 15px; position: relative;">
+                        <div style="width: 76px; height: 76px; background: var(--bg-card); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                            <div style="font-size: 1.2rem; font-weight: 800; color: #f59e0b;">${fNum(srVal)}</div>
+                            <div style="font-size: 0.6rem; font-weight: 600; color: var(--text-muted);">W/m²</div>
+                        </div>
                     </div>
                 </div>
-                <div style="margin-top: 12px; font-size: 0.75rem; font-weight: 600; color: var(--text-muted);">Max: ${fNum(data.ws_max || 0)} m/s</div>
-            </div>
-
-            <!-- Wind Direction Compass -->
-            <div class="card chart-card" style="padding: 20px; margin-bottom: 0; display: flex; flex-direction: column; align-items: center; justify-content: space-between;">
-                <div style="width: 100%; display: flex; justify-content: space-between;">
-                    <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Wind Direction</div>
-                    <div style="color: #ef4444;">🧭</div>
-                </div>
-                <div style="height: 100px; width: 100%; position: relative; margin-top: 15px; display: flex; align-items: center; justify-content: center;">
-                     <div style="width: 80px; height: 80px; border: 2px solid rgba(148, 163, 184, 0.15); border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center;">
-                        <div style="position: absolute; top: 4px; font-size: 0.65rem; font-weight: 800; color: var(--text-muted);">N</div>
-                        <div style="position: absolute; right: 4px; font-size: 0.65rem; font-weight: 800; color: var(--text-muted);">E</div>
-                        <div style="position: absolute; bottom: 4px; font-size: 0.65rem; font-weight: 800; color: var(--text-muted);">S</div>
-                        <div style="position: absolute; left: 4px; font-size: 0.65rem; font-weight: 800; color: var(--text-muted);">W</div>
-                        <div style="width: 3px; height: 45px; background: linear-gradient(to top, transparent 50%, #ef4444 50%); position: absolute; transform: rotate(${data.wd || 0}deg); transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 1.5px;"></div>
-                        <div style="width: 8px; height: 8px; background: var(--bg-card); border: 2px solid #ef4444; border-radius: 50%; z-index: 2;"></div>
-                     </div>
-                </div>
-                <div style="margin-top: 12px; text-align: center;">
-                    <div style="font-size: 1.4rem; font-weight: 800; color: var(--text-primary); line-height: 1;">${fNum(data.wd)}°</div>
-                    <div style="font-size: 0.7rem; font-weight: 600; color: var(--text-muted); margin-top: 2px;">${getCardinalDirection(data.wd)}</div>
-                </div>
-            </div>
-
-            <!-- Solar Radiation -->
-            <div class="card chart-card" style="padding: 20px; margin-bottom: 0; display: flex; flex-direction: column; align-items: center; justify-content: space-between;">
-                <div style="width: 100%; display: flex; justify-content: space-between;">
-                    <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Solar Radiation</div>
-                    <div style="color: #f59e0b;">☀️</div>
-                </div>
-                <div style="height: 90px; width: 100%; position: relative; margin-top: 10px;"><canvas id="sparkSolar"></canvas></div>
-                <div style="margin-top: 10px; text-align: center;">
-                    <div style="font-size: 1.6rem; font-weight: 800; color: #f59e0b; line-height: 1;">${fNum(data.sr)}</div>
-                    <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">W/m²</div>
+                <div class="metric-v2-right">
+                    <div style="font-size: 0.75rem; color: var(--text-secondary);">Kondisi</div>
+                    <div style="font-size: 1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 8px;">${srDesc.cond}</div>
+                    <div style="font-size: 0.7rem; color: var(--text-secondary);">Intensitas</div>
+                    <div style="font-size: 0.75rem; font-weight: 500; color: var(--text-muted); display: flex; align-items: center; gap: 4px;"><span style="color: ${srDesc.active === 1 ? '#f59e0b' : 'var(--gray-300)'}">●</span> 0-200 Rendah</div>
+                    <div style="font-size: 0.75rem; font-weight: 500; color: var(--text-muted); display: flex; align-items: center; gap: 4px;"><span style="color: ${srDesc.active === 2 ? '#f59e0b' : 'var(--gray-300)'}">●</span> 200-600 Sedang</div>
+                    <div style="font-size: 0.75rem; font-weight: 500; color: var(--text-muted); display: flex; align-items: center; gap: 4px;"><span style="color: ${srDesc.active === 3 ? '#f59e0b' : 'var(--gray-300)'}">●</span> 600+ Tinggi</div>
                 </div>
             </div>
 
             <!-- Power Status -->
-            <div class="card chart-card" style="padding: 20px; margin-bottom: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                <div style="width: 100%; display: flex; justify-content: space-between;">
-                    <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Power Status</div>
-                    <div style="color: #10b981;">🔋</div>
+            <div class="metric-card-v2">
+                <div class="metric-v2-header">⚡ Status Daya</div>
+                <div class="power-list-v2" style="margin-top: 15px; flex: 1;">
+                    <div class="power-item-v2"><span>Sumber</span><strong style="color: #10b981;">Solar</strong></div>
+                    <div class="power-item-v2"><span>Tegangan</span><strong>${fNum(data.batt)} V</strong></div>
+                    <div class="power-item-v2"><span>Baterai</span><strong><div class="battery-bar-v2"><div class="battery-bar-fill-v2 green" style="width: ${battPcnt}%; background: #10b981;"></div></div> ${battPcnt.toFixed(0)}%</strong></div>
                 </div>
-                <div style="width: 100%; margin-top: 16px; padding: 16px; background: rgba(0,0,0,0.2); border-radius: 8px; text-align: center;">
-                    <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 4px;">Voltage Source</div>
-                    <div style="font-size: 1.4rem; font-weight: 800;">${fNum(data.batt)} <span style="font-size: 0.9rem; color: #f59e0b;">V</span></div>
-                </div>
+                <button class="btn-detail-v2" onclick="document.getElementById('health-card')?.scrollIntoView({behavior: 'smooth', block: 'center'})">ⓘ Detail Diagnostik ↗</button>
             </div>
         </div>
         `;
     }
 
     grid.innerHTML = metricsHTML;
-
-    // Render Sparklines
-    const history = fullHistory || [];
-    const drawSparkline = (id, key, color, fillMode = false) => {
-        const canvas = document.getElementById(id);
-        if (!canvas) return;
-        const sCtx = canvas.getContext('2d');
-        const sData = history.map(d => d[key]).filter(v => v !== null && v !== undefined).slice(-24);
-        if (sData.length === 0) return;
-        
-        let bg = 'transparent';
-        if (fillMode) {
-            let gradient = sCtx.createLinearGradient(0, 0, 0, 60);
-            gradient.addColorStop(0, color + '66');
-            gradient.addColorStop(1, color + '00');
-            bg = gradient;
-        }
-
-        new Chart(sCtx, {
-            type: 'line',
-            data: {
-                labels: sData.map((_, i) => i),
-                datasets: [{
-                    data: sData,
-                    borderColor: color,
-                    borderWidth: 2,
-                    backgroundColor: bg,
-                    fill: fillMode,
-                    tension: 0.4,
-                    pointRadius: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false }, tooltip: { enabled: false } },
-                scales: { x: { display: false }, y: { display: false } },
-                layout: { padding: 0 }
-            }
-        });
-    };
-
-    // Bar sparkline for rainfall (discrete data, bar more appropriate than line)
-    const drawBarSparkline = (id, key, color) => {
-        const canvas = document.getElementById(id);
-        if (!canvas) return;
-        const sCtx = canvas.getContext('2d');
-        const sData = history.map(d => d[key]).filter(v => v !== null && v !== undefined).slice(-24);
-        if (sData.length === 0) return;
-
-        // Color each bar by rainfall intensity
-        const barColors = sData.map(v => {
-            if (v >= 100) return '#E53E3E';
-            if (v >= 50) return '#ED8936';
-            if (v >= 20) return '#ECC94B';
-            if (v >= 0.5) return '#38A169';
-            return '#E2E8F066';
-        });
-
-        new Chart(sCtx, {
-            type: 'bar',
-            data: {
-                labels: sData.map((_, i) => i),
-                datasets: [{
-                    data: sData,
-                    backgroundColor: barColors,
-                    borderRadius: 2,
-                    borderSkipped: false
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false }, tooltip: { enabled: false } },
-                scales: { x: { display: false }, y: { display: false, beginAtZero: true } },
-                layout: { padding: 0 }
-            }
-        });
-    };
-
-    drawSparkline('sparkTemp', isARG ? 'log_temp' : 'temp', '#f97316', true);
-    if (!isARG) drawSparkline('sparkRh', 'rh', '#10b981');
-    drawBarSparkline('sparkRain', 'rr', '#3b82f6');
-    if (!isARG) drawSparkline('sparkPress', 'press', '#8b5cf6');
-    if (!isARG) drawSparkline('sparkSolar', 'sr', '#f59e0b', true);
-
-    // Wind Speed Gauge (Doughnut)
-    if (!isARG) {
-        const gaugeWs = document.getElementById('gaugeWindSpeed');
-        if (gaugeWs) {
-            new Chart(gaugeWs.getContext('2d'), {
-                type: 'doughnut',
-                data: {
-                    datasets: [{
-                        data: [Math.min(data.ws || 0, 20), Math.max(20 - (data.ws || 0), 0)],
-                        backgroundColor: ['#3b82f6', 'rgba(255,255,255,0.05)'],
-                        borderWidth: 0,
-                        circumference: 180,
-                        rotation: 270
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '80%',
-                    plugins: { tooltip: { enabled: false } },
-                    layout: { padding: 0 }
-                }
-            });
-        }
-    }
 }
 
 function renderChart(station, history) {
