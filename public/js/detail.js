@@ -20,33 +20,15 @@ function renderNewWidgets(station, data) {
         return directions[Math.round(angle / 45) % 8];
     };
     
-    // Advanced Heat Index (Steadman / Rothfusz)
-    const calculateHeatIndex = (temp, rh) => {
-        if (!temp || !rh) return temp;
-        // Heat index is only valid for temps > 27°C and RH > 40%
-        if (temp < 27) return temp;
+    // Apparent Temperature (Australian / BMKG)
+    const calculateApparentTemp = (temp, rh, ws) => {
+        if (temp === undefined || temp === null) return temp;
+        // Hitung tekanan uap air (vapor pressure)
+        const e = (rh / 100) * 6.105 * Math.exp((17.27 * temp) / (237.7 + temp));
+        // Hitung Apparent Temperature
+        let apparentTemp = temp + (0.33 * e) - (0.70 * ws) - 4.0;
         
-        // Convert to Fahrenheit for standard formula
-        const T = (temp * 9/5) + 32;
-        const R = rh;
-        
-        // Simple Steadman approximation first
-        let HI = 0.5 * (T + 61.0 + ((T - 68.0) * 1.2) + (R * 0.094));
-        
-        // Use Rothfusz regression if temp is high enough
-        if (HI >= 80) {
-            HI = -42.379 + 2.04901523*T + 10.14333127*R - 0.22475541*T*R - 0.00683783*T*T - 0.05481717*R*R + 0.00122874*T*T*R + 0.00085282*T*R*R - 0.00000199*T*T*R*R;
-            // Adjustments
-            if (R < 13 && T >= 80 && T <= 112) {
-                HI -= ((13 - R) / 4) * Math.sqrt((17 - Math.abs(T - 95)) / 17);
-            } else if (R > 85 && T >= 80 && T <= 87) {
-                HI += ((R - 85) / 10) * ((87 - T) / 5);
-            }
-        }
-        // Convert back to Celsius
-        const hic = (HI - 32) * 5/9;
-        // Ensure it's not wildly lower than temp
-        return Math.max(temp, hic);
+        return apparentTemp;
     };
 
     const getHumidityDesc = (rh) => {
@@ -126,10 +108,10 @@ function renderNewWidgets(station, data) {
         </div>
         `;
     } else {
-        const heatIndex = calculateHeatIndex(tempVal, Number(data.rh || 50));
         const rhVal = Number(data.rh || 0);
         const pressVal = Number(data.press || 1000);
         const wsVal = Number(data.ws || 0);
+        const heatIndex = calculateApparentTemp(tempVal, rhVal, wsVal);
         const wdVal = Number(data.wd || 0);
         const srVal = Number(data.sr || 0);
         
