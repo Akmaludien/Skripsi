@@ -106,7 +106,6 @@ async function loadPredictions() {
         renderPredictionMap(allPredictions);
         renderPredictionTable(allPredictions);
         renderRainfallBarChart(allPredictions);
-        renderFeatureRadarChart();
         renderCategoryDistribution(allPredictions);
 
         // Update subtitle
