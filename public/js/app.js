@@ -1,4 +1,4 @@
-﻿/**
+/**
  * STMKG Monitoring System - Shared Utilities
  */
 
@@ -173,11 +173,11 @@ function getTypeColor(type) {
  * Get BMKG Rainfall Category (24h Accumulated)
  */
 function getRainfallCategory(val) {
-    if (val === null || val === undefined || val < 0.5) return { label: 'Tidak Hujan', class: 'cat-none', color: '#E2E8F0' };
-    if (val < 20) return { label: 'Hujan Ringan', class: 'cat-light', color: '#38A169' };
-    if (val < 50) return { label: 'Hujan Sedang', class: 'cat-moderate', color: '#ECC94B' };
-    if (val < 100) return { label: 'Hujan Lebat', class: 'cat-heavy', color: '#ED8936' };
-    return { label: 'Hujan Sangat Lebat', class: 'cat-very-heavy', color: '#E53E3E' };
+    if (val === null || val === undefined || val < 0.5) return { name: 'Tidak Hujan', label: 'Tidak Hujan', class: 'cat-none', color: '#E2E8F0' };
+    if (val < 20) return { name: 'Ringan', label: 'Hujan Ringan', class: 'cat-light', color: '#38A169' };
+    if (val < 50) return { name: 'Sedang', label: 'Hujan Sedang', class: 'cat-moderate', color: '#ECC94B' };
+    if (val < 100) return { name: 'Lebat', label: 'Hujan Lebat', class: 'cat-heavy', color: '#ED8936' };
+    return { name: 'Sangat Lebat', label: 'Hujan Sangat Lebat', class: 'cat-very-heavy', color: '#E53E3E' };
 }
 
 /**

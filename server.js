@@ -934,6 +934,54 @@ app.get('/api/stations', async (req, res) => {
     res.json(enriched);
 });
 
+app.get('/api/rainfall-map', async (req, res) => {
+    try {
+        const hours = parseInt(req.query.hours) || 0;
+        // Get valid stations metadata
+        const stations = db.prepare('SELECT id, name, type, latitude, longitude FROM stations WHERE latitude IS NOT NULL AND longitude IS NOT NULL').all();
+        
+        if (hours === 0 || !queryApi) {
+            // Fallback to latest current reading if hours=0 or Influx unavailable
+            const fullStations = db.prepare('SELECT * FROM stations WHERE latitude IS NOT NULL').all();
+            return res.json(fullStations.map(s => ({
+                station_id: s.id,
+                name: s.name,
+                type: s.type,
+                latitude: s.latitude,
+                longitude: s.longitude,
+                rainfall: s.latest_rr || 0
+            })));
+        }
+
+        // Query InfluxDB for max rainfall in the requested time window
+        const query = `
+            from(bucket: "${INFLUX_BUCKET}")
+              |> range(start: -${hours}h)
+              |> filter(fn: (r) => (r["_measurement"] == "AWS" or r["_measurement"] == "ARG" or r["_measurement"] == "AAWS") and r["_field"] == "rain")
+              |> group(columns: ["id"])
+              |> max()
+        `;
+        
+        const rows = await queryApi.collectRows(query);
+        const actualMap = {};
+        rows.forEach(r => { actualMap[r.id] = Math.round((r._value || 0) * 10) / 10 });
+
+        const data = stations.map(s => ({
+            station_id: s.id,
+            name: s.name,
+            type: s.type,
+            latitude: s.latitude,
+            longitude: s.longitude,
+            rainfall: actualMap[s.id] || 0
+        }));
+
+        res.json(data);
+    } catch (e) {
+        console.error('[API] /api/rainfall-map error:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
 // Station detail
 app.get('/api/stations/:id', async (req, res) => {
     const station = db.prepare('SELECT * FROM stations WHERE id = ?').get(req.params.id);
@@ -1087,10 +1135,7 @@ app.get('/api/predictions', (req, res) => {
 
 // Model Performance
 app.get('/api/model-performance', (req, res) => {
-    // FORCE OVERWRITE IN DATABASE TO CLEAN UP OLD DUMMY DATA FROM PREVIOUS DEPLOYS
-    try {
-        db.prepare(`UPDATE model_performance SET rmse=6.063, mae=4.129, r_squared=0.813, accuracy=81.3, model_version='BiLSTM-v3.0 (Trend)', notes='Bi-LSTM 4 Fitur (Tren Hujan 3 Harian). Verified on actual BMKG data.'`).run();
-    } catch (e) {}
+    // Real performance from database
 
     const perf = db.prepare('SELECT * FROM model_performance ORDER BY training_date DESC LIMIT 1').get();
     res.json(perf || { 
@@ -1106,49 +1151,75 @@ app.get('/api/model-performance', (req, res) => {
 
 // Verification Data
 app.get('/api/verification', async (req, res) => {
-    let targetDate = new Date().toISOString().split('T')[0];
-    let preds = [];
     try {
-        const today = new Date().toISOString().split('T')[0];
-        
-        // Find the most recent date in predictions table
-        const latestPred = db.prepare(`SELECT DISTINCT prediction_date FROM predictions WHERE prediction_date <= ? ORDER BY prediction_date DESC LIMIT 1`).get(today);
-        if (latestPred) {
-            targetDate = latestPred.prediction_date;
+        const typeFilter = req.query.type && req.query.type !== 'all' ? req.query.type : null;
+        const seasonFilter = req.query.season && req.query.season !== 'all' ? req.query.season : null; // 'hujan' or 'kemarau'
+        const dateFilter = req.query.date;
+
+        let queryArgs = [];
+        let dateCondition = "";
+
+        if (dateFilter) {
+            dateCondition = "p.prediction_date = ?";
+            queryArgs.push(dateFilter);
+        } else if (seasonFilter) {
+            // BMKG Season: Hujan (Nov-Apr), Kemarau (May-Oct)
+            if (seasonFilter === 'hujan') {
+                dateCondition = "CAST(strftime('%m', p.prediction_date) AS INTEGER) IN (11, 12, 1, 2, 3, 4)";
+            } else {
+                dateCondition = "CAST(strftime('%m', p.prediction_date) AS INTEGER) IN (5, 6, 7, 8, 9, 10)";
+            }
+        } else {
+            // Default: Most recent date
+            const latestPred = db.prepare(`SELECT DISTINCT prediction_date FROM predictions ORDER BY prediction_date DESC LIMIT 1`).get();
+            if (!latestPred) return res.json({ date: new Date().toISOString().split('T')[0], data: [], summary: { rmse: 0, mae: 0, n: 0 } });
+            dateCondition = "p.prediction_date = ?";
+            queryArgs.push(latestPred.prediction_date);
         }
 
-        preds = db.prepare(`
-            SELECT p.station_id, p.predicted_rainfall, s.name as station_name, s.type as station_type, s.latitude, s.longitude 
+        let typeCondition = "";
+        if (typeFilter) {
+            typeCondition = " AND s.type = ?";
+            queryArgs.push(typeFilter);
+        }
+
+        const preds = db.prepare(`
+            SELECT p.station_id, p.prediction_date, p.predicted_rainfall, s.name as station_name, s.type as station_type, s.latitude, s.longitude 
             FROM predictions p 
             JOIN stations s ON p.station_id = s.id 
-            WHERE p.prediction_date = ?
-        `).all(targetDate);
+            WHERE ${dateCondition}${typeCondition}
+        `).all(...queryArgs);
         
         if (preds.length === 0) {
-            return res.json({ date: targetDate, data: [], summary: { rmse: 0, mae: 0, n: 0 } });
+            return res.json({ date: dateFilter || 'N/A', data: [], summary: { rmse: 0, mae: 0, n: 0 } });
         }
         
-        // Get valid stasiun map
         const validStations = db.prepare('SELECT id, name FROM stations').all();
         const validIds = new Set(validStations.map(s => s.id));
 
         if (!queryApi) {
-            const data = preds
-                .filter(p => validIds.has(p.station_id))
-                .map(p => ({ ...p, actual_rainfall: 0, error: p.predicted_rainfall }));
-            return res.json({ date: targetDate, data: data, summary: { rmse: 0, mae: 0, n: data.length } });
+            const data = preds.filter(p => validIds.has(p.station_id)).map(p => ({ ...p, actual_rainfall: 0, error: p.predicted_rainfall }));
+            return res.json({ date: dateFilter || 'N/A', data: data, summary: { rmse: 0, mae: 0, n: data.length } });
         }
 
-        const query = `from(bucket: "${INFLUX_BUCKET}") |> range(start: ${targetDate}T00:00:00Z, stop: ${targetDate}T23:59:59Z) |> filter(fn: (r) => (r["_measurement"] == "AWS" or r["_measurement"] == "ARG" or r["_measurement"] == "AAWS") and r["_field"] == "rain") |> group(columns: ["id"]) |> max()`;
+        // We must fetch actuals for ALL prediction dates involved.
+        const uniqueDates = [...new Set(preds.map(p => p.prediction_date))];
+        const actualMap = {}; // key: "stationId_date" -> rainfall
         
-        const actualRows = await queryApi.collectRows(query);
-        const actualMap = {};
-        actualRows.forEach(r => { actualMap[r.id] = Math.round((r._value || 0) * 10) / 10 });
+        for (const targetDate of uniqueDates) {
+            try {
+                const query = `from(bucket: "${INFLUX_BUCKET}") |> range(start: ${targetDate}T00:00:00Z, stop: ${targetDate}T23:59:59Z) |> filter(fn: (r) => (r["_measurement"] == "AWS" or r["_measurement"] == "ARG" or r["_measurement"] == "AAWS") and r["_field"] == "rain") |> group(columns: ["id"]) |> max()`;
+                const actualRows = await queryApi.collectRows(query);
+                actualRows.forEach(r => { actualMap[`${r.id}_${targetDate}`] = Math.round((r._value || 0) * 10) / 10 });
+            } catch (e) {
+                console.error('[InfluxDB] Query failed for date', targetDate, e.message);
+            }
+        }
 
         const data = preds
             .filter(p => validIds.has(p.station_id))
             .map(p => {
-                const actual = actualMap[p.station_id] || 0;
+                const actual = actualMap[`${p.station_id}_${p.prediction_date}`] || 0;
                 const predicted = Math.round(p.predicted_rainfall * 10) / 10;
                 const error = Math.round((predicted - actual) * 10) / 10;
                 return { ...p, predicted_rainfall: predicted, actual_rainfall: Math.round(actual * 10) / 10, error };
@@ -1161,23 +1232,13 @@ app.get('/api/verification', async (req, res) => {
         const mae = n > 0 ? sumAbsErr / n : 0;
 
         res.json({
-            date: targetDate,
+            date: dateFilter || (uniqueDates.length === 1 ? uniqueDates[0] : 'Multiple Dates'),
             data: data,
             summary: { rmse: Math.round(rmse * 100) / 100, mae: Math.round(mae * 100) / 100, n: n }
         });
     } catch (e) {
-        console.error('[InfluxDB] Verification query failed, falling back to predictions only:', e.message);
-        // Resilient Fallback: return predictions with actuals as 0
-        const data = preds.map(p => ({
-            ...p,
-            actual_rainfall: 0,
-            error: p.predicted_rainfall
-        }));
-        res.json({
-            date: targetDate,
-            data: data,
-            summary: { rmse: 0, mae: 0, n: data.length }
-        });
+        console.error('/api/verification error:', e);
+        res.status(500).json({ error: e.message });
     }
 });
 

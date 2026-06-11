@@ -57,6 +57,16 @@
             </header>
 
             <main class="page-content" style="padding: 16px;">
+                <div class="day-tabs" style="margin-bottom: 16px; justify-content: flex-start;">
+                    <button class="day-tab active" onclick="changeRainfallTime(0, this)">Real-time</button>
+                    <button class="day-tab" onclick="changeRainfallTime(1, this)">1 Jam</button>
+                    <button class="day-tab" onclick="changeRainfallTime(3, this)">3 Jam</button>
+                    <button class="day-tab" onclick="changeRainfallTime(6, this)">6 Jam</button>
+                    <button class="day-tab" onclick="changeRainfallTime(12, this)">12 Jam</button>
+                    <button class="day-tab" onclick="changeRainfallTime(24, this)">24 Jam (Harian)</button>
+                    <button class="day-tab" onclick="changeRainfallTime(72, this)">3 Hari</button>
+                    <button class="day-tab" onclick="changeRainfallTime(168, this)">7 Hari</button>
+                </div>
                 <div class="rainfall-map-container">
                     <div id="rainfallMap"></div>
                     <!-- Legend -->
@@ -95,9 +105,9 @@
             maxZoom: 18
         }).addTo(rfMap);
 
-        await loadRainfallData();
-        // Auto refresh every 5 minutes
-        setInterval(loadRainfallData, 300000);
+        await loadRainfallData(0);
+        // Auto refresh every 5 minutes (for real-time)
+        setInterval(() => loadRainfallData(currentRfHours), 300000);
 
         // Update clock
         updateMapClock();
@@ -125,9 +135,28 @@
         return 0.25;
     }
 
-    async function loadRainfallData() {
+    let currentRfHours = 0;
+    async function changeRainfallTime(hours, btnElem) {
+        currentRfHours = hours;
+        // Update active class
+        document.querySelectorAll('.day-tab').forEach(b => b.classList.remove('active'));
+        if(btnElem) btnElem.classList.add('active');
+        
+        // Update time overlay text
+        if (hours > 0) {
+            document.getElementById('mapTime').textContent = hours === 24 ? 'Akumulasi 24 Jam' : \`Maks \${hours} Jam Terakhir\`;
+            document.getElementById('mapDate').textContent = 'Data Historis';
+        } else {
+            updateMapClock(); // reset to live clock
+        }
+        
+        await loadRainfallData(hours);
+    }
+
+    async function loadRainfallData(hours = 0) {
         try {
-            const stations = await API.get('/api/stations');
+            const endpoint = hours === 0 ? '/api/stations' : \`/api/rainfall-map?hours=\${hours}\`;
+            const stations = await API.get(endpoint);
 
             // Remove old polygons
             rfMap.eachLayer(layer => {
@@ -138,7 +167,7 @@
 
             // Prepare points for Voronoi
             const points = stations.filter(s => s.latitude && s.longitude).map(s => [s.longitude, s.latitude]);
-            const rainfall = stations.filter(s => s.latitude && s.longitude).map(s => s.latest_rr || 0);
+            const rainfall = stations.filter(s => s.latitude && s.longitude).map(s => hours === 0 ? (s.latest_rr || 0) : (s.rainfall || 0));
             const names = stations.filter(s => s.latitude && s.longitude).map(s => s.name);
             const types = stations.filter(s => s.latitude && s.longitude).map(s => s.type);
 

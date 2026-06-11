@@ -124,7 +124,7 @@ console.log(`✓ sensor_data seeding skipped (real data comes from MQTT/InfluxDB
 // ─── Seed predictions (next 7 days) ────────────────
 const insertPrediction = db.prepare(`
     INSERT INTO predictions (station_id, prediction_date, predicted_rainfall, category, confidence, model_version)
-    VALUES (?, ?, ?, ?, ?, 'LSTM-v1.0')
+    VALUES (?, ?, ?, ?, ?, 'Bi-LSTM-v1.0')
 `);
 
 const categories = [
@@ -170,7 +170,7 @@ const insertPerf = db.prepare(`
     INSERT INTO model_performance (rmse, mae, r_squared, accuracy, training_date, model_version, notes)
     VALUES (?, ?, ?, ?, ?, ?, ?)
 `);
-insertPerf.run(12.4, 9.1, 0.85, 88.0, '2024-05-24', 'LSTM-v1.0', 'Model LSTM trained on 5 years historical data from 50 stations');
+insertPerf.run(12.4, 9.1, 0.85, 88.0, '2024-05-24', 'Bi-LSTM-v1.0', 'Model Bi-LSTM trained on 5 years historical data from 50 stations');
 console.log('✓ Model performance seeded');
 
 db.close();

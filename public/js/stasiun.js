@@ -76,6 +76,7 @@ function renderTable() {
             <td><span class="type-badge type-${s.type.toLowerCase()}">${s.type}</span></td>
             <td class="location-cell"><span class="loc-icon">📍</span>${s.location}</td>
             <td class="coords-cell">${s.latitude.toFixed(4)}, ${s.longitude.toFixed(4)}</td>
+            <td class="elevation-cell">${s.elevation !== null && s.elevation !== undefined ? s.elevation + ' m' : '-'}</td>
             <td><span class="status-badge ${statusClass}"><span class="dot"></span>${statusLabel}</span></td>
             <td><a href="/detail.html?id=${s.id}" class="action-link">📈 Detail</a></td>
         </tr>

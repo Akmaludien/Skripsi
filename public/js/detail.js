@@ -511,21 +511,49 @@ function renderPredictionChart(predictions) {
     });
 
     const data = predictions.map(p => p.predicted_rainfall);
+    const upperData = predictions.map(p => p.predicted_rainfall + (p.predicted_rainfall * ((100 - p.confidence) / 100)));
+    const lowerData = predictions.map(p => Math.max(0, p.predicted_rainfall - (p.predicted_rainfall * ((100 - p.confidence) / 100))));
     const colors = predictions.map(p => getCategoryColor(p.category));
 
     predChart = new Chart(ctx, {
         type: 'bar',
         data: {
             labels,
-            datasets: [{
-                label: 'Prediksi (mm)',
-                data,
-                backgroundColor: colors.map(c => c + 'CC'),
-                borderColor: colors,
-                borderWidth: 2,
-                borderRadius: 8,
-                borderSkipped: false,
-            }]
+            datasets: [
+                {
+                    type: 'line',
+                    label: 'Batas Atas (+σ)',
+                    data: upperData,
+                    borderColor: 'rgba(148, 163, 184, 0.4)',
+                    borderDash: [4, 4],
+                    borderWidth: 1.5,
+                    fill: false,
+                    pointRadius: 0,
+                    tension: 0.3
+                },
+                {
+                    type: 'line',
+                    label: 'Batas Bawah (-σ)',
+                    data: lowerData,
+                    borderColor: 'rgba(148, 163, 184, 0.4)',
+                    backgroundColor: 'rgba(148, 163, 184, 0.1)',
+                    borderDash: [4, 4],
+                    borderWidth: 1.5,
+                    fill: '-1',
+                    pointRadius: 0,
+                    tension: 0.3
+                },
+                {
+                    type: 'bar',
+                    label: 'Prediksi (mm)',
+                    data,
+                    backgroundColor: colors.map(c => c + 'CC'),
+                    borderColor: colors,
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    borderSkipped: false,
+                }
+            ]
         },
         options: {
             responsive: true,

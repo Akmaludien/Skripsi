@@ -359,7 +359,7 @@
         /* ─── Chart Card ─────────────────────── */
         .pred-chart-grid {
             display: grid;
-            grid-template-columns: 2fr 1fr;
+            grid-template-columns: 2fr 1fr 1.5fr;
             gap: 20px;
             margin-bottom: 24px;
         }
@@ -644,6 +644,20 @@
                         <div class="card-body">
                             <div class="category-distribution" id="categoryDist">
                                 <!-- Populated by JS -->
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Feature Importance -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h3>📊 Feature Importance</h3>
+                                <p>Bobot 5 Parameter Input Bi-LSTM</p>
+                            </div>
+                        </div>
+                        <div class="card-body" style="display:flex; justify-content:center; align-items:center;">
+                            <div class="chart-container-pred" style="height: 250px; width: 100%;">
+                                <canvas id="featureRadarChart"></canvas>
                             </div>
                         </div>
                     </div>
