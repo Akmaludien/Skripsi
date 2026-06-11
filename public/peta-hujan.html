@@ -144,7 +144,7 @@
         
         // Update time overlay text
         if (hours > 0) {
-            document.getElementById('mapTime').textContent = hours === 24 ? 'Akumulasi 24 Jam' : \`Maks \${hours} Jam Terakhir\`;
+            document.getElementById('mapTime').textContent = hours === 24 ? 'Akumulasi 24 Jam' : `Maks ${hours} Jam Terakhir`;
             document.getElementById('mapDate').textContent = 'Data Historis';
         } else {
             updateMapClock(); // reset to live clock
@@ -155,7 +155,7 @@
 
     async function loadRainfallData(hours = 0) {
         try {
-            const endpoint = hours === 0 ? '/api/stations' : \`/api/rainfall-map?hours=\${hours}\`;
+            const endpoint = hours === 0 ? '/api/stations' : `/api/rainfall-map?hours=${hours}`;
             const stations = await API.get(endpoint);
 
             // Remove old polygons
