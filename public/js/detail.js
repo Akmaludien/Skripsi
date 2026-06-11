@@ -8,6 +8,9 @@ function renderNewWidgets(station, data) {
     const grid = document.getElementById('metricsGrid');
     if (!grid) return;
 
+    // FIX: Override default 4-column grid from summary-grid class
+    grid.style.display = 'block';
+
     const fNum = val => val === undefined || val === null ? '--' : Number(val).toFixed(1);
     
     // Helper functions
@@ -17,18 +20,40 @@ function renderNewWidgets(station, data) {
         return directions[Math.round(angle / 45) % 8];
     };
     
+    // Advanced Heat Index (Steadman / Rothfusz)
     const calculateHeatIndex = (temp, rh) => {
         if (!temp || !rh) return temp;
-        // Simple approximation for UI
+        // Heat index is only valid for temps > 27°C and RH > 40%
         if (temp < 27) return temp;
-        return temp + ((rh - 50) * 0.05);
+        
+        // Convert to Fahrenheit for standard formula
+        const T = (temp * 9/5) + 32;
+        const R = rh;
+        
+        // Simple Steadman approximation first
+        let HI = 0.5 * (T + 61.0 + ((T - 68.0) * 1.2) + (R * 0.094));
+        
+        // Use Rothfusz regression if temp is high enough
+        if (HI >= 80) {
+            HI = -42.379 + 2.04901523*T + 10.14333127*R - 0.22475541*T*R - 0.00683783*T*T - 0.05481717*R*R + 0.00122874*T*T*R + 0.00085282*T*R*R - 0.00000199*T*T*R*R;
+            // Adjustments
+            if (R < 13 && T >= 80 && T <= 112) {
+                HI -= ((13 - R) / 4) * Math.sqrt((17 - Math.abs(T - 95)) / 17);
+            } else if (R > 85 && T >= 80 && T <= 87) {
+                HI += ((R - 85) / 10) * ((87 - T) / 5);
+            }
+        }
+        // Convert back to Celsius
+        const hic = (HI - 32) * 5/9;
+        // Ensure it's not wildly lower than temp
+        return Math.max(temp, hic);
     };
 
     const getHumidityDesc = (rh) => {
         if (rh < 40) return 'Kering';
         if (rh <= 60) return 'Nyaman';
-        if (rh <= 80) return 'Lembab — cukup nyaman';
-        return 'Sangat Lembab';
+        if (rh <= 80) return 'Lembap — cukup nyaman';
+        return 'Sangat Lembap';
     };
 
     const getPressureDesc = (press) => {
@@ -92,12 +117,11 @@ function renderNewWidgets(station, data) {
             <!-- Power Status -->
             <div class="metric-card-v2 accent-green">
                 <div class="metric-v2-header">⚡ Status Daya</div>
-                <div class="power-list-v2" style="margin-top: 10px;">
+                <div class="power-list-v2" style="margin-top: 10px; flex: 1;">
                     <div class="power-item-v2"><span>Sumber</span><strong style="color: #10b981;">Panel Surya</strong></div>
                     <div class="power-item-v2"><span>Tegangan</span><strong>${fNum(data.batt)} V</strong></div>
                     <div class="power-item-v2"><span>Baterai</span><strong><div class="battery-bar-v2"><div class="battery-bar-fill-v2 green" style="width: ${battPcnt}%; background: #10b981;"></div></div> ${battPcnt.toFixed(0)}%</strong></div>
                 </div>
-                <button class="btn-detail-v2" onclick="document.getElementById('health-card')?.scrollIntoView({behavior: 'smooth', block: 'center'})">ⓘ Detail Diagnostik ↗</button>
             </div>
         </div>
         `;
@@ -125,9 +149,9 @@ function renderNewWidgets(station, data) {
                 </div>
             </div>
             
-            <!-- Kelembaban -->
+            <!-- Kelembapan -->
             <div class="metric-card-v2 accent-green">
-                <div class="metric-v2-header">💧 Kelembaban</div>
+                <div class="metric-v2-header">💧 Kelembapan</div>
                 <div class="metric-v2-value">${fNum(rhVal)}<span>%</span></div>
                 <div class="metric-v2-subtitle">${getHumidityDesc(rhVal)}</div>
                 <div>
@@ -162,22 +186,22 @@ function renderNewWidgets(station, data) {
         <div class="metrics-grid-v2-bottom">
             <!-- Wind -->
             <div class="metric-card-v2 wide-card">
-                <div class="metric-v2-left" style="flex: 0.8;">
+                <div class="metric-v2-left" style="flex: 0.9;">
                     <div class="metric-v2-header" style="position:absolute; top:16px; left:20px;">🌬️ Angin</div>
-                    <div style="width: 80px; height: 80px; border: 2px dashed rgba(148, 163, 184, 0.3); border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center; margin-top: 15px;">
-                        <div style="position: absolute; top: -15px; font-size: 0.7rem; font-weight: 800; color: var(--text-muted);">N</div>
-                        <div style="position: absolute; right: -12px; font-size: 0.7rem; font-weight: 800; color: var(--text-muted);">E</div>
-                        <div style="position: absolute; bottom: -15px; font-size: 0.7rem; font-weight: 800; color: var(--text-muted);">S</div>
-                        <div style="position: absolute; left: -15px; font-size: 0.7rem; font-weight: 800; color: var(--text-muted);">W</div>
-                        <div style="width: 4px; height: 40px; background: linear-gradient(to top, transparent 50%, #f97316 50%); position: absolute; transform: rotate(${wdVal}deg); transition: transform 0.8s; border-radius: 2px; transform-origin: bottom center; top: 0px;"></div>
+                    <div style="width: 70px; height: 70px; border: 2px dashed rgba(148, 163, 184, 0.3); border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center; margin-top: 25px;">
+                        <div style="position: absolute; top: -15px; font-size: 0.65rem; font-weight: 800; color: var(--text-muted);">N</div>
+                        <div style="position: absolute; right: -12px; font-size: 0.65rem; font-weight: 800; color: var(--text-muted);">E</div>
+                        <div style="position: absolute; bottom: -15px; font-size: 0.65rem; font-weight: 800; color: var(--text-muted);">S</div>
+                        <div style="position: absolute; left: -15px; font-size: 0.65rem; font-weight: 800; color: var(--text-muted);">W</div>
+                        <div style="width: 4px; height: 35px; background: linear-gradient(to top, transparent 50%, #f97316 50%); position: absolute; transform: rotate(${wdVal}deg); transition: transform 0.8s; border-radius: 2px; transform-origin: bottom center; top: 0px;"></div>
                         <div style="width: 8px; height: 8px; background: var(--bg-card); border: 2px solid #f97316; border-radius: 50%; z-index: 2;"></div>
                     </div>
                     <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-primary); margin-top: 15px;">${fNum(wdVal)}° ${getCardinalDirection(wdVal)}</div>
                 </div>
-                <div class="metric-v2-right" style="flex: 1.2;">
-                    <div class="metric-v2-value" style="font-size: 2.4rem;">${fNum(wsVal)}<span style="font-size:1rem;">m/s</span></div>
+                <div class="metric-v2-right" style="flex: 1.1;">
+                    <div class="metric-v2-value" style="font-size: 2.2rem;">${fNum(wsVal)}<span style="font-size:0.9rem;">m/s</span></div>
                     <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-bottom: 8px;">Maks: ${fNum(data.ws_max || 0)} m/s</div>
-                    <div style="font-size: 0.75rem; color: var(--text-secondary);">Skala Beaufort</div>
+                    <div style="font-size: 0.7rem; color: var(--text-secondary);">Skala Beaufort</div>
                     <div class="beaufort-bars">
                         <div class="b-bar ${bf.scale > 0 ? 'active' : ''}"></div>
                         <div class="b-bar ${bf.scale > 2 ? 'active' : ''}"></div>
@@ -185,28 +209,28 @@ function renderNewWidgets(station, data) {
                         <div class="b-bar ${bf.scale > 6 ? 'active' : ''}"></div>
                         <div class="b-bar ${bf.scale > 8 ? 'active' : ''}"></div>
                     </div>
-                    <div style="font-size: 0.75rem; font-weight: 600;">${bf.desc}</div>
+                    <div style="font-size: 0.7rem; font-weight: 600;">${bf.desc}</div>
                 </div>
             </div>
 
             <!-- Solar -->
             <div class="metric-card-v2 wide-card">
-                <div class="metric-v2-left">
+                <div class="metric-v2-left" style="flex: 0.9;">
                     <div class="metric-v2-header" style="position:absolute; top:16px; left:20px;">☀️ Radiasi Matahari</div>
-                    <div style="width: 90px; height: 90px; border-radius: 50%; background: conic-gradient(#f59e0b ${Math.min(100, srVal/1000*100)}%, var(--gray-200) 0); display: flex; align-items: center; justify-content: center; margin-top: 15px; position: relative;">
-                        <div style="width: 76px; height: 76px; background: var(--bg-card); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                            <div style="font-size: 1.2rem; font-weight: 800; color: #f59e0b;">${fNum(srVal)}</div>
+                    <div style="width: 80px; height: 80px; border-radius: 50%; background: conic-gradient(#f59e0b ${Math.min(100, srVal/1000*100)}%, var(--gray-200) 0); display: flex; align-items: center; justify-content: center; margin-top: 20px; position: relative;">
+                        <div style="width: 68px; height: 68px; background: var(--bg-card); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                            <div style="font-size: 1.1rem; font-weight: 800; color: #f59e0b;">${fNum(srVal)}</div>
                             <div style="font-size: 0.6rem; font-weight: 600; color: var(--text-muted);">W/m²</div>
                         </div>
                     </div>
                 </div>
-                <div class="metric-v2-right">
-                    <div style="font-size: 0.75rem; color: var(--text-secondary);">Kondisi</div>
-                    <div style="font-size: 1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 8px;">${srDesc.cond}</div>
+                <div class="metric-v2-right" style="flex: 1.1;">
+                    <div style="font-size: 0.7rem; color: var(--text-secondary);">Kondisi</div>
+                    <div style="font-size: 0.9rem; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">${srDesc.cond}</div>
                     <div style="font-size: 0.7rem; color: var(--text-secondary);">Intensitas</div>
-                    <div style="font-size: 0.75rem; font-weight: 500; color: var(--text-muted); display: flex; align-items: center; gap: 4px;"><span style="color: ${srDesc.active === 1 ? '#f59e0b' : 'var(--gray-300)'}">●</span> 0-200 Rendah</div>
-                    <div style="font-size: 0.75rem; font-weight: 500; color: var(--text-muted); display: flex; align-items: center; gap: 4px;"><span style="color: ${srDesc.active === 2 ? '#f59e0b' : 'var(--gray-300)'}">●</span> 200-600 Sedang</div>
-                    <div style="font-size: 0.75rem; font-weight: 500; color: var(--text-muted); display: flex; align-items: center; gap: 4px;"><span style="color: ${srDesc.active === 3 ? '#f59e0b' : 'var(--gray-300)'}">●</span> 600+ Tinggi</div>
+                    <div style="font-size: 0.7rem; font-weight: 500; color: var(--text-muted); display: flex; align-items: center; gap: 4px;"><span style="color: ${srDesc.active === 1 ? '#f59e0b' : 'var(--gray-300)'}">●</span> 0-200 Rendah</div>
+                    <div style="font-size: 0.7rem; font-weight: 500; color: var(--text-muted); display: flex; align-items: center; gap: 4px;"><span style="color: ${srDesc.active === 2 ? '#f59e0b' : 'var(--gray-300)'}">●</span> 200-600 Sedang</div>
+                    <div style="font-size: 0.7rem; font-weight: 500; color: var(--text-muted); display: flex; align-items: center; gap: 4px;"><span style="color: ${srDesc.active === 3 ? '#f59e0b' : 'var(--gray-300)'}">●</span> 600+ Tinggi</div>
                 </div>
             </div>
 
@@ -214,11 +238,10 @@ function renderNewWidgets(station, data) {
             <div class="metric-card-v2">
                 <div class="metric-v2-header">⚡ Status Daya</div>
                 <div class="power-list-v2" style="margin-top: 15px; flex: 1;">
-                    <div class="power-item-v2"><span>Sumber</span><strong style="color: #10b981;">Solar</strong></div>
+                    <div class="power-item-v2"><span>Sumber</span><strong style="color: #10b981;">Panel Surya</strong></div>
                     <div class="power-item-v2"><span>Tegangan</span><strong>${fNum(data.batt)} V</strong></div>
                     <div class="power-item-v2"><span>Baterai</span><strong><div class="battery-bar-v2"><div class="battery-bar-fill-v2 green" style="width: ${battPcnt}%; background: #10b981;"></div></div> ${battPcnt.toFixed(0)}%</strong></div>
                 </div>
-                <button class="btn-detail-v2" onclick="document.getElementById('health-card')?.scrollIntoView({behavior: 'smooth', block: 'center'})">ⓘ Detail Diagnostik ↗</button>
             </div>
         </div>
         `;
