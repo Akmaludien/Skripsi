@@ -236,9 +236,47 @@ function renderNewWidgets(station, data) {
         });
     };
 
+    // Bar sparkline for rainfall (discrete data, bar more appropriate than line)
+    const drawBarSparkline = (id, key, color) => {
+        const canvas = document.getElementById(id);
+        if (!canvas) return;
+        const sCtx = canvas.getContext('2d');
+        const sData = history.map(d => d[key]).filter(v => v !== null && v !== undefined).slice(-24);
+        if (sData.length === 0) return;
+
+        // Color each bar by rainfall intensity
+        const barColors = sData.map(v => {
+            if (v >= 100) return '#E53E3E';
+            if (v >= 50) return '#ED8936';
+            if (v >= 20) return '#ECC94B';
+            if (v >= 0.5) return '#38A169';
+            return '#E2E8F066';
+        });
+
+        new Chart(sCtx, {
+            type: 'bar',
+            data: {
+                labels: sData.map((_, i) => i),
+                datasets: [{
+                    data: sData,
+                    backgroundColor: barColors,
+                    borderRadius: 2,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                scales: { x: { display: false }, y: { display: false, beginAtZero: true } },
+                layout: { padding: 0 }
+            }
+        });
+    };
+
     drawSparkline('sparkTemp', isARG ? 'log_temp' : 'temp', '#f97316', true);
     if (!isARG) drawSparkline('sparkRh', 'rh', '#10b981');
-    drawSparkline('sparkRain', 'rr', '#3b82f6', true);
+    drawBarSparkline('sparkRain', 'rr', '#3b82f6');
     if (!isARG) drawSparkline('sparkPress', 'press', '#8b5cf6');
     if (!isARG) drawSparkline('sparkSolar', 'sr', '#f59e0b', true);
 
@@ -282,16 +320,17 @@ function renderChart(station, history) {
         if (station.type === 'ARG') {
             pSelect.innerHTML += '<option value="temp">Temperatur Logger (°C)</option>';
             pSelect.innerHTML += '<option value="rr">Curah Hujan (mm)</option>';
-            pSelect.innerHTML += '<option value="batt">Baterai (V)</option>';
+            pSelect.innerHTML += '<option value="batt">Baterai / Voltage (V)</option>';
         } else {
+            // AWS & AAWS: identik — semua punya 9 parameter termasuk radiasi matahari
             pSelect.innerHTML += '<option value="temp">Suhu Udara (°C)</option>';
             pSelect.innerHTML += '<option value="rh">Kelembapan (%)</option>';
             pSelect.innerHTML += '<option value="rr">Curah Hujan (mm)</option>';
-            pSelect.innerHTML += '<option value="press">Tekanan (hPa)</option>';
+            pSelect.innerHTML += '<option value="press">Tekanan Udara (hPa)</option>';
             pSelect.innerHTML += '<option value="ws">Kecepatan Angin (m/s)</option>';
             pSelect.innerHTML += '<option value="wd">Arah Angin (°)</option>';
             pSelect.innerHTML += '<option value="sr">Radiasi Matahari (W/m²)</option>';
-            pSelect.innerHTML += '<option value="batt">Baterai (V)</option>';
+            pSelect.innerHTML += '<option value="batt">Baterai / Voltage (V)</option>';
         }
     }
 
@@ -379,9 +418,10 @@ function updateChart() {
                 datasets.push({ label: 'Arah Angin (°)', data: filteredHistory.map(d => d.wd), type: 'scatter', backgroundColor: colors.wd, pointRadius: 4, yAxisID: 'yWd' });
                 scales.yWd = { type: 'linear', position: 'right', min: 0, max: 360, title: { display: true, text: 'Arah (°)' } };
             }
-            if (currentChartType === 'sr' || (isAll && sType === 'AAWS')) {
+            if (currentChartType === 'sr' || isAll) {
+                // AWS & AAWS semua punya sensor radiasi matahari
                 datasets.push({ label: 'Radiasi (W/m²)', data: filteredHistory.map(d => d.sr), type: 'line', borderColor: colors.sr, backgroundColor: 'rgba(245, 158, 11, 0.1)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0, yAxisID: 'ySr', order: 5 });
-                scales.ySr = { type: 'linear', position: 'left', title: { display: true, text: 'Radiasi (W/m²)' }, beginAtZero: true };
+                scales.ySr = { type: 'linear', position: 'left', title: { display: true, text: 'Radiasi (W/m²)' }, beginAtZero: true, grid: { display: false } };
             }
         }
 
@@ -693,6 +733,16 @@ async function loadStationDetail(id) {
 
         // Use latest_data from InfluxDB if available, otherwise fall back to station metadata
         const sensorData = stationRes.latest_data || stationRes;
+
+        // Dynamic chart description based on station type
+        const chartDesc = document.querySelector('.chart-card .card-header p');
+        if (chartDesc) {
+            if (stationRes.type === 'ARG') {
+                chartDesc.textContent = 'Data Curah Hujan & Logger — Riwayat 24 Jam Terakhir';
+            } else {
+                chartDesc.textContent = 'Parameter Meteorologi Lengkap (8 Sensor) — Riwayat 24 Jam Terakhir';
+            }
+        }
 
         // Render data widgets and charts
         renderNewWidgets(stationRes, sensorData);

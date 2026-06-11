@@ -188,14 +188,7 @@
                             <button id="btn-print" class="btn-sm" style="background:var(--bg-main);border:1px solid var(--border-color);color:var(--text-secondary);padding:6px 12px;border-radius:6px;font-size:0.85rem;cursor:pointer;">🖨️ Cetak Laporan</button>
                             <select id="chartParamSelect" class="filter-select" style="padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-primary);">
                                 <option value="all">Semua Parameter Utama</option>
-                                <option value="temp">Suhu Udara (°C)</option>
-                                <option value="rh">Kelembapan (%)</option>
-                                <option value="rr">Curah Hujan (mm)</option>
-                                <option value="press">Tekanan (hPa)</option>
-                                <option value="ws">Kecepatan Angin (m/s)</option>
-                                <option value="wd">Arah Angin (°)</option>
-                                <option value="sr">Radiasi Matahari (W/m²)</option>
-                                <option value="batt">Baterai / Voltage (V)</option>
+                                <!-- Options populated dynamically by JS based on station type -->
                             </select>
                             <select id="chartTimeSelect" class="filter-select" style="padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-primary);">
                                 <option value="0.083">5 Menit Terakhir</option>
