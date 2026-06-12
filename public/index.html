@@ -73,6 +73,7 @@
                     </div>
                 </div>
                 <div class="header-actions">
+                    <button class="btn-icon btn-extreme" id="extremeBtn" title="Laporan Cuaca Ekstrem">🚨</button>
                     <button class="btn-icon" id="themeToggle" title="Toggle Theme">🌙</button>
                     <div class="notif-wrapper">
                         <button class="btn-icon" title="Notifikasi Hujan" id="notifBtn">🔔</button>
@@ -164,6 +165,29 @@
                     </div>
                     <div class="station-cards-grid stagger" id="stationCardsGrid">
                         <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Modal Peringkat Cuaca Ekstrem -->
+                <div class="modal-overlay" id="extremeModal">
+                    <div class="modal-content extreme-modal">
+                        <div class="modal-header">
+                            <h3>🚨 Peringkat Cuaca Ekstrem (30 Hari)</h3>
+                            <button class="modal-close" id="closeExtremeModal">✕</button>
+                        </div>
+                        <div class="modal-body">
+                            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 15px;">
+                                Daftar stasiun dengan intensitas bencana hidrometeorologi (curah hujan tertinggi) terbanyak dalam 30 hari terakhir berdasarkan data sensor InfluxDB.
+                            </p>
+                            <div class="extreme-list" id="extremeList">
+                                <div style="text-align:center; padding: 20px;">Memuat data...</div>
+                            </div>
+                            <div style="margin-top: 20px; text-align: right;">
+                                <button class="btn-primary" id="btnSendTelegram" style="background: #0088cc;">
+                                    <span class="icon">✈️</span> Kirim ke Telegram (n8n)
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </main>

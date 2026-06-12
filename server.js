@@ -1354,6 +1354,53 @@ app.get('/api/dashboard/summary', async (req, res) => {
     });
 });
 
+// Top 5 Cuaca Ekstrem (Curah Hujan Tertinggi 30 Hari Terakhir)
+app.get('/api/extreme-weather', async (req, res) => {
+    if (!queryApi) return res.status(500).json({ error: 'InfluxDB not configured' });
+    try {
+        const query = `
+            from(bucket: "${INFLUX_BUCKET}")
+              |> range(start: -30d)
+              |> filter(fn: (r) => (r["_measurement"] == "AWS" or r["_measurement"] == "ARG" or r["_measurement"] == "AAWS") and r["_field"] == "rain")
+              |> max()
+              |> group(columns: ["station", "_measurement"])
+        `;
+        const rows = await queryApi.collectRows(query);
+        
+        let extremeStations = [];
+        for (const row of rows) {
+            if (row._value > 0) { 
+                extremeStations.push({
+                    station_id: row.station,
+                    type: row._measurement,
+                    max_rainfall: Math.round(row._value * 10) / 10
+                });
+            }
+        }
+        
+        extremeStations.sort((a, b) => b.max_rainfall - a.max_rainfall);
+        const top5 = extremeStations.slice(0, 5);
+        
+        const validStations = db.prepare('SELECT id, name, location FROM stations').all();
+        const stationMap = {};
+        validStations.forEach(s => stationMap[s.id] = s);
+        
+        const result = top5.map(s => {
+            const info = stationMap[s.station_id] || { name: 'Unknown', location: 'Unknown' };
+            return {
+                ...s,
+                station_name: info.name,
+                location: info.location
+            };
+        });
+        
+        res.json(result);
+    } catch (err) {
+        console.error('Error fetching extreme weather:', err);
+        res.status(500).json({ error: 'Failed to fetch extreme weather data' });
+    }
+});
+
 // Daily rainfall summary per station
 app.get('/api/dashboard/rainfall-summary', async (req, res) => {
     let result = [];

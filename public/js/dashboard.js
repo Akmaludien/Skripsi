@@ -485,3 +485,99 @@ function handleRealtimeUpdate(data) {
 function handleRealtimeAlert(alert) {
     console.log('[Alert]', alert);
 }
+// --- Modal Peringkat Cuaca Ekstrem ---
+const extremeBtn = document.getElementById('extremeBtn');
+const extremeModal = document.getElementById('extremeModal');
+const closeExtremeModal = document.getElementById('closeExtremeModal');
+const extremeList = document.getElementById('extremeList');
+const btnSendTelegram = document.getElementById('btnSendTelegram');
+let extremeDataCache = [];
+
+if (extremeBtn) {
+    extremeBtn.addEventListener('click', async () => {
+        extremeModal.classList.add('show');
+        extremeList.innerHTML = '<div style="text-align:center; padding: 20px;">Memuat data...</div>';
+        
+        try {
+            const res = await fetch('/api/extreme-weather');
+            const data = await res.json();
+            extremeDataCache = data;
+            
+            if (data.length === 0) {
+                extremeList.innerHTML = '<div style="text-align:center; padding: 20px; color: var(--text-muted);">Belum ada data ekstrem 30 hari terakhir.</div>';
+                return;
+            }
+            
+            let html = '';
+            data.forEach((st, idx) => {
+                const rankClass = idx < 3 ? `rank-${idx+1}` : '';
+                html += `
+                    <div class="extreme-item ${rankClass}">
+                        <div class="rank">#${idx + 1}</div>
+                        <div class="extreme-info">
+                            <div class="extreme-name">${st.station_name}</div>
+                            <div class="extreme-loc">${st.location}</div>
+                        </div>
+                        <div class="extreme-value">
+                            ${st.max_rainfall} <small>mm</small>
+                        </div>
+                    </div>
+                `;
+            });
+            extremeList.innerHTML = html;
+        } catch (e) {
+            extremeList.innerHTML = '<div style="text-align:center; padding: 20px; color: #ef4444;">Gagal memuat data. Pastikan InfluxDB aktif.</div>';
+            console.error('Error fetching extreme weather:', e);
+        }
+    });
+}
+
+if (closeExtremeModal) {
+    closeExtremeModal.addEventListener('click', () => {
+        extremeModal.classList.remove('show');
+    });
+    extremeModal.addEventListener('click', (e) => {
+        if (e.target === extremeModal) extremeModal.classList.remove('show');
+    });
+}
+
+if (btnSendTelegram) {
+    btnSendTelegram.addEventListener('click', async () => {
+        if (extremeDataCache.length === 0) return alert('Data belum siap atau kosong.');
+        
+        const webhookUrl = prompt("Masukkan URL Webhook n8n Anda:", "https://your-n8n.com/webhook/test");
+        if (!webhookUrl) return;
+        
+        btnSendTelegram.innerHTML = '<span class="icon">⏳</span> Mengirim...';
+        btnSendTelegram.disabled = true;
+        
+        try {
+            let message = "🚨 *LAPORAN CUACA EKSTREM (30 HARI)* 🚨\n\n";
+            message += "Stasiun dengan intensitas curah hujan tertinggi:\n";
+            extremeDataCache.forEach((st, idx) => {
+                message += `${idx+1}. *${st.station_name}* (${st.location}) - ${st.max_rainfall} mm\n`;
+            });
+            
+            const req = await fetch(webhookUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    text: message,
+                    data: extremeDataCache
+                })
+            });
+            
+            if (req.ok) {
+                alert('Laporan berhasil dikirim ke n8n/Telegram!');
+            } else {
+                alert('Gagal mengirim laporan. Status HTTP: ' + req.status);
+            }
+        } catch (e) {
+            alert('Gagal mengirim laporan. Pastikan URL Webhook benar dan bisa diakses (CORS).');
+            console.error(e);
+        } finally {
+            btnSendTelegram.innerHTML = '<span class="icon">✈️</span> Kirim ke Telegram (n8n)';
+            btnSendTelegram.disabled = false;
+        }
+    });
+}
