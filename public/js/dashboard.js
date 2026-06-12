@@ -601,13 +601,7 @@ window.clearNotifications = function() {
     renderNotifications();
 };
 
-const notifBtn = document.getElementById('notifBtn');
-if (notifBtn) {
-    notifBtn.addEventListener('click', () => {
-        const dropdown = document.getElementById('notifDropdown');
-        if (dropdown) dropdown.classList.toggle('show');
-    });
-}
+// notifBtn listener is handled by app.js
 // --- Modal Peringkat Cuaca Ekstrem ---
 const extremeBtn = document.getElementById('extremeBtn');
 const extremeModal = document.getElementById('extremeModal');
