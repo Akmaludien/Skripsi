@@ -504,8 +504,13 @@ function handleRealtimeUpdate(data) {
         const maxRainfallEl = document.getElementById('maxRainfall');
         const maxRainfallStationEl = document.getElementById('maxRainfallStation');
         if (maxRainfallEl && maxRainfallStationEl) {
-            maxRainfallEl.innerHTML = `${formatNumber(maxRain)} <span style="font-size:0.9rem;font-weight:400">mm</span>`;
-            maxRainfallStationEl.textContent = `📍 ${maxStationName}`;
+            if (maxRain === 0) {
+                maxRainfallEl.innerHTML = `0.0 <span style="font-size:0.9rem;font-weight:400">mm</span>`;
+                maxRainfallStationEl.textContent = `☀️ Cerah / Tidak Ada Hujan`;
+            } else {
+                maxRainfallEl.innerHTML = `${formatNumber(maxRain)} <span style="font-size:0.9rem;font-weight:400">mm</span>`;
+                maxRainfallStationEl.textContent = `📍 ${maxStationName}`;
+            }
         }
     }
 
