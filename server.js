@@ -108,6 +108,33 @@ if (!dbExists) {
     }
 }
 
+// Migration: Ensure 'TIDAK HUJAN' is allowed in predictions table
+try {
+    const tableInfo = db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='predictions'").get();
+    if (tableInfo && !tableInfo.sql.includes('TIDAK HUJAN')) {
+        console.log('[DB] Migrating predictions table to support TIDAK HUJAN category...');
+        db.exec(`
+            CREATE TABLE IF NOT EXISTS predictions_new (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                station_id TEXT NOT NULL,
+                prediction_date DATE NOT NULL,
+                predicted_rainfall REAL DEFAULT 0,
+                category TEXT DEFAULT 'TIDAK HUJAN' CHECK(category IN ('TIDAK HUJAN', 'RINGAN', 'SEDANG', 'LEBAT', 'SANGAT LEBAT')),
+                confidence REAL DEFAULT 0,
+                model_version TEXT DEFAULT 'v1.0',
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (station_id) REFERENCES stations(id)
+            );
+            INSERT INTO predictions_new SELECT * FROM predictions;
+            DROP TABLE predictions;
+            ALTER TABLE predictions_new RENAME TO predictions;
+        `);
+        console.log('[DB] Migration complete.');
+    }
+} catch (e) {
+    console.error('[DB] Migration error:', e);
+}
+
 // Auto-seed stations if table is empty (e.g., fresh Docker volume)
 const stationCount = db.prepare('SELECT COUNT(*) as cnt FROM stations').get();
 if (stationCount && stationCount.cnt === 0) {
