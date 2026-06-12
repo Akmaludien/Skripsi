@@ -1363,7 +1363,7 @@ app.get('/api/extreme-weather', async (req, res) => {
               |> range(start: -30d)
               |> filter(fn: (r) => (r["_measurement"] == "AWS" or r["_measurement"] == "ARG" or r["_measurement"] == "AAWS") and r["_field"] == "rain")
               |> max()
-              |> group(columns: ["station", "_measurement"])
+              |> group(columns: ["id", "_measurement"])
         `;
         const rows = await queryApi.collectRows(query);
         
@@ -1371,7 +1371,7 @@ app.get('/api/extreme-weather', async (req, res) => {
         for (const row of rows) {
             if (row._value > 0) { 
                 extremeStations.push({
-                    station_id: row.station,
+                    station_id: row.id,
                     type: row._measurement,
                     max_rainfall: Math.round(row._value * 10) / 10
                 });
