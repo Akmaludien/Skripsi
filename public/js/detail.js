@@ -387,10 +387,10 @@ async function loadStationPredictions(stationId) {
                     stationPred._day = d;
                     allDayPreds.push(stationPred);
                 } else {
-                    allDayPreds.push({ _day: d, predicted_rainfall: 0, category: 'RINGAN', confidence: 0, _empty: true });
+                    allDayPreds.push({ _day: d, predicted_rainfall: 0, category: 'TIDAK HUJAN', confidence: 0, _empty: true });
                 }
             } catch {
-                allDayPreds.push({ _day: d, predicted_rainfall: 0, category: 'RINGAN', confidence: 0, _empty: true });
+                allDayPreds.push({ _day: d, predicted_rainfall: 0, category: 'TIDAK HUJAN', confidence: 0, _empty: true });
             }
         }
 

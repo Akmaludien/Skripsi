@@ -87,7 +87,9 @@ def save_prediction(station_id, prediction_date, predicted_rainfall, day_horizon
     conn = get_db_connection()
     cursor = conn.cursor()
     # KLASIFIKASI INTENSITAS CURAH HUJAN STANDAR BMKG
-    if predicted_rainfall <= 20:
+    if predicted_rainfall < 0.5:
+        category = 'TIDAK HUJAN'
+    elif predicted_rainfall <= 20:
         category = 'RINGAN'
     elif predicted_rainfall <= 50:
         category = 'SEDANG'
