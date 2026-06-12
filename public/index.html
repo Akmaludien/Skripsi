@@ -176,16 +176,11 @@
                             <button class="modal-close" id="closeExtremeModal">✕</button>
                         </div>
                         <div class="modal-body">
-                            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 15px;">
-                                Daftar stasiun dengan intensitas bencana hidrometeorologi (curah hujan tertinggi) terbanyak dalam 30 hari terakhir berdasarkan data sensor InfluxDB.
-                            </p>
+                            <div id="extremeStory" style="background: rgba(239, 68, 68, 0.05); border-left: 4px solid #ef4444; padding: 12px 16px; margin-bottom: 16px; border-radius: 0 8px 8px 0; font-size: 0.95rem; font-weight: 500; color: var(--text-primary); line-height: 1.5;">
+                                Memuat ringkasan analitik...
+                            </div>
                             <div class="extreme-list" id="extremeList">
                                 <div style="text-align:center; padding: 20px;">Memuat data...</div>
-                            </div>
-                            <div style="margin-top: 20px; text-align: right;">
-                                <button class="btn-primary" id="btnSendTelegram" style="background: #0088cc;">
-                                    <span class="icon">✈️</span> Kirim ke Telegram (n8n)
-                                </button>
                             </div>
                         </div>
                     </div>

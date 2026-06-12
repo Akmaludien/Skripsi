@@ -1260,8 +1260,8 @@ app.get('/api/alerts', (req, res) => {
 app.get('/api/dashboard/summary', async (req, res) => {
     const totalStations = db.prepare('SELECT COUNT(*) as total FROM stations').get().total;
     const onlineStations = db.prepare("SELECT COUNT(*) as total FROM stations WHERE status != 'Offline'").get().total;
-    const activeAlerts = db.prepare("SELECT COUNT(*) as total FROM alerts WHERE is_active = 1").get().total;
-    const alertDetails = db.prepare(`
+    let activeAlerts = db.prepare("SELECT COUNT(*) as total FROM alerts WHERE is_active = 1").get().total;
+    let alertDetails = db.prepare(`
         SELECT a.*, s.name as station_name 
         FROM alerts a 
         LEFT JOIN stations s ON a.station_id = s.id 
@@ -1299,15 +1299,38 @@ app.get('/api/dashboard/summary', async (req, res) => {
 
             let maxVal = 0;
             let maxStationId = null;
+            let dynamicActiveAlerts = 0;
+            let dynamicAlertDetails = [];
 
             for (const [id, sData] of Object.entries(influxMap)) {
                 const val = sData.realtime_rr || 0;
-                // Filter: must be in our 50 sites, and value must be reasonable (< 500mm/h)
-                if (validIds.has(id) && val >= maxVal && val < 500) {
-                    maxVal = val;
-                    maxStationId = id;
+                
+                if (validIds.has(id)) {
+                    // Update Max Rainfall
+                    if (val >= maxVal && val < 500) {
+                        maxVal = val;
+                        maxStationId = id;
+                    }
+                    
+                    // Update Active Alerts dynamically (>= 50mm)
+                    if (val >= 50 && val < 500) {
+                        dynamicActiveAlerts++;
+                        let severity = val > 100 ? 'AWAS' : (val > 80 ? 'SIAGA' : 'WASPADA');
+                        dynamicAlertDetails.push({
+                            station_id: id,
+                            station_name: idToName[id] || id,
+                            severity: severity,
+                            message: `Curah hujan ${val} mm terdeteksi`,
+                            val: val,
+                            created_at: new Date().toISOString()
+                        });
+                    }
                 }
             }
+            
+            // Override database alerts with real-time dynamic alerts
+            activeAlerts = dynamicActiveAlerts;
+            alertDetails = dynamicAlertDetails.sort((a,b) => b.val - a.val).slice(0, 5);
 
             if (maxStationId) {
                 maxRainfall24h = {

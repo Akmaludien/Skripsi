@@ -9,6 +9,7 @@ let allStations = [];
 document.addEventListener('DOMContentLoaded', () => {
     showLoadingSkeleton();
     loadDashboard();
+    loadPersistedNotifications();
 });
 
 function showLoadingSkeleton() {
@@ -100,26 +101,39 @@ function renderSummary(data, stations) {
     }
 
     // Fallback to backend value if all stations are 0 or no stations array is passed
-    if (maxRain === 0 && data.max_rainfall_24h) {
-        maxRain = data.max_rainfall_24h.value || 0;
+    if (maxRain === 0 && data.max_rainfall_24h && data.max_rainfall_24h.value > 0) {
+        maxRain = data.max_rainfall_24h.value;
         maxStationName = data.max_rainfall_24h.station_name || '-';
     }
 
-    document.getElementById('maxRainfall').innerHTML = `${formatNumber(maxRain)} <span style="font-size:0.9rem;font-weight:400">mm</span>`;
-    document.getElementById('maxRainfallStation').textContent = `📍 ${maxStationName}`;
+    if (maxRain === 0) {
+        document.getElementById('maxRainfall').innerHTML = `0.0 <span style="font-size:0.9rem;font-weight:400">mm</span>`;
+        document.getElementById('maxRainfallStation').textContent = `☀️ Cerah / Tidak Ada Hujan`;
+    } else {
+        document.getElementById('maxRainfall').innerHTML = `${formatNumber(maxRain)} <span style="font-size:0.9rem;font-weight:400">mm</span>`;
+        document.getElementById('maxRainfallStation').textContent = `📍 ${maxStationName}`;
+    }
 }
 
 async function loadPredictionSummary() {
     try {
         const predictions = await API.get('/api/predictions?day=0');
         if (predictions && predictions.length > 0) {
-            const heavy = predictions.filter(p => p.predicted_rainfall > 50);
+            // Get today's date in local time for comparison
+            const todayDate = new Date();
+            const todayStr = `${todayDate.getFullYear()}-${String(todayDate.getMonth()+1).padStart(2, '0')}-${String(todayDate.getDate()).padStart(2, '0')}`;
+            
+            const heavy = predictions.filter(p => {
+                if (!p.target_date) return false;
+                return p.predicted_rainfall > 50 && p.target_date.startsWith(todayStr);
+            });
+            
             document.getElementById('predHeavy').textContent = heavy.length;
             if (heavy.length > 0) {
                 document.getElementById('predHeavySub').textContent = `${heavy.length} stasiun diprediksi hujan lebat`;
                 document.getElementById('predHeavy').style.color = 'var(--danger)';
             } else {
-                document.getElementById('predHeavySub').textContent = 'Tidak ada prediksi hujan lebat';
+                document.getElementById('predHeavySub').textContent = 'Tidak ada prediksi hujan lebat hari ini';
             }
         }
     } catch (e) {
@@ -208,20 +222,44 @@ function initMap(stations) {
     legend.onAdd = () => {
         const div = L.DomUtil.create('div', 'map-legend');
         div.innerHTML = `
-            <h4>Tipe Stasiun <span style="font-size:0.7rem;font-weight:normal;color:#64748b">(Klik Filter)</span></h4>
-            <div class="legend-item filter-click" id="filter-aws" style="display:flex;align-items:center;cursor:pointer;user-select:none;transition:opacity 0.2s"><svg width="12" height="12" style="margin-right:8px;overflow:visible"><polygon points="6,0 12,12 0,12" style="fill:#cbd5e1"/></svg> AWS</div>
-            <div class="legend-item filter-click" id="filter-arg" style="display:flex;align-items:center;cursor:pointer;user-select:none;transition:opacity 0.2s"><svg width="12" height="12" style="margin-right:8px;overflow:visible"><circle cx="6" cy="6" r="6" style="fill:#cbd5e1"/></svg> ARG</div>
-            <div class="legend-item filter-click" id="filter-aaws" style="display:flex;align-items:center;cursor:pointer;user-select:none;transition:opacity 0.2s"><svg width="12" height="12" style="margin-right:8px;overflow:visible"><polygon points="6,0 12,6 6,12 0,6" style="fill:#cbd5e1"/></svg> AAWS</div>
-    <hr style="border:0;border-top:1px solid rgba(255,255,255,0.1);margin:8px 0">
-    <h4>Status Data <span style="font-size:0.7rem;font-weight:normal;color:#64748b">(Freshness)</span></h4>
-    <div class="legend-item" style="display:flex;align-items:center"><svg width="10" height="10" style="margin-right:8px"><circle cx="5" cy="5" r="5" fill="#22c55e"/></svg> &le; 30 Menit</div>
-    <div class="legend-item" style="display:flex;align-items:center"><svg width="10" height="10" style="margin-right:8px"><circle cx="5" cy="5" r="5" fill="#eab308"/></svg> 31 - 60 Menit</div>
-    <div class="legend-item" style="display:flex;align-items:center"><svg width="10" height="10" style="margin-right:8px"><circle cx="5" cy="5" r="5" fill="#f97316"/></svg> 1 - 24 Jam</div>
-    <div class="legend-item" style="display:flex;align-items:center"><svg width="10" height="10" style="margin-right:8px"><circle cx="5" cy="5" r="5" fill="#ef4444"/></svg> 1 - 30 Hari</div>
-    <div class="legend-item" style="display:flex;align-items:center"><svg width="10" height="10" style="margin-right:8px"><circle cx="5" cy="5" r="5" fill="#6b7280"/></svg> > 30 Hari</div>
+            <div style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; min-width:140px" id="legendToggleBtn">
+                <h4 style="margin:0; font-size:0.75rem; font-weight:bold; color:var(--text-primary);">Tampilkan Legenda</h4>
+                <span id="legendToggleIcon" style="font-size:0.8rem; margin-left: 8px;">👁️</span>
+            </div>
+            <div id="legendContent" style="display:none; margin-top:12px;">
+                <h4>Tipe Stasiun <span style="font-size:0.7rem;font-weight:normal;color:#64748b">(Klik Filter)</span></h4>
+                <div class="legend-item filter-click" id="filter-aws" style="display:flex;align-items:center;cursor:pointer;user-select:none;transition:opacity 0.2s"><svg width="12" height="12" style="margin-right:8px;overflow:visible"><polygon points="6,0 12,12 0,12" style="fill:#cbd5e1"/></svg> AWS</div>
+                <div class="legend-item filter-click" id="filter-arg" style="display:flex;align-items:center;cursor:pointer;user-select:none;transition:opacity 0.2s"><svg width="12" height="12" style="margin-right:8px;overflow:visible"><circle cx="6" cy="6" r="6" style="fill:#cbd5e1"/></svg> ARG</div>
+                <div class="legend-item filter-click" id="filter-aaws" style="display:flex;align-items:center;cursor:pointer;user-select:none;transition:opacity 0.2s"><svg width="12" height="12" style="margin-right:8px;overflow:visible"><polygon points="6,0 12,6 6,12 0,6" style="fill:#cbd5e1"/></svg> AAWS</div>
+                <hr style="border:0;border-top:1px solid rgba(255,255,255,0.1);margin:8px 0">
+                <h4>Status Data <span style="font-size:0.7rem;font-weight:normal;color:#64748b">(Freshness)</span></h4>
+                <div class="legend-item" style="display:flex;align-items:center"><svg width="10" height="10" style="margin-right:8px"><circle cx="5" cy="5" r="5" fill="#22c55e"/></svg> &le; 30 Menit</div>
+                <div class="legend-item" style="display:flex;align-items:center"><svg width="10" height="10" style="margin-right:8px"><circle cx="5" cy="5" r="5" fill="#eab308"/></svg> 31 - 60 Menit</div>
+                <div class="legend-item" style="display:flex;align-items:center"><svg width="10" height="10" style="margin-right:8px"><circle cx="5" cy="5" r="5" fill="#f97316"/></svg> 1 - 24 Jam</div>
+                <div class="legend-item" style="display:flex;align-items:center"><svg width="10" height="10" style="margin-right:8px"><circle cx="5" cy="5" r="5" fill="#ef4444"/></svg> 1 - 30 Hari</div>
+                <div class="legend-item" style="display:flex;align-items:center"><svg width="10" height="10" style="margin-right:8px"><circle cx="5" cy="5" r="5" fill="#6b7280"/></svg> > 30 Hari</div>
+            </div>
         `;
 
         setTimeout(() => {
+            const toggleBtn = document.getElementById('legendToggleBtn');
+            const content = document.getElementById('legendContent');
+            const icon = document.getElementById('legendToggleIcon');
+            const title = toggleBtn.querySelector('h4');
+            
+            if(toggleBtn) {
+                toggleBtn.onclick = () => {
+                    if (content.style.display === 'none') {
+                        content.style.display = 'block';
+                        icon.textContent = '🙈';
+                        title.textContent = 'Sembunyikan Legenda';
+                    } else {
+                        content.style.display = 'none';
+                        icon.textContent = '👁️';
+                        title.textContent = 'Tampilkan Legenda';
+                    }
+                };
+            }
             const setupToggle = (id, group) => {
                 const el = document.getElementById(id);
                 if (!el) return;
@@ -482,44 +520,149 @@ function handleRealtimeUpdate(data) {
     }, 100);
 }
 
+let notifications = JSON.parse(localStorage.getItem('weather_notifications') || '[]');
+
+function loadPersistedNotifications() {
+    renderNotifications();
+}
+
 function handleRealtimeAlert(alert) {
     console.log('[Alert]', alert);
+    const newNotif = {
+        id: Date.now(),
+        station_name: alert.station_name || 'Stasiun',
+        message: alert.message || `Curah hujan tinggi terdeteksi di ${alert.station_name || 'lokasi'}`,
+        severity: alert.severity || 'WASPADA',
+        time: new Date().toISOString()
+    };
+    notifications.unshift(newNotif);
+    if (notifications.length > 20) notifications = notifications.slice(0, 20); // max 20
+    localStorage.setItem('weather_notifications', JSON.stringify(notifications));
+    renderNotifications();
+    
+    // Add visual cue
+    const badge = document.getElementById('notifBadge');
+    if (badge) {
+        badge.style.display = 'flex';
+        badge.textContent = notifications.length;
+        badge.classList.add('pulse');
+        setTimeout(() => badge.classList.remove('pulse'), 2000);
+    }
+}
+
+function renderNotifications() {
+    const notifBody = document.getElementById('notifBody');
+    const badge = document.getElementById('notifBadge');
+    
+    if (!notifBody) return;
+    
+    if (notifications.length === 0) {
+        notifBody.innerHTML = '<div class="notif-empty" style="padding: 15px; text-align: center; color: var(--text-muted);">Tidak ada peringatan saat ini</div>';
+        if (badge) badge.style.display = 'none';
+        return;
+    }
+    
+    if (badge) {
+        badge.style.display = 'flex';
+        badge.textContent = notifications.length;
+    }
+    
+    let html = '';
+    notifications.forEach(n => {
+        const color = n.severity === 'AWAS' ? '#ef4444' : (n.severity === 'SIAGA' ? '#f97316' : '#eab308');
+        html += `
+            <div class="notif-item" style="padding: 12px; border-bottom: 1px solid var(--border-color);">
+                <div style="display:flex; justify-content:space-between; margin-bottom: 4px;">
+                    <strong style="color: ${color}; font-size: 0.85rem;">${n.severity}</strong>
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">${timeAgo(n.time)}</span>
+                </div>
+                <div style="font-size: 0.9rem; font-weight: 500; color: var(--text-primary);">${n.station_name}</div>
+                <div style="font-size: 0.85rem; color: var(--text-secondary);">${n.message}</div>
+            </div>
+        `;
+    });
+    // Add a clear button at the end
+    html += `
+        <div style="text-align: center; padding: 10px; background: var(--bg-card); border-top: 1px solid var(--border-color); border-radius: 0 0 8px 8px;">
+            <button onclick="clearNotifications()" style="background:none; border:none; color: #ef4444; cursor:pointer; font-size: 0.85rem; font-weight: 600;">Hapus Semua Notifikasi</button>
+        </div>
+    `;
+    notifBody.innerHTML = html;
+}
+
+window.clearNotifications = function() {
+    notifications = [];
+    localStorage.setItem('weather_notifications', JSON.stringify([]));
+    renderNotifications();
+};
+
+const notifBtn = document.getElementById('notifBtn');
+if (notifBtn) {
+    notifBtn.addEventListener('click', () => {
+        const dropdown = document.getElementById('notifDropdown');
+        if (dropdown) dropdown.classList.toggle('show');
+    });
 }
 // --- Modal Peringkat Cuaca Ekstrem ---
 const extremeBtn = document.getElementById('extremeBtn');
 const extremeModal = document.getElementById('extremeModal');
 const closeExtremeModal = document.getElementById('closeExtremeModal');
 const extremeList = document.getElementById('extremeList');
-const btnSendTelegram = document.getElementById('btnSendTelegram');
-let extremeDataCache = [];
+const extremeStory = document.getElementById('extremeStory');
 
 if (extremeBtn) {
     extremeBtn.addEventListener('click', async () => {
         extremeModal.classList.add('show');
         extremeList.innerHTML = '<div style="text-align:center; padding: 20px;">Memuat data...</div>';
+        if (extremeStory) extremeStory.innerHTML = 'Memuat ringkasan analitik...';
         
         try {
             const res = await fetch('/api/extreme-weather');
             const data = await res.json();
-            extremeDataCache = data;
             
             if (data.length === 0) {
                 extremeList.innerHTML = '<div style="text-align:center; padding: 20px; color: var(--text-muted);">Belum ada data ekstrem 30 hari terakhir.</div>';
+                if (extremeStory) extremeStory.style.display = 'none';
                 return;
             }
             
+            if (extremeStory) extremeStory.style.display = 'block';
             let html = '';
+            
+            // Generate Story
+            const topStation = data[0];
+            let impact = '';
+            if (topStation.max_rainfall > 100) impact = 'sangat lebat yang berpotensi memicu bencana banjir bandang atau longsor';
+            else if (topStation.max_rainfall >= 50) impact = 'lebat yang berpotensi memicu genangan air atau pohon tumbang';
+            else impact = 'sedang hingga lebat yang perlu diwaspadai';
+            
+            if (extremeStory) {
+                extremeStory.innerHTML = `💡 <strong>Analitik Cerdas:</strong> Dalam 30 hari terakhir, wilayah <strong>${topStation.location} (${topStation.station_name})</strong> menjadi titik paling rawan. Stasiun ini mencatatkan curah hujan tertinggi mencapai <strong>${topStation.max_rainfall} mm</strong>, masuk dalam kategori hujan ${impact}.`;
+            }
+
             data.forEach((st, idx) => {
                 const rankClass = idx < 3 ? `rank-${idx+1}` : '';
+                
+                // Wording Label
+                let labelHtml = '';
+                if (st.max_rainfall > 100) {
+                    labelHtml = `<div style="font-size: 0.75rem; color: #ef4444; margin-top: 4px;">🚨 Sangat Lebat (Siaga Banjir)</div>`;
+                } else if (st.max_rainfall >= 50) {
+                    labelHtml = `<div style="font-size: 0.75rem; color: #f59e0b; margin-top: 4px;">⚠️ Lebat (Waspada Genangan)</div>`;
+                } else {
+                    labelHtml = `<div style="font-size: 0.75rem; color: #10b981; margin-top: 4px;">🟢 Sedang (Kategori Aman)</div>`;
+                }
+
                 html += `
                     <div class="extreme-item ${rankClass}">
                         <div class="rank">#${idx + 1}</div>
                         <div class="extreme-info">
                             <div class="extreme-name">${st.station_name}</div>
                             <div class="extreme-loc">${st.location}</div>
+                            ${labelHtml}
                         </div>
-                        <div class="extreme-value">
-                            ${st.max_rainfall} <small>mm</small>
+                        <div class="extreme-value" style="display:flex; flex-direction:column; justify-content:center; align-items:flex-end;">
+                            <div>${st.max_rainfall} <small>mm</small></div>
                         </div>
                     </div>
                 `;
@@ -527,6 +670,7 @@ if (extremeBtn) {
             extremeList.innerHTML = html;
         } catch (e) {
             extremeList.innerHTML = '<div style="text-align:center; padding: 20px; color: #ef4444;">Gagal memuat data. Pastikan InfluxDB aktif.</div>';
+            if (extremeStory) extremeStory.innerHTML = 'Gagal memuat analitik.';
             console.error('Error fetching extreme weather:', e);
         }
     });
@@ -538,46 +682,5 @@ if (closeExtremeModal) {
     });
     extremeModal.addEventListener('click', (e) => {
         if (e.target === extremeModal) extremeModal.classList.remove('show');
-    });
-}
-
-if (btnSendTelegram) {
-    btnSendTelegram.addEventListener('click', async () => {
-        if (extremeDataCache.length === 0) return alert('Data belum siap atau kosong.');
-        
-        const webhookUrl = prompt("Masukkan URL Webhook n8n Anda:", "https://your-n8n.com/webhook/test");
-        if (!webhookUrl) return;
-        
-        btnSendTelegram.innerHTML = '<span class="icon">⏳</span> Mengirim...';
-        btnSendTelegram.disabled = true;
-        
-        try {
-            let message = "🚨 *LAPORAN CUACA EKSTREM (30 HARI)* 🚨\n\n";
-            message += "Stasiun dengan intensitas curah hujan tertinggi:\n";
-            extremeDataCache.forEach((st, idx) => {
-                message += `${idx+1}. *${st.station_name}* (${st.location}) - ${st.max_rainfall} mm\n`;
-            });
-            
-            const req = await fetch(webhookUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    text: message,
-                    data: extremeDataCache
-                })
-            });
-            
-            if (req.ok) {
-                alert('Laporan berhasil dikirim ke n8n/Telegram!');
-            } else {
-                alert('Gagal mengirim laporan. Status HTTP: ' + req.status);
-            }
-        } catch (e) {
-            alert('Gagal mengirim laporan. Pastikan URL Webhook benar dan bisa diakses (CORS).');
-            console.error(e);
-        } finally {
-            btnSendTelegram.innerHTML = '<span class="icon">✈️</span> Kirim ke Telegram (n8n)';
-            btnSendTelegram.disabled = false;
-        }
     });
 }
