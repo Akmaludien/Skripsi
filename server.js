@@ -1330,7 +1330,8 @@ app.get('/api/dashboard/summary', async (req, res) => {
             let dynamicAlertDetails = [];
 
             for (const [id, sData] of Object.entries(influxMap)) {
-                const val = sData.realtime_rr || 0;
+                // Use latest_rr (accumulated rainfall) to match the Map logic, not realtime_rr (15min)
+                const val = sData.latest_rr || 0;
                 
                 if (validIds.has(id)) {
                     // Update Max Rainfall

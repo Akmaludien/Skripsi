@@ -495,7 +495,7 @@ function handleRealtimeUpdate(data) {
         let maxRain = 0;
         let maxStationName = '-';
         allStations.forEach(s => {
-            const rr = s.realtime_rr || 0;
+            const rr = s.latest_rr || 0;
             if (rr >= maxRain) {
                 maxRain = rr;
                 maxStationName = s.name;
