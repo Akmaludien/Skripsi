@@ -146,8 +146,8 @@ function renderPredictionMap(predictions) {
             scrollWheelZoom: true
         }).setView([-6.9, 107.6], 8);
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap',
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; CartoDB',
             maxZoom: 18
         }).addTo(predMap);
 
