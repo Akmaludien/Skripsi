@@ -329,17 +329,18 @@ const LOG_INTERVAL = 15000; // Log success only every 15 seconds
 function connectMQTT() {
     console.log(`[MQTT] Connecting to ${MQTT_BROKER}...`);
     
-    // Stable Client ID instead of Date.now() to avoid "Client ID Churn"
-    const clientId = process.env.MQTT_CLIENT_ID || `stmkg_srv_jabar_local_$(Math.floor(Math.random() * 10000))`;
+    // Stable Client ID with proper template literal interpolation
+    const clientId = `stmkg_srv_jabar_${Math.floor(Math.random() * 10000)}`;
 
     mqttClient = mqtt.connect(MQTT_BROKER, {
         clientId: clientId,
         username: MQTT_USER_STATIC,
         password: MQTT_PASS_STATIC,
+        protocolVersion: 4,     // Force MQTT 3.1.1 — BMKG broker does NOT support MQTT 5.0
         clean: true,
-        reconnectPeriod: 15000, // Increase to 15s to avoid "hammering" the broker
+        reconnectPeriod: 15000,
         connectTimeout: 30000,
-        keepalive: 120, // Longer keepalive
+        keepalive: 120,
     });
 
     mqttClient.on('connect', () => {
