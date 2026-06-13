@@ -100,7 +100,7 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
         rfMap = L.map('rainfallMap', { zoomControl: true }).setView([-6.9, 107.6], 9);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
             attribution: '&copy; CartoDB',
             maxZoom: 18
         }).addTo(rfMap);
@@ -129,10 +129,11 @@
     }
 
     function getRainfallOpacity(rr) {
-        if (rr > 50) return 0.6;
-        if (rr > 20) return 0.5;
-        if (rr > 5) return 0.4;
-        return 0.25;
+        if (rr > 50) return 0.7;
+        if (rr > 20) return 0.6;
+        if (rr > 5) return 0.5;
+        if (rr >= 0.5) return 0.4;
+        return 0.05; // Hampir transparan jika tidak hujan (polosan)
     }
 
     let currentRfHours = 0;
