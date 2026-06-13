@@ -30,21 +30,25 @@ if (writeApi) {
 
 // ——— Config ————————————————————————————————————
 const PORT = process.env.PORT || 3001;
-const MQTT_BROKER = 'mqtt://202.90.198.159:1883';
-const MQTT_USER_STATIC = 'bmkg_aws';
-const MQTT_PASS_STATIC = 'bmkg_aws123';
+const MQTT_BROKER = process.env.MQTT_BROKER || 'mqtt://202.90.198.159:1883';
+const MQTT_USER_STATIC = process.env.MQTT_USER || '';
+const MQTT_PASS_STATIC = process.env.MQTT_PASS || '';
+const API_KEY = process.env.API_KEY || '';
 
 // ——— Reklim AAWS Clients ——————————————————————
-const reklimStations = [
-    { id: 'AAWS3010', topic: 'device/50e81az718842ds', user: 'wxki2', pass: '7ep1l' },
-    { id: 'STA3008',  topic: 'device/jz0o33ob874q9q4', user: 'vcjpa', pass: '65tm2' },
-    { id: 'STA3005',  topic: 'device/ha0v1kd4pt92jwf', user: 'k38fg', pass: 'efxvf' },
-    { id: 'STA3009',  topic: 'device/ur884m1lh6wn908', user: '11r7o', pass: '49vs4' },
-    { id: 'STA3006',  topic: 'device/waayijbhjl6e7lp', user: 'ls9xi', pass: 'dzvf5' },
-    { id: 'AAWS0354', topic: 'device/6d21w334lpk38cs', user: 'h0wzh', pass: 'iv0ej' },
-    { id: 'STA3004',  topic: 'device/s5bq2hv47nmpi1a', user: 'qp6lc', pass: 'motoi' },
-    { id: 'AAWS0348', topic: 'device/tv9s62p8iqwsf2t', user: 'azq54', pass: 'y62jy' }
-];
+// Load from external config file (gitignored) to keep credentials out of source code
+let reklimStations = [];
+try {
+    const reklimConfigPath = path.join(__dirname, 'reklim_config.json');
+    if (fs.existsSync(reklimConfigPath)) {
+        reklimStations = JSON.parse(fs.readFileSync(reklimConfigPath, 'utf-8'));
+        console.log(`[Reklim] Loaded ${reklimStations.length} station configs from reklim_config.json`);
+    } else {
+        console.log('[Reklim] reklim_config.json not found, Reklim stations disabled.');
+    }
+} catch (e) {
+    console.error('[Reklim] Failed to load reklim_config.json:', e.message);
+}
 
 // MQTT Topics (main BMKG broker - excludes reklim topics which need separate auth)
 const MQTT_TOPICS = [
@@ -233,10 +237,58 @@ try {
 // â”€â”€â”€ Express App â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const app = express();
 // Security Middleware
-// app.use(helmet({
-//     contentSecurityPolicy: false,
-// }));
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: [
+                "'self'",
+                "'unsafe-inline'",          // Required: inline <script> in HTML pages
+                "https://unpkg.com",         // Leaflet.js
+                "https://cdn.jsdelivr.net"   // Chart.js
+            ],
+            styleSrc: [
+                "'self'",
+                "'unsafe-inline'",          // Required: inline <style> blocks
+                "https://unpkg.com",         // Leaflet CSS
+                "https://fonts.googleapis.com"
+            ],
+            fontSrc: [
+                "'self'",
+                "https://fonts.gstatic.com"
+            ],
+            imgSrc: [
+                "'self'",
+                "data:",                    // SVG data URIs in Leaflet markers
+                "https://a.tile.openstreetmap.org",
+                "https://b.tile.openstreetmap.org",
+                "https://c.tile.openstreetmap.org"
+            ],
+            connectSrc: [
+                "'self'",
+                "ws:",                      // WebSocket (dev)
+                "wss:",                     // WebSocket Secure (production)
+                "https://a.tile.openstreetmap.org",
+                "https://b.tile.openstreetmap.org",
+                "https://c.tile.openstreetmap.org"
+            ],
+            frameSrc: ["'none'"],
+            objectSrc: ["'none'"],
+            baseUri: ["'self'"]
+        }
+    }
+}));
 app.use(cors({ origin: process.env.NODE_ENV === 'production' ? ['https://simprech-jabar.my.id', 'https://akmaludien.github.io'] : '*' }));
+
+// API Key Middleware (for write/admin endpoints)
+function requireApiKey(req, res, next) {
+    if (!API_KEY) return next(); // Skip if no key configured
+    const key = req.headers['x-api-key'] || req.query.api_key;
+    if (key !== API_KEY) {
+        return res.status(403).json({ error: 'Invalid or missing API key' });
+    }
+    next();
+}
 
 // Rate Limiting
 const limiter = rateLimit({ windowMs: 60 * 1000, max: 100, message: 'Too many requests' });
@@ -674,7 +726,7 @@ async function handleSensorData(data) {
         try {
             db.prepare(`UPDATE stations SET last_update = ?, status = 'Active / Normal' WHERE id = ?`)
                 .run(new Date().toISOString(), stationId);
-        } catch(e) {} // ignore unknown stations for SQLite metadata
+        } catch(e) { console.error('[DB] Update station status failed:', e.message); }
 
         // Broadcast to WebSocket clients (Limit to 1 minute per station to avoid UI flicker)
         const nowMs = Date.now();
@@ -736,7 +788,7 @@ async function handleSensorData(data) {
             try {
                 db.prepare(`INSERT INTO alerts (station_id, alert_type, severity, message) VALUES (?, ?, ?, ?)`)
                     .run(alert.station_id, alert.alert_type, alert.severity, alert.message);
-            } catch(e) {} // Ignore foreign key constraints for unknown stations
+            } catch(e) { console.error('[DB] Insert alert failed:', e.message); }
             broadcast('alert', alert);
         }
     } catch (e) {
@@ -1492,8 +1544,8 @@ app.get('/api/dashboard/rainfall-summary', async (req, res) => {
 });
 
 
-// Bi-directional: Send command to station
-app.post('/api/stations/:id/command', (req, res) => {
+// Bi-directional: Send command to station (requires API key)
+app.post('/api/stations/:id/command', requireApiKey, (req, res) => {
     const { command_type, payload } = req.body;
     if (!command_type) return res.status(400).json({ error: 'command_type required' });
 
@@ -1552,7 +1604,7 @@ try {
     const oneDayAgo = new Date(Date.now() - 86400000).toISOString();
     const cleaned = db.prepare("DELETE FROM alerts WHERE created_at < ?").run(oneDayAgo);
     if (cleaned.changes > 0) console.log(`[Startup] Cleaned ${cleaned.changes} old alerts`);
-} catch(e) {}
+} catch(e) { console.error('[Startup] Alert cleanup failed:', e.message); }
 
 // â”€â”€â”€ Auto Prediction Cron (every 6 hours) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function runPrediction() {
@@ -1579,6 +1631,37 @@ setInterval(runPrediction, 6 * 60 * 60 * 1000);
 // Run once on startup after 30 seconds (let InfluxDB connect first)
 setTimeout(runPrediction, 30000);
 
+// --- Data Retention Policy (daily cleanup) ---
+function runDataRetention() {
+    try {
+        // Delete sensor_data older than 30 days
+        const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString();
+        const sensorCleaned = db.prepare("DELETE FROM sensor_data WHERE timestamp < ?").run(thirtyDaysAgo);
+
+        // Delete predictions older than 90 days
+        const ninetyDaysAgo = new Date(Date.now() - 90 * 86400000).toISOString().split('T')[0];
+        const predCleaned = db.prepare("DELETE FROM predictions WHERE prediction_date < ?").run(ninetyDaysAgo);
+
+        // Delete resolved alerts older than 7 days
+        const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+        const alertCleaned = db.prepare("DELETE FROM alerts WHERE created_at < ?").run(sevenDaysAgo);
+
+        // Delete old commands older than 30 days
+        const cmdCleaned = db.prepare("DELETE FROM commands WHERE created_at < ?").run(thirtyDaysAgo);
+
+        const total = sensorCleaned.changes + predCleaned.changes + alertCleaned.changes + cmdCleaned.changes;
+        if (total > 0) {
+            console.log(`[Retention] Cleaned: sensor_data=${sensorCleaned.changes}, predictions=${predCleaned.changes}, alerts=${alertCleaned.changes}, commands=${cmdCleaned.changes}`);
+        }
+    } catch (e) {
+        console.error('[Retention] Data cleanup failed:', e.message);
+    }
+}
+
+// Run retention daily (every 24 hours), and once on startup after 60s
+setInterval(runDataRetention, 24 * 60 * 60 * 1000);
+setTimeout(runDataRetention, 60000);
+
 // â”€â”€â”€ Start Server â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 server.listen(PORT, () => {
     console.log(`\nðŸŒ¦ï¸  STMKG Monitoring System`);
@@ -1589,11 +1672,47 @@ server.listen(PORT, () => {
 });
 
 // Graceful shutdown
-process.on('SIGINT', () => {
-    console.log('\nShutting down...');
-    if (mqttClient) mqttClient.end();
-    reklimClients.forEach(c => c.end());
-    db.close();
-    process.exit(0);
-});
+function gracefulShutdown(signal) {
+    console.log(`\n[Shutdown] Received ${signal}, cleaning up...`);
+
+    // 1. Close WebSocket connections
+    for (const client of wsClients) {
+        try { client.close(1001, 'Server shutting down'); } catch (e) { /* ignore */ }
+    }
+    wsClients.clear();
+
+    // 2. Flush and close InfluxDB write API
+    if (writeApi) {
+        writeApi.close().then(() => {
+            console.log('[Shutdown] InfluxDB writeApi flushed and closed');
+        }).catch(e => {
+            console.error('[Shutdown] InfluxDB close error:', e.message);
+        });
+    }
+
+    // 3. Close MQTT clients
+    if (mqttClient) {
+        try { mqttClient.end(true); } catch (e) { /* ignore */ }
+    }
+    reklimClients.forEach(c => {
+        try { c.end(true); } catch (e) { /* ignore */ }
+    });
+
+    // 4. Close HTTP server (stop accepting new connections)
+    server.close(() => {
+        // 5. Close SQLite database
+        try { db.close(); } catch (e) { /* ignore */ }
+        console.log('[Shutdown] Cleanup complete. Goodbye.');
+        process.exit(0);
+    });
+
+    // Force exit after 10 seconds if graceful shutdown stalls
+    setTimeout(() => {
+        console.error('[Shutdown] Forced exit after timeout');
+        process.exit(1);
+    }, 10000);
+}
+
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 

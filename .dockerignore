@@ -1,10 +1,52 @@
+# Dependencies
 node_modules
 .venv
 venv312
+
+# Version control & IDE
 .git
 .vscode
-*.log
-*.whl
+.gitignore
+.dockerignore
+
+# Environment & Secrets (NEVER bake into image)
+.env
+.env.influxdb
+reklim_config.json
+
+# Database files (created at runtime)
 data/monitoring.db
 data/monitoring.db-shm
 data/monitoring.db-wal
+database/*.db
+
+# Python cache
+__pycache__
+*.pyc
+*.pyo
+
+# One-off scripts (not needed in production)
+add_api.js
+append_css.js
+apply_fixes.py
+fix_bugs.py
+fix_css.py
+fix_heat.js
+fix_tentang.py
+fix_widgets.js
+migrate_db.js
+replace_js.js
+test_influx.js
+
+# Thesis documents
+BAB_4_Hasil_dan_Pembahasan.md
+BAB_5_Penutup.md
+evaluasi-simprech-jabar.md
+evaluasi-simprech-jabar-final.md
+
+# Logs & OS
+logs
+*.log
+*.whl
+.DS_Store
+scratch

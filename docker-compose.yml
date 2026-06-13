@@ -11,13 +11,8 @@ services:
     volumes:
       - influxdb-data:/var/lib/influxdb2
       - influxdb-config:/etc/influxdb2
-    environment:
-      - DOCKER_INFLUXDB_INIT_MODE=setup
-      - DOCKER_INFLUXDB_INIT_USERNAME=admin
-      - DOCKER_INFLUXDB_INIT_PASSWORD=stmkg2026
-      - DOCKER_INFLUXDB_INIT_ORG=SKRIPSI
-      - DOCKER_INFLUXDB_INIT_BUCKET=skripsi
-      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=stmkg-influx-token-2026
+    env_file:
+      - .env.influxdb
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8086/health"]
       interval: 10s
@@ -33,17 +28,13 @@ services:
     depends_on:
       influxdb:
         condition: service_healthy
+    env_file:
+      - .env
     environment:
+      # Docker-specific overrides (override .env values for container networking)
       - NODE_ENV=production
       - PORT=3001
       - INFLUX_URL=http://influxdb:8086
-      - INFLUX_TOKEN=stmkg-influx-token-2026
-      - INFLUX_ORG=SKRIPSI
-      - INFLUX_BUCKET=skripsi
-      - INFLUX_TIMEOUT=60000
-      - MQTT_BROKER=mqtt://202.90.198.159:1883
-      - MQTT_USER=bmkg_aws
-      - MQTT_PASS=bmkg_aws123
       - PYTHON_CMD=/app/venv/bin/python3
     volumes:
       - app-data:/app/data

@@ -1,6 +1,7 @@
 import os
 os.environ['CUDA_VISIBLE_DEVICES'] = ''
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+import re
 import sqlite3
 import json
 import numpy as np
@@ -38,16 +39,23 @@ SCALER_ARG_PATH = os.path.join(os.path.dirname(__file__), 'models', 'arg', 'scal
 def get_db_connection():
     return sqlite3.connect(DB_PATH)
 
+def _sanitize_station_id(station_id):
+    """Sanitize station_id to prevent Flux injection. Only allow alphanumeric, underscore, hyphen."""
+    if not re.match(r'^[a-zA-Z0-9_-]+$', str(station_id)):
+        raise ValueError(f"Invalid station_id: {station_id}")
+    return str(station_id)
+
 def fetch_data_from_influx(station_id, days_back=60):
     if not INFLUX_TOKEN:
         print("[predict.py] InfluxDB Token not set.")
         return pd.DataFrame()
+    safe_id = _sanitize_station_id(station_id)
     client = InfluxDBClient(url=INFLUX_URL, token=INFLUX_TOKEN, org=INFLUX_ORG, timeout=30000)
     query_api = client.query_api()
     query = f"""
         from(bucket: "{INFLUX_BUCKET}")
           |> range(start: -{days_back}d)
-          |> filter(fn: (r) => (r["_measurement"] == "AWS" or r["_measurement"] == "AAWS" or r["_measurement"] == "ARG") and r["id"] == "{station_id}")
+          |> filter(fn: (r) => (r["_measurement"] == "AWS" or r["_measurement"] == "AAWS" or r["_measurement"] == "ARG") and r["id"] == "{safe_id}")
           |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
           |> sort(columns: ["_time"], desc: false)
     """
@@ -332,7 +340,7 @@ if __name__ == "__main__":
                 r2 = 1 - (ss_res / ss_tot) if ss_tot > 0 else 0
                 accuracy = max(0, min(100, r2 * 100))
 
-                if r2 >= 0.5:
+                if r2 >= 0.65:
                     conn.execute('''
                         UPDATE model_performance 
                         SET rmse = ?, mae = ?, r_squared = ?, accuracy = ?,

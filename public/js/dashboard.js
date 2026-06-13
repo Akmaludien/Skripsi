@@ -79,18 +79,6 @@ function renderSummary(data, stations) {
     let maxStationName = '-';
 
     if (stations && stations.length > 0) {
-        // Warna marker berdasarkan freshness data (mirip AWS Center BMKG)
-    function getStatusColor(lastUpdate) {
-        if (!lastUpdate) return '#6b7280'; // Abu-abu: belum pernah ada data
-        const diffMs = Date.now() - new Date(lastUpdate).getTime();
-        const diffMin = diffMs / 60000;
-        if (diffMin <= 30) return '#22c55e';    // Hijau: <= 30 menit
-        if (diffMin <= 60) return '#eab308';    // Kuning: 31-60 menit
-        if (diffMin <= 1440) return '#f97316';  // Oranye: 1-24 jam
-        if (diffMin <= 43200) return '#ef4444'; // Merah: 1-30 hari
-        return '#6b7280';                        // Abu-abu: > 30 hari
-    }
-
     stations.forEach(s => {
             const rr = s.realtime_rr || 0;
             if (rr >= maxRain) {

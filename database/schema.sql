@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS predictions (
     station_id TEXT NOT NULL,
     prediction_date DATE NOT NULL,
     predicted_rainfall REAL DEFAULT 0,
-    category TEXT DEFAULT 'RINGAN' CHECK(category IN ('RINGAN', 'SEDANG', 'LEBAT', 'SANGAT LEBAT')),
+    category TEXT DEFAULT 'TIDAK HUJAN' CHECK(category IN ('TIDAK HUJAN', 'RINGAN', 'SEDANG', 'LEBAT', 'SANGAT LEBAT')),
     confidence REAL DEFAULT 0,
     model_version TEXT DEFAULT 'v1.0',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,

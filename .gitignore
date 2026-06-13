@@ -1,9 +1,48 @@
+# Dependencies
 node_modules/
+.venv/
+
+# Environment & Secrets
 .env
+.env.influxdb
+reklim_config.json
+
+# Database (local dev only)
+data/monitoring.db
 data/*.db-shm
 data/*.db-wal
-scratch/
-.DS_Store
-.venv/
-data/monitoring.db
 database/*.db
+database/*.sqlite
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# One-off fix/migration scripts (not needed for deployment)
+add_api.js
+append_css.js
+apply_fixes.py
+fix_bugs.py
+fix_css.py
+fix_heat.js
+fix_tentang.py
+fix_widgets.js
+migrate_db.js
+replace_js.js
+test_influx.js
+
+# Thesis evaluation documents (not part of the app)
+BAB_4_Hasil_dan_Pembahasan.md
+BAB_5_Penutup.md
+evaluasi-simprech-jabar.md
+evaluasi-simprech-jabar-final.md
+
+# IDE & OS
+.vscode/
+.DS_Store
+scratch/
+
+# Logs
+logs/
+*.log
