@@ -332,15 +332,13 @@ function connectMQTT() {
     // Stable Client ID with proper template literal interpolation
     const clientId = `stmkg_srv_jabar_${Math.floor(Math.random() * 10000)}`;
 
-    mqttClient = mqtt.connect(MQTT_BROKER, {
+    mqttClient = mqtt.connect(MQTT_BROKER.trim(), {
         clientId: clientId,
-        username: MQTT_USER_STATIC,
-        password: MQTT_PASS_STATIC,
-        protocolVersion: 4,     // Force MQTT 3.1.1 — BMKG broker does NOT support MQTT 5.0
-        clean: true,
+        username: MQTT_USER_STATIC ? MQTT_USER_STATIC.trim() : undefined,
+        password: MQTT_PASS_STATIC ? MQTT_PASS_STATIC.trim() : undefined,
         reconnectPeriod: 15000,
         connectTimeout: 30000,
-        keepalive: 120,
+        keepalive: 60,
     });
 
     mqttClient.on('connect', () => {
