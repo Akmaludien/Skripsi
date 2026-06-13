@@ -15,8 +15,8 @@ require('dotenv').config();
 const { InfluxDB, Point } = require('@influxdata/influxdb-client');
 
 // â”€â”€â”€ InfluxDB Config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-const INFLUX_URL = process.env.INFLUX_URL || 'http://localhost:8086';
-const INFLUX_TOKEN = process.env.INFLUX_TOKEN;
+const INFLUX_URL = process.env.INFLUX_URL || 'http://influxdb:8086';
+const INFLUX_TOKEN = process.env.INFLUX_TOKEN || '3kvTazgpG43uHEkPynOK_-WKlDfmVn0tWl_LcMvucyYXB0l1I8BQXFBd-aiIcKMdcDv5wGOFeVHfES8llO2ykQ==';
 const INFLUX_ORG = process.env.INFLUX_ORG || 'SKRIPSI';
 const INFLUX_BUCKET = process.env.INFLUX_BUCKET || 'skripsi';
 
@@ -31,12 +31,22 @@ if (writeApi) {
 // ——— Config ————————————————————————————————————
 const PORT = process.env.PORT || 3001;
 const MQTT_BROKER = process.env.MQTT_BROKER || 'mqtt://202.90.198.159:1883';
-const MQTT_USER_STATIC = process.env.MQTT_USER || '';
-const MQTT_PASS_STATIC = process.env.MQTT_PASS || '';
+const MQTT_USER_STATIC = process.env.MQTT_USER || 'bmkg_aws';
+const MQTT_PASS_STATIC = process.env.MQTT_PASS || 'bmkg_aws123';
 const API_KEY = process.env.API_KEY || '';
 
 // ——— Reklim AAWS Clients ——————————————————————
-// Load from external config file (gitignored) to keep credentials out of source code
+// Load from external config file if available, otherwise use embedded defaults
+const REKLIM_DEFAULTS = [
+    { id: 'AAWS3010', topic: 'device/50e81az718842ds', user: 'wxki2', pass: '7ep1l' },
+    { id: 'STA3008',  topic: 'device/jz0o33ob874q9q4', user: 'vcjpa', pass: '65tm2' },
+    { id: 'STA3005',  topic: 'device/ha0v1kd4pt92jwf', user: 'k38fg', pass: 'efxvf' },
+    { id: 'STA3009',  topic: 'device/ur884m1lh6wn908', user: '11r7o', pass: '49vs4' },
+    { id: 'STA3006',  topic: 'device/waayijbhjl6e7lp', user: 'ls9xi', pass: 'dzvf5' },
+    { id: 'AAWS0354', topic: 'device/6d21w334lpk38cs', user: 'h0wzh', pass: 'iv0ej' },
+    { id: 'STA3004',  topic: 'device/s5bq2hv47nmpi1a', user: 'qp6lc', pass: 'motoi' },
+    { id: 'AAWS0348', topic: 'device/tv9s62p8iqwsf2t', user: 'azq54', pass: 'y62jy' }
+];
 let reklimStations = [];
 try {
     const reklimConfigPath = path.join(__dirname, 'reklim_config.json');
@@ -44,10 +54,12 @@ try {
         reklimStations = JSON.parse(fs.readFileSync(reklimConfigPath, 'utf-8'));
         console.log(`[Reklim] Loaded ${reklimStations.length} station configs from reklim_config.json`);
     } else {
-        console.log('[Reklim] reklim_config.json not found, Reklim stations disabled.');
+        reklimStations = REKLIM_DEFAULTS;
+        console.log(`[Reklim] Using ${reklimStations.length} embedded station configs (reklim_config.json not found)`);
     }
 } catch (e) {
-    console.error('[Reklim] Failed to load reklim_config.json:', e.message);
+    reklimStations = REKLIM_DEFAULTS;
+    console.error('[Reklim] Failed to load reklim_config.json, using defaults:', e.message);
 }
 
 // MQTT Topics (main BMKG broker - excludes reklim topics which need separate auth)

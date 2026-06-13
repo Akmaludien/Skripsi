@@ -12,7 +12,6 @@ venv312
 # Environment & Secrets (NEVER bake into image)
 .env
 .env.influxdb
-reklim_config.json
 
 # Database files (created at runtime)
 data/monitoring.db
