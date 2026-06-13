@@ -710,7 +710,7 @@ function initDetailMap(station) {
         attributionControl: false
     }).setView([lat, lng], 13);
     
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', { attribution: '&copy; CartoDB' }).addTo(mapDetail);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; CartoDB' }).addTo(mapDetail);
     
     L.circleMarker([lat, lng], {
         radius: 8,

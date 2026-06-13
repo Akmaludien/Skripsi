@@ -1497,6 +1497,10 @@ button {
 }
 
 /* ─── Leaflet Custom ──────────────────────── */
+[data-theme="dark"] .leaflet-tile-pane {
+    filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+}
+
 .leaflet-popup-content-wrapper {
     border-radius: var(--border-radius-sm) !important;
     box-shadow: var(--shadow-lg) !important;
