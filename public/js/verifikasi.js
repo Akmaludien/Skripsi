@@ -158,7 +158,7 @@ async function fetchAndRenderVerification() {
 function initErrorMap(data) {
     if (!errorMap) {
         errorMap = L.map('errorMap').setView([-6.9, 107.6], 8);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', { attribution: '&copy; CartoDB' }).addTo(errorMap);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; CartoDB' }).addTo(errorMap);
     }
 
     // Clear existing markers
