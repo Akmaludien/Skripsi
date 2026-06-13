@@ -1497,11 +1497,11 @@ button {
 }
 
 /* ─── Leaflet Custom ──────────────────────── */
-.leaflet-tile-pane {
+#rainfallMap .leaflet-tile-pane {
     filter: grayscale(80%) opacity(70%) brightness(110%);
     transition: filter 0.3s ease;
 }
-[data-theme="dark"] .leaflet-tile-pane {
+[data-theme="dark"] #rainfallMap .leaflet-tile-pane {
     filter: invert(100%) hue-rotate(180deg) grayscale(80%) brightness(85%) contrast(110%) opacity(80%);
 }
 
