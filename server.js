@@ -332,10 +332,13 @@ function connectMQTT() {
     // Stable Client ID with proper template literal interpolation
     const clientId = `stmkg_srv_jabar_${Math.floor(Math.random() * 10000)}`;
 
-    mqttClient = mqtt.connect(MQTT_BROKER.trim(), {
+    // Utility to strip whitespace and accidental quotes from environment variables
+    const cleanEnvVar = (val) => val ? val.trim().replace(/^['"]|['"]$/g, '') : undefined;
+
+    mqttClient = mqtt.connect(cleanEnvVar(MQTT_BROKER), {
         clientId: clientId,
-        username: MQTT_USER_STATIC ? MQTT_USER_STATIC.trim() : undefined,
-        password: MQTT_PASS_STATIC ? MQTT_PASS_STATIC.trim() : undefined,
+        username: cleanEnvVar(MQTT_USER_STATIC),
+        password: cleanEnvVar(MQTT_PASS_STATIC),
         reconnectPeriod: 15000,
         connectTimeout: 30000,
         keepalive: 60,
