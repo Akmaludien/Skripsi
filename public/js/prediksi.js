@@ -374,7 +374,7 @@ async function loadModelPerformance() {
         document.getElementById('perfRmse').textContent = formatNumber(perf.rmse);
         document.getElementById('perfMae').textContent = formatNumber(perf.mae);
         document.getElementById('perfR2').textContent = formatNumber(perf.r_squared, 2);
-        document.getElementById('perfR2Change').textContent = perf.r_squared >= 0.7 ? '<i class="ri-check-line"></i> Good Fit' : '<i class="ri-alert-line"></i> Underfitting';
+        document.getElementById('perfR2Change').innerHTML = perf.r_squared >= 0.7 ? '<i class="ri-check-line"></i> Good Fit' : '<i class="ri-alert-line"></i> Underfitting';
         document.getElementById('perfR2Change').style.color = perf.r_squared >= 0.7 ? 'var(--success)' : 'var(--warning)';
         document.getElementById('perfDate').textContent = formatDate(perf.training_date);
         document.getElementById('perfNotes').textContent = perf.notes || '';

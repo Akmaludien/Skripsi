@@ -96,10 +96,10 @@ function renderSummary(data, stations) {
 
     if (maxRain === 0) {
         document.getElementById('maxRainfall').innerHTML = `0.0 <span style="font-size:0.9rem;font-weight:400">mm</span>`;
-        document.getElementById('maxRainfallStation').textContent = `<i class="ri-sun-line"></i> Cerah / Tidak Ada Hujan`;
+        document.getElementById('maxRainfallStation').innerHTML = `<i class="ri-sun-line"></i> Cerah / Tidak Ada Hujan`;
     } else {
         document.getElementById('maxRainfall').innerHTML = `${formatNumber(maxRain)} <span style="font-size:0.9rem;font-weight:400">mm</span>`;
-        document.getElementById('maxRainfallStation').textContent = `<i class="ri-map-pin-line"></i> ${maxStationName}`;
+        document.getElementById('maxRainfallStation').innerHTML = `<i class="ri-map-pin-line"></i> ${maxStationName}`;
     }
 }
 
@@ -494,10 +494,10 @@ function handleRealtimeUpdate(data) {
         if (maxRainfallEl && maxRainfallStationEl) {
             if (maxRain === 0) {
                 maxRainfallEl.innerHTML = `0.0 <span style="font-size:0.9rem;font-weight:400">mm</span>`;
-                maxRainfallStationEl.textContent = `<i class="ri-sun-line"></i> Cerah / Tidak Ada Hujan`;
+                maxRainfallStationEl.innerHTML = `<i class="ri-sun-line"></i> Cerah / Tidak Ada Hujan`;
             } else {
                 maxRainfallEl.innerHTML = `${formatNumber(maxRain)} <span style="font-size:0.9rem;font-weight:400">mm</span>`;
-                maxRainfallStationEl.textContent = `<i class="ri-map-pin-line"></i> ${maxStationName}`;
+                maxRainfallStationEl.innerHTML = `<i class="ri-map-pin-line"></i> ${maxStationName}`;
             }
         }
     }
