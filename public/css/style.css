@@ -1457,6 +1457,7 @@ button {
 /* ─── Legend for map ──────────────────────── */
 .map-legend {
     background: var(--bg-card);
+    color: var(--text-primary);
     border-radius: var(--border-radius-sm);
     padding: 10px 14px;
     border: 1px solid var(--border-color);
@@ -1501,11 +1502,19 @@ button {
     filter: grayscale(80%) opacity(70%) brightness(110%);
     transition: filter 0.3s ease;
 }
+
+[data-theme="dark"] .leaflet-tile-pane {
+    filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+    transition: filter 0.3s ease;
+}
+
 [data-theme="dark"] #rainfallMap .leaflet-tile-pane {
     filter: invert(100%) hue-rotate(180deg) grayscale(80%) brightness(85%) contrast(110%) opacity(80%);
 }
 
-.leaflet-popup-content-wrapper {
+.leaflet-popup-content-wrapper, .leaflet-popup-tip {
+    background: var(--bg-card) !important;
+    color: var(--text-primary) !important;
     border-radius: var(--border-radius-sm) !important;
     box-shadow: var(--shadow-lg) !important;
 }
@@ -1925,6 +1934,7 @@ button {
     width: 360px;
     max-height: 420px;
     background: var(--bg-card);
+    color: var(--text-primary);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     box-shadow: var(--shadow-lg);
