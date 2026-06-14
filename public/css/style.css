@@ -1512,7 +1512,7 @@ button {
     filter: invert(100%) hue-rotate(180deg) grayscale(80%) brightness(85%) contrast(110%) opacity(80%);
 }
 
-.leaflet-popup-content-wrapper, .leaflet-popup-tip {
+.leaflet-container, .leaflet-popup-content, .leaflet-popup-content-wrapper, .leaflet-popup-tip {
     background: var(--bg-card) !important;
     color: var(--text-primary) !important;
     border-radius: var(--border-radius-sm) !important;
@@ -1528,11 +1528,12 @@ button {
     font-size: 0.9rem;
     font-weight: 700;
     margin-bottom: 4px;
+    color: var(--text-primary) !important;
 }
 
 .map-popup p {
     font-size: 0.78rem;
-    color: var(--text-secondary);
+    color: var(--text-secondary) !important;
     margin-bottom: 2px;
 }
 
