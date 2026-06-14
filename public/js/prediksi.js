@@ -180,14 +180,14 @@ function renderPredictionMap(predictions) {
                     <span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.68rem;font-weight:700;color:#fff;background:${getTypeColor(p.station_type)}">${p.station_type}</span>
                     <strong style="font-size:0.9rem">${p.station_name}</strong>
                 </div>
-                <div style="font-size:0.78rem;color:#64748b;margin-bottom:8px"><i class="ri-map-pin-line"></i> ${p.location}${p.elevation > 0 ? ` • ${p.elevation}m asl` : ''}</div>
+                <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:8px"><i class="ri-map-pin-line"></i> ${p.location}${p.elevation > 0 ? ` • ${p.elevation}m asl` : ''}</div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-                    <div style="background:rgba(148,163,184,0.08);border-radius:6px;padding:8px;text-align:center">
-                        <div style="font-size:0.68rem;color:#94a3b8">PREDIKSI</div>
+                    <div style="background:var(--bg-main);border-radius:6px;padding:8px;text-align:center">
+                        <div style="font-size:0.68rem;color:var(--text-muted)">PREDIKSI</div>
                         <div style="font-size:1.2rem;font-weight:800;color:${color}">${formatNumber(p.predicted_rainfall)} mm</div>
                     </div>
-                    <div style="background:rgba(148,163,184,0.08);border-radius:6px;padding:8px;text-align:center">
-                        <div style="font-size:0.68rem;color:#94a3b8">KATEGORI</div>
+                    <div style="background:var(--bg-main);border-radius:6px;padding:8px;text-align:center">
+                        <div style="font-size:0.68rem;color:var(--text-muted)">KATEGORI</div>
                         <div style="font-size:0.82rem;font-weight:700;color:${color}">${p.category}</div>
                     </div>
                 </div>

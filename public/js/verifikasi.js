@@ -190,7 +190,7 @@ function initErrorMap(data) {
                 <div style="font-size:0.85rem">
                     Prediksi: <b>${parseFloat(d.predicted_rainfall).toFixed(1)} mm</b> (<span style="color:${catPred.color}">${catPred.label}</span>)<br>
                     Aktual: <b>${parseFloat(d.actual_rainfall).toFixed(1)} mm</b> (<span style="color:${catAct.color}">${catAct.label}</span>)<br>
-                    <hr style="margin:8px 0; border:0; border-top:1px solid #eee">
+                    <hr style="margin:8px 0; border:0; border-top:1px solid var(--border-color)">
                     Error: <b style="color:${color}">${d.error > 0 ? '+' : ''}${d.error} mm</b>
                 </div>
             </div>
