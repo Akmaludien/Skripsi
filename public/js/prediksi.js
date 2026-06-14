@@ -180,7 +180,7 @@ function renderPredictionMap(predictions) {
                     <span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.68rem;font-weight:700;color:#fff;background:${getTypeColor(p.station_type)}">${p.station_type}</span>
                     <strong style="font-size:0.9rem">${p.station_name}</strong>
                 </div>
-                <div style="font-size:0.78rem;color:#64748b;margin-bottom:8px">📍 ${p.location}${p.elevation > 0 ? ` • ${p.elevation}m asl` : ''}</div>
+                <div style="font-size:0.78rem;color:#64748b;margin-bottom:8px"><i class="ri-map-pin-line"></i> ${p.location}${p.elevation > 0 ? ` • ${p.elevation}m asl` : ''}</div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
                     <div style="background:rgba(148,163,184,0.08);border-radius:6px;padding:8px;text-align:center">
                         <div style="font-size:0.68rem;color:#94a3b8">PREDIKSI</div>
@@ -212,7 +212,7 @@ function renderPredictionMap(predictions) {
 function renderPredictionTable(predictions) {
     const tbody = document.getElementById('predictionBody');
     if (predictions.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-muted)">🌤️ Belum ada data prediksi untuk parameter yang dipilih</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-muted)"><i class="ri-sun-cloudy-line"></i> Belum ada data prediksi untuk parameter yang dipilih</td></tr>';
         return;
     }
 
@@ -226,7 +226,7 @@ function renderPredictionTable(predictions) {
             <td style="font-weight:600;color:var(--text-muted)">${String(i + 1).padStart(2, '0')}</td>
             <td>
                 <div style="font-weight:600">${p.station_name}</div>
-                <div style="font-size:0.7rem;color:var(--text-muted)">📍 ${p.location}</div>
+                <div style="font-size:0.7rem;color:var(--text-muted)"><i class="ri-map-pin-line"></i> ${p.location}</div>
             </td>
             <td><span class="type-badge type-${p.station_type.toLowerCase()}">${p.station_type}</span></td>
             <td class="rainfall-value ${rfClass}">${formatNumber(p.predicted_rainfall)} mm</td>
@@ -374,7 +374,7 @@ async function loadModelPerformance() {
         document.getElementById('perfRmse').textContent = formatNumber(perf.rmse);
         document.getElementById('perfMae').textContent = formatNumber(perf.mae);
         document.getElementById('perfR2').textContent = formatNumber(perf.r_squared, 2);
-        document.getElementById('perfR2Change').textContent = perf.r_squared >= 0.7 ? '✓ Good Fit' : '⚠ Underfitting';
+        document.getElementById('perfR2Change').textContent = perf.r_squared >= 0.7 ? '<i class="ri-check-line"></i> Good Fit' : '<i class="ri-alert-line"></i> Underfitting';
         document.getElementById('perfR2Change').style.color = perf.r_squared >= 0.7 ? 'var(--success)' : 'var(--warning)';
         document.getElementById('perfDate').textContent = formatDate(perf.training_date);
         document.getElementById('perfNotes').textContent = perf.notes || '';

@@ -76,7 +76,7 @@ function renderNewWidgets(station, data) {
         <div class="metrics-grid-v2-arg">
             <!-- Suhu Widget -->
             <div class="metric-card-v2 accent-orange">
-                <div class="metric-v2-header">🌡️ Suhu Logger</div>
+                <div class="metric-v2-header"><i class="ri-temp-hot-line"></i> Suhu Logger</div>
                 <div class="metric-v2-value">${fNum(tempVal)}<span>°C</span></div>
                 <div class="metric-v2-subtitle">Suhu sistem normal</div>
                 <div>
@@ -87,9 +87,9 @@ function renderNewWidgets(station, data) {
             
             <!-- Curah Hujan Widget -->
             <div class="metric-card-v2 accent-blue">
-                <div class="metric-v2-header">🌧️ Curah Hujan</div>
+                <div class="metric-v2-header"><i class="ri-rainy-line"></i> Curah Hujan</div>
                 <div class="metric-v2-value">${fNum(rainVal)}<span>mm</span></div>
-                <div class="metric-v2-subtitle" style="color: ${getRainfallCategory(rainVal).color};">☀ ${getRainfallCategory(rainVal).label}</div>
+                <div class="metric-v2-subtitle" style="color: ${getRainfallCategory(rainVal).color};"><i class="ri-sun-line"></i> ${getRainfallCategory(rainVal).label}</div>
                 <div>
                     <div class="metric-v2-progress"><div class="metric-v2-progress-fill blue" style="width: ${Math.min(100, rainVal)}%;"></div></div>
                     <div class="metric-v2-range"><span>0</span><span>100mm+</span></div>
@@ -98,7 +98,7 @@ function renderNewWidgets(station, data) {
             
             <!-- Power Status -->
             <div class="metric-card-v2 accent-green">
-                <div class="metric-v2-header">⚡ Status Daya</div>
+                <div class="metric-v2-header"><i class="ri-flashlight-line"></i> Status Daya</div>
                 <div class="power-list-v2" style="margin-top: 10px; flex: 1;">
                     <div class="power-item-v2"><span>Sumber</span><strong style="color: #10b981;">Panel Surya</strong></div>
                     <div class="power-item-v2"><span>Tegangan</span><strong>${fNum(data.batt)} V</strong></div>
@@ -122,7 +122,7 @@ function renderNewWidgets(station, data) {
         <div class="metrics-grid-v2-top">
             <!-- Suhu -->
             <div class="metric-card-v2 accent-orange">
-                <div class="metric-v2-header">🌡️ Suhu</div>
+                <div class="metric-v2-header"><i class="ri-temp-hot-line"></i> Suhu</div>
                 <div class="metric-v2-value">${fNum(tempVal)}<span>°C</span></div>
                 <div class="metric-v2-subtitle">Terasa seperti ${fNum(heatIndex)}°C</div>
                 <div>
@@ -133,7 +133,7 @@ function renderNewWidgets(station, data) {
             
             <!-- Kelembapan -->
             <div class="metric-card-v2 accent-green">
-                <div class="metric-v2-header">💧 Kelembapan</div>
+                <div class="metric-v2-header"><i class="ri-drop-line"></i> Kelembapan</div>
                 <div class="metric-v2-value">${fNum(rhVal)}<span>%</span></div>
                 <div class="metric-v2-subtitle">${getHumidityDesc(rhVal)}</div>
                 <div>
@@ -144,9 +144,9 @@ function renderNewWidgets(station, data) {
             
             <!-- Curah Hujan -->
             <div class="metric-card-v2 accent-blue">
-                <div class="metric-v2-header">🌧️ Curah Hujan</div>
+                <div class="metric-v2-header"><i class="ri-rainy-line"></i> Curah Hujan</div>
                 <div class="metric-v2-value">${fNum(rainVal)}<span>mm</span></div>
-                <div class="metric-v2-subtitle" style="color: ${getRainfallCategory(rainVal).color};">☀ ${getRainfallCategory(rainVal).label}</div>
+                <div class="metric-v2-subtitle" style="color: ${getRainfallCategory(rainVal).color};"><i class="ri-sun-line"></i> ${getRainfallCategory(rainVal).label}</div>
                 <div>
                     <div class="metric-v2-progress"><div class="metric-v2-progress-fill blue" style="width: ${Math.min(100, rainVal)}%;"></div></div>
                     <div class="metric-v2-range"><span>0</span><span>100mm+</span></div>
@@ -155,7 +155,7 @@ function renderNewWidgets(station, data) {
             
             <!-- Tekanan -->
             <div class="metric-card-v2 accent-purple">
-                <div class="metric-v2-header">🎯 Tekanan</div>
+                <div class="metric-v2-header"><i class="ri-focus-2-line"></i> Tekanan</div>
                 <div class="metric-v2-value">${fNum(pressVal)}<span>hPa</span></div>
                 <div class="metric-v2-subtitle">${getPressureDesc(pressVal)}</div>
                 <div>
@@ -169,7 +169,7 @@ function renderNewWidgets(station, data) {
             <!-- Wind -->
             <div class="metric-card-v2 wide-card">
                 <div class="metric-v2-left" style="flex: 0.9;">
-                    <div class="metric-v2-header" style="position:absolute; top:16px; left:20px;">🌬️ Angin</div>
+                    <div class="metric-v2-header" style="position:absolute; top:16px; left:20px;"><i class="ri-windy-line"></i>️ Angin</div>
                     <div style="width: 70px; height: 70px; border: 2px dashed rgba(148, 163, 184, 0.3); border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center; margin-top: 25px;">
                         <div style="position: absolute; top: -15px; font-size: 0.65rem; font-weight: 800; color: var(--text-muted);">N</div>
                         <div style="position: absolute; right: -12px; font-size: 0.65rem; font-weight: 800; color: var(--text-muted);">E</div>
@@ -198,7 +198,7 @@ function renderNewWidgets(station, data) {
             <!-- Solar -->
             <div class="metric-card-v2 wide-card">
                 <div class="metric-v2-left" style="flex: 0.9;">
-                    <div class="metric-v2-header" style="position:absolute; top:16px; left:20px;">☀️ Radiasi Matahari</div>
+                    <div class="metric-v2-header" style="position:absolute; top:16px; left:20px;"><i class="ri-sun-line"></i> Radiasi Matahari</div>
                     <div style="width: 80px; height: 80px; border-radius: 50%; background: conic-gradient(#f59e0b ${Math.min(100, srVal/1000*100)}%, var(--gray-200) 0); display: flex; align-items: center; justify-content: center; margin-top: 20px; position: relative;">
                         <div style="width: 68px; height: 68px; background: var(--bg-card); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
                             <div style="font-size: 1.1rem; font-weight: 800; color: #f59e0b;">${fNum(srVal)}</div>
@@ -218,7 +218,7 @@ function renderNewWidgets(station, data) {
 
             <!-- Power Status -->
             <div class="metric-card-v2">
-                <div class="metric-v2-header">⚡ Status Daya</div>
+                <div class="metric-v2-header"><i class="ri-flashlight-line"></i> Status Daya</div>
                 <div class="power-list-v2" style="margin-top: 15px; flex: 1;">
                     <div class="power-item-v2"><span>Sumber</span><strong style="color: #10b981;">Panel Surya</strong></div>
                     <div class="power-item-v2"><span>Tegangan</span><strong>${fNum(data.batt)} V</strong></div>
@@ -402,28 +402,28 @@ async function loadStationPredictions(stationId) {
         if (veryHeavyDays.length > 0) {
             alert.style.background = 'rgba(239,68,68,0.12)';
             alert.style.border = '1px solid rgba(239,68,68,0.3)';
-            icon.textContent = '🔴';
+            icon.innerHTML = '<i class="ri-checkbox-blank-circle-fill" style="color:var(--danger)"></i>';
             title.textContent = 'BAHAYA – Potensi Banjir Tinggi!';
             title.style.color = '#ef4444';
             detail.textContent = `${veryHeavyDays.length} hari diprediksi curah hujan sangat lebat (maks ${formatNumber(maxRainfall)}mm). Waspadai banjir, longsor, dan genangan. Segera siapkan dan perika jalur evakuasi di sekitar stasiun.`;
         } else if (heavyDays.length > 0) {
             alert.style.background = 'rgba(249,115,22,0.12)';
             alert.style.border = '1px solid rgba(249,115,22,0.3)';
-            icon.textContent = '🚨';
+            icon.innerHTML = '<i class="ri-alarm-warning-line"></i>';
             title.textContent = 'SIAGA – Potensi Hujan Lebat';
             title.style.color = '#f97316';
             detail.textContent = `${heavyDays.length} hari diprediksi hujan lebat (maks ${formatNumber(maxRainfall)}mm). Waspadai genangan dan potensi banjir di daerah rawan.`;
         } else if (maxRainfall > 20) {
             alert.style.background = 'rgba(234,179,8,0.12)';
             alert.style.border = '1px solid rgba(234,179,8,0.3)';
-            icon.textContent = '⚠️';
+            icon.innerHTML = '<i class="ri-error-warning-line"></i>';
             title.textContent = 'WASPADA – Hujan Sedang';
             title.style.color = '#eab308';
             detail.textContent = `Prediksi curah hujan sedang (maks ${formatNumber(maxRainfall)}mm). Kondisi cenderung aman, namun tetap waspada jika stasiun berada di kawasan langganan banjir.`;
         } else {
             alert.style.background = 'rgba(34,197,94,0.12)';
             alert.style.border = '1px solid rgba(34,197,94,0.3)';
-            icon.textContent = '✅';
+            icon.innerHTML = '<i class="ri-checkbox-circle-line"></i>';
             title.textContent = 'AMAN – Potensi Banjir Rendah';
             title.style.color = '#22c55e';
             detail.textContent = `Berdasarkan prediksi cuaca 7 hari ke depan (maks ${formatNumber(maxRainfall)}mm), daerah di sekitar stasiun relatif kondusif dan aman dari ancaman banjir intensitas presipitasi.`;
@@ -456,7 +456,7 @@ async function loadStationPredictions(stationId) {
 
     } catch (e) {
         console.error('Failed to load predictions:', e);
-        icon.textContent = '❓';
+        icon.innerHTML = '<i class="ri-question-line"></i>';
         title.textContent = 'Data Prediksi Tidak Tersedia';
         title.style.color = 'var(--text-muted)';
         detail.textContent = 'Tidak dapat memuat histori analisis dan prediksi 7 hari untuk site ini.';
@@ -686,7 +686,7 @@ async function loadStationDetail(id) {
         if (grid) {
             grid.innerHTML = `
                 <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
-                    <div style="font-size: 3rem; margin-bottom: 16px;">⚠️</div>
+                    <div style="font-size: 3rem; margin-bottom: 16px;"><i class="ri-error-warning-line"></i></div>
                     <h3 style="margin-bottom: 8px; color: var(--text-primary);">Gagal Memuat Data Stasiun</h3>
                     <p style="color: var(--text-muted); margin-bottom: 16px;">${e.message || 'Pastikan backend dan InfluxDB berjalan.'}</p>
                     <a href="/stasiun.html" style="color: #3b82f6; font-weight: 600;">← Kembali ke Daftar Stasiun</a>

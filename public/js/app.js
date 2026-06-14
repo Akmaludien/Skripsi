@@ -91,9 +91,9 @@ function initTheme() {
             const next = current === 'dark' ? 'light' : 'dark';
             document.documentElement.setAttribute('data-theme', next);
             localStorage.setItem('theme', next);
-            btn.innerHTML = next === 'dark' ? '🌙' : '☀️';
+            btn.innerHTML = next === 'dark' ? '<i class="ri-moon-line"></i>' : '<i class="ri-sun-line"></i>';
         });
-        btn.innerHTML = saved === 'dark' ? '🌙' : '☀️';
+        btn.innerHTML = saved === 'dark' ? '<i class="ri-moon-line"></i>' : '<i class="ri-sun-line"></i>';
     }
 }
 
@@ -323,7 +323,7 @@ async function loadRainNotifications() {
     if (!body) return;
 
     // Only show real-time notifications (no historical data)
-    body.innerHTML = '<div class="notif-empty">✅ Tidak ada peringatan hujan lebat saat ini</div>';
+    body.innerHTML = '<div class="notif-empty"><i class="ri-checkbox-circle-line"></i> Tidak ada peringatan hujan lebat saat ini</div>';
     if (badge) badge.style.display = 'none';
 }
 
@@ -349,7 +349,7 @@ function addRealtimeNotification(alertData) {
     // Tampilkan station_name (nama asli) jika tersedia, bukan station_id
     const displayName = alertData.station_name || alertData.station_id;
     item.innerHTML = `
-        <div class="notif-title ${severity}">🚨 ${alertData.severity}: ${alertData.alert_type}</div>
+        <div class="notif-title ${severity}"><i class="ri-alarm-warning-line"></i> ${alertData.severity}: ${alertData.alert_type}</div>
         <div class="notif-detail"><b>${displayName}</b> — ${alertData.message}</div>
         <div class="notif-time">Baru saja</div>
     `;
@@ -413,7 +413,7 @@ function initBrowserNotifications() {
         if (Notification.permission !== 'granted') return;
         if (!data || !data.severity) return;
 
-        const title = `⚠️ ${data.severity}: ${data.alert_type}`;
+        const title = `<i class="ri-error-warning-line"></i> ${data.severity}: ${data.alert_type}`;
         const body = `${data.station_name || data.station_id} — ${data.message}`;
         const icon = '/img/stmkg-logo.png';
 
@@ -439,7 +439,7 @@ function initBrowserNotifications() {
         const stationName = data.station_name || data.station_id;
         const category = rr > 100 ? 'SANGAT LEBAT' : 'LEBAT';
         
-        const notif = new Notification(`🌧️ Hujan ${category}!`, {
+        const notif = new Notification(`<i class="ri-rainy-line"></i> Hujan ${category}!`, {
             body: `${stationName}: ${rr.toFixed(1)} mm terdeteksi`,
             icon: '/img/stmkg-logo.png',
             tag: `rain_${data.station_id}` // Prevent duplicate notifications per station

@@ -135,7 +135,7 @@ async function fetchAndRenderVerification() {
             infoMsg.style.textAlign = 'center';
             infoMsg.style.borderLeft = '4px solid var(--primary)';
             infoMsg.innerHTML = `
-                <div style="font-size: 3.5rem; margin-bottom: 20px;">📊</div>
+                <div style="font-size: 3.5rem; margin-bottom: 20px;"><i class="ri-bar-chart-line"></i></div>
                 <h3 style="font-size: 1.4rem; margin-bottom: 12px;">Data Verifikasi Belum Tersedia</h3>
                 <p style="color: var(--text-muted); max-width: 600px; margin: 0 auto 24px; line-height: 1.6;">
                     Sistem belum menemukan data perbandingan untuk parameter yang dipilih. 

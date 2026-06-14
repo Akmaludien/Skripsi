@@ -24,6 +24,7 @@
         .stat-box .num { font-size: 1.8rem; font-weight: 800; color: var(--primary-500); }
         .stat-box .label { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
     </style>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
 </head>
 <body>
     <div class="app-layout">
@@ -48,20 +49,20 @@
 
         <div class="main-content">
             <header class="top-header">
-                <button class="mobile-menu-btn">☰</button><button class="sidebar-toggle" title="Toggle Sidebar">☰</button>
+                <button class="mobile-menu-btn"><i class="ri-menu-line"></i></button><button class="sidebar-toggle" title="Toggle Sidebar"><i class="ri-menu-line"></i></button>
                 <div class="header-title" style="display:flex;align-items:center;gap:14px;">
                     <img src="/img/stmkg-logo.png" alt="STMKG" style="height:46px;width:auto;object-fit:contain">
                     <div><h1>Tentang Sistem</h1><span>Arsitektur & Teknologi</span></div>
                 </div>
                 <div class="header-actions">
-                    <button class="btn-icon" id="themeToggle" title="Toggle Theme">🌙</button>
+                    <button class="btn-icon" id="themeToggle" title="Toggle Theme"><i class="ri-moon-line"></i></button>
                 </div>
             </header>
 
             <main class="page-content">
                 <!-- Overview -->
                 <div class="card" style="padding: 32px; margin-bottom: 24px;">
-                    <h2 style="font-size: 1.4rem; margin-bottom: 12px;">🌧️ Sistem Monitoring dan Prediksi Curah Hujan</h2>
+                    <h2 style="font-size: 1.4rem; margin-bottom: 12px;"><i class="ri-rainy-line"></i> Sistem Monitoring dan Prediksi Curah Hujan</h2>
                     <p style="color: var(--text-secondary); line-height: 1.7; max-width: 800px;">
                         Sistem terintegrasi untuk pemantauan kondisi cuaca secara real-time dan prediksi curah hujan 7 hari ke depan 
                         menggunakan model Deep Learning (Bidirectional LSTM) berbasis data dari jaringan stasiun meteorologi 
@@ -78,7 +79,7 @@
 
                 <!-- Architecture -->
                 <div class="card" style="padding: 32px; margin-bottom: 24px;">
-                    <h3 style="font-size: 1.2rem; margin-bottom: 16px;">🏗️ Arsitektur Sistem</h3>
+                    <h3 style="font-size: 1.2rem; margin-bottom: 16px;"><i class="ri-building-4-line"></i> Arsitektur Sistem</h3>
                     <div style="width: 100%; overflow-x: auto; border-radius: 12px; border: 1px solid var(--border-color);">
                         <div style="overflow-x:auto; margin: 24px 0;">
 <svg width="100%" height="auto" style="min-width: 800px; display: block; margin: 0 auto;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1000">
@@ -185,7 +186,7 @@
 
                 <!-- Data Flow -->
                 <div class="card" style="padding: 32px; margin-bottom: 24px;">
-                    <h3 style="font-size: 1.2rem; margin-bottom: 20px;">🔄 Alur Data (Data Flow)</h3>
+                    <h3 style="font-size: 1.2rem; margin-bottom: 20px;"><i class="ri-refresh-line"></i> Alur Data (Data Flow)</h3>
                     <div class="flow-step">
                         <div class="flow-num">1</div>
                         <div class="flow-content">
@@ -210,7 +211,7 @@
                     <div class="flow-step">
                         <div class="flow-num">4</div>
                         <div class="flow-content">
-                            <h4>📊 Visualisasi & Alert (WebSocket)</h4>
+                            <h4><i class="ri-bar-chart-line"></i> Visualisasi & Alert (WebSocket)</h4>
                             <p>Dashboard menampilkan data real-time via WebSocket. Jika curah hujan melebihi 50mm, sistem otomatis mengirim peringatan ke semua client yang terhubung.</p>
                         </div>
                     </div>
@@ -225,22 +226,22 @@
 
                 <!-- Tech Stack -->
                 <div class="card" style="padding: 32px; margin-bottom: 24px;">
-                    <h3 style="font-size: 1.2rem; margin-bottom: 20px;">🛠️ Technology Stack</h3>
+                    <h3 style="font-size: 1.2rem; margin-bottom: 20px;"><i class="ri-tools-line"></i> Technology Stack</h3>
                     <div class="tech-grid">
                         <div class="tech-card">
-                            <h4>🟢 Node.js</h4>
+                            <h4><i class="ri-checkbox-blank-circle-fill" style="color:var(--success)"></i> Node.js</h4>
                             <p>Runtime server utama. Menangani REST API, MQTT subscription, WebSocket broadcasting, dan bridge ke Python prediction engine.</p>
                         </div>
                         <div class="tech-card">
-                            <h4>🗄️ InfluxDB</h4>
+                            <h4><i class="ri-database-2-line"></i> InfluxDB</h4>
                             <p>Database time-series untuk menyimpan data sensor dengan performa query tinggi. Mendukung retention policy dan downsampling.</p>
                         </div>
                         <div class="tech-card">
-                            <h4>💾 SQLite</h4>
+                            <h4><i class="ri-database-2-line"></i> SQLite</h4>
                             <p>Database ringan untuk metadata stasiun, hasil prediksi, peringatan, dan performa model. Zero-configuration.</p>
                         </div>
                         <div class="tech-card">
-                            <h4>📡 MQTT</h4>
+                            <h4><i class="ri-radar-line"></i> MQTT</h4>
                             <p>Protokol IoT lightweight untuk komunikasi real-time antara datalogger stasiun dan server. QoS 0 untuk efisiensi bandwidth.</p>
                         </div>
                         <div class="tech-card">
@@ -248,19 +249,19 @@
                             <p>Framework Deep Learning untuk model Bidirectional LSTM. Dilatih dengan data historis 5 tahun dari stasiun BMKG.</p>
                         </div>
                         <div class="tech-card">
-                            <h4>🗺️ Leaflet.js</h4>
+                            <h4><i class="ri-map-2-line"></i> Leaflet.js</h4>
                             <p>Library peta interaktif open-source. Menampilkan lokasi stasiun, heatmap curah hujan, dan marker prediksi.</p>
                         </div>
                         <div class="tech-card">
-                            <h4>📉 Chart.js</h4>
+                            <h4><i class="ri-line-chart-line"></i> Chart.js</h4>
                             <p>Library visualisasi data untuk grafik time-series, bar chart prediksi, dan scatter plot verifikasi model.</p>
                         </div>
                         <div class="tech-card">
-                            <h4>⚙️ n8n & Telegram</h4>
+                            <h4><i class="ri-settings-3-line"></i> n8n & Telegram</h4>
                             <p>Platform workflow automation (n8n) untuk mengintegrasikan peringatan sistem dengan Telegram Bot sebagai media diseminasi informasi ke pengguna.</p>
                         </div>
                         <div class="tech-card">
-                            <h4>⚡ WebSocket</h4>
+                            <h4><i class="ri-flashlight-line"></i> WebSocket</h4>
                             <p>Koneksi bidirectional untuk push data real-time ke browser tanpa polling. Update instan saat data baru masuk.</p>
                         </div>
                     </div>
@@ -268,18 +269,18 @@
 
                 <!-- Station Types -->
                 <div class="card" style="padding: 32px; margin-bottom: 24px;">
-                    <h3 style="font-size: 1.2rem; margin-bottom: 20px;">📡 Tiper Stasiun</h3>
+                    <h3 style="font-size: 1.2rem; margin-bottom: 20px;"><i class="ri-radar-line"></i> Tiper Stasiun</h3>
                     <div class="tech-grid">
                         <div class="tech-card" style="border-left: 4px solid #2563eb;">
-                            <h4>🔷 AWS (Automatic Weather Station)</h4>
+                            <h4><i class="ri-shape-line"></i> AWS (Automatic Weather Station)</h4>
                             <p><strong>12 stasiun</strong> — Mengukur 7 parameter utama: suhu, kelembapan, tekanan, kecepatan angin, arah angin, curah hujan, dan radiasi matahari.</p>
                         </div>
                         <div class="tech-card" style="border-left: 4px solid #22c55e;">
-                            <h4>🟢 ARG (Automatic Rain Gauge)</h4>
+                            <h4><i class="ri-checkbox-blank-circle-fill" style="color:var(--success)"></i> ARG (Automatic Rain Gauge)</h4>
                             <p><strong>30 stasiun</strong> — Fokus pengukuran curah hujan dengan presisi tinggi. Parameter: curah hujan, suhu logger, dan tegangan baterai.</p>
                         </div>
                         <div class="tech-card" style="border-left: 4px solid #f97316;">
-                            <h4>🔶 AAWS (Automatic Agro Weather Station)</h4>
+                            <h4><i class="ri-shape-2-line"></i> AAWS (Automatic Agro Weather Station)</h4>
                             <p><strong>8 stasiun</strong> — Stasiun agroklimatologi dengan parameter lengkap seperti AWS, ditambah parameter khusus pertanian.</p>
                         </div>
                     </div>

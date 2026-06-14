@@ -46,7 +46,7 @@ function renderTable() {
     if (pageData.length === 0) {
         tbody.innerHTML = `
             <tr><td colspan="8" class="empty-state">
-                <div class="icon">📡</div>
+                <div class="icon"><i class="ri-radar-line"></i></div>
                 <div style="font-size:1rem;font-weight:600;margin-bottom:4px">Stasiun tidak ditemukan</div>
                 <div style="font-size:0.85rem">Coba ubah filter pencarian Anda</div>
             </td></tr>
@@ -71,14 +71,14 @@ function renderTable() {
             <td><span class="station-id">${s.id}</span></td>
             <td class="station-name-cell">
                 <a href="/detail.html?id=${s.id}">${s.name}</a>
-                ${isAnomalous ? '<span style="color:#ef4444; font-size:1rem; margin-left:4px;" title="Data Anomaly Detected">⚠️</span>' : ''}
+                ${isAnomalous ? '<span style="color:#ef4444; font-size:1rem; margin-left:4px;" title="Data Anomaly Detected"><i class="ri-error-warning-line"></i></span>' : ''}
             </td>
             <td><span class="type-badge type-${s.type.toLowerCase()}">${s.type}</span></td>
-            <td class="location-cell"><span class="loc-icon">📍</span>${s.location}</td>
+            <td class="location-cell"><span class="loc-icon"><i class="ri-map-pin-line"></i></span>${s.location}</td>
             <td class="coords-cell">${s.latitude.toFixed(4)}, ${s.longitude.toFixed(4)}</td>
             <td class="elevation-cell">${s.elevation !== null && s.elevation !== undefined ? s.elevation + ' m' : '-'}</td>
             <td><span class="status-badge ${statusClass}"><span class="dot"></span>${statusLabel}</span></td>
-            <td><a href="/detail.html?id=${s.id}" class="action-link">📈 Detail</a></td>
+            <td><a href="/detail.html?id=${s.id}" class="action-link"><i class="ri-line-chart-line"></i> Detail</a></td>
         </tr>
         `;
     }).join('');

@@ -449,6 +449,7 @@
             }
         }
     </style>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
 </head>
 
 <body>
@@ -482,7 +483,7 @@
 
         <div class="main-content">
             <header class="top-header">
-                <button class="mobile-menu-btn">☰</button><button class="sidebar-toggle" title="Toggle Sidebar">☰</button>
+                <button class="mobile-menu-btn"><i class="ri-menu-line"></i></button><button class="sidebar-toggle" title="Toggle Sidebar"><i class="ri-menu-line"></i></button>
                 <div class="header-title" style="display:flex;align-items:center;gap:14px;">
                     <img src="/img/stmkg-logo.png" alt="STMKG"
                         style="height:46px;width:auto;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.1))">
@@ -492,15 +493,15 @@
                     </div>
                 </div>
                 <div class="header-actions">
-                    <button class="btn-icon" id="themeToggle" title="Toggle Theme">🌙</button>
+                    <button class="btn-icon" id="themeToggle" title="Toggle Theme"><i class="ri-moon-line"></i></button>
                     <div class="notif-wrapper">
-                        <button class="btn-icon" title="Notifikasi Hujan" id="notifBtn">🔔</button>
+                        <button class="btn-icon" title="Notifikasi Hujan" id="notifBtn"><i class="ri-notification-3-line"></i></button>
                         <span class="notif-badge" id="notifBadge" style="display:none">0</span>
                         <div class="notif-dropdown" id="notifDropdown">
                             <div class="notif-header">
-                                <strong>⚠️ Peringatan Hujan Lebat</strong>
+                                <strong><i class="ri-error-warning-line"></i> Peringatan Hujan Lebat</strong>
                                 <button class="notif-close"
-                                    onclick="document.getElementById('notifDropdown').classList.remove('show')">✕</button>
+                                    onclick="document.getElementById('notifDropdown').classList.remove('show')"><i class="ri-close-line"></i></button>
                             </div>
                             <div class="notif-body" id="notifBody">
                                 <div class="notif-empty">Tidak ada peringatan saat ini</div>
@@ -513,18 +514,18 @@
             <main class="page-content">
                 <!-- Banner -->
                 <div class="forecast-banner">
-                    <h2>🌧️ Prediksi Curah Hujan – Jawa Barat</h2>
+                    <h2><i class="ri-rainy-line"></i> Prediksi Curah Hujan – Jawa Barat</h2>
                     <p>Hasil Analisis Model LSTM & Machine Learning Berbasis Data 50— Stasiun (AWS, ARG, AAWS)</p>
                 </div>
 
                 <!-- Controls Bar: Date Picker + Filters + Day Tabs -->
                 <div class="prediction-controls" style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end">
                     <div class="control-group" style="min-width:140px">
-                        <label>📅 Tanggal</label>
+                        <label><i class="ri-calendar-line"></i> Tanggal</label>
                         <input type="date" class="control-input" id="datePicker">
                     </div>
                     <div class="control-group" style="min-width:120px">
-                        <label>📡 Tipe</label>
+                        <label><i class="ri-radar-line"></i> Tipe</label>
                         <select class="control-input" id="typeFilter">
                             <option value="all">Semua Tipe</option>
                             <option value="AWS">AWS</option>
@@ -533,7 +534,7 @@
                         </select>
                     </div>
                     <div class="control-group" style="min-width:140px">
-                        <label>📍 Wilayah</label>
+                        <label><i class="ri-map-pin-line"></i> Wilayah</label>
                         <select class="control-input" id="regionFilter">
                             <option value="all">Semua Wilayah</option>
                         </select>
@@ -546,22 +547,22 @@
                 <!-- Summary Stat Cards -->
                 <div class="prediction-summary-grid" id="summaryGrid">
                     <div class="pred-stat-card">
-                        <div class="stat-icon">📡</div>
+                        <div class="stat-icon"><i class="ri-radar-line"></i></div>
                         <div class="stat-value" id="sumStations">--</div>
                         <div class="stat-label">Total Stasiun</div>
                     </div>
                     <div class="pred-stat-card">
-                        <div class="stat-icon">⚠️</div>
+                        <div class="stat-icon"><i class="ri-error-warning-line"></i></div>
                         <div class="stat-value" id="sumHighRisk">--</div>
                         <div class="stat-label">Lebat / Sangat Lebat</div>
                     </div>
                     <div class="pred-stat-card">
-                        <div class="stat-icon">🌧️</div>
+                        <div class="stat-icon"><i class="ri-rainy-line"></i></div>
                         <div class="stat-value" id="sumMaxRainfall">--</div>
                         <div class="stat-label">Prediksi Tertinggi (mm)</div>
                     </div>
                     <div class="pred-stat-card">
-                        <div class="stat-icon">📍</div>
+                        <div class="stat-icon"><i class="ri-map-pin-line"></i></div>
                         <div class="stat-value" id="sumAffectedRegions">--</div>
                         <div class="stat-label">Wilayah Terancam Hujan Lebat</div>
                     </div>
@@ -573,7 +574,7 @@
                     <div class="card" style="overflow:hidden">
                         <div class="card-header">
                             <div>
-                                <h3>🗺️ Peta Sebaran Intensitas Hujan</h3>
+                                <h3><i class="ri-map-2-line"></i> Peta Sebaran Intensitas Hujan</h3>
                                 <p>Klik marker untuk melihat detail prediksi stasiun</p>
                             </div>
                         </div>
@@ -594,7 +595,7 @@
                     <div class="card" style="overflow:hidden">
                         <div class="card-header">
                             <div>
-                                <h3>📊 Detail Prediksi per Stasiun</h3>
+                                <h3><i class="ri-bar-chart-line"></i> Detail Prediksi per Stasiun</h3>
                                 <p id="tableSubtitle">Data prediksi harian</p>
                             </div>
                             <span></span>
@@ -624,7 +625,7 @@
                     <div class="card">
                         <div class="card-header">
                             <div>
-                                <h3>🔮 Prediksi Curah Hujan</h3>
+                                <h3><i class="ri-magic-line"></i> Prediksi Curah Hujan</h3>
                                 <p>Perbandingan prediksi antar stasiun (diurutkan)</p>
                             </div>
                         </div>
@@ -637,7 +638,7 @@
                     <div class="card">
                         <div class="card-header">
                             <div>
-                                <h3>🎯 Distribusi Kategori</h3>
+                                <h3><i class="ri-focus-2-line"></i> Distribusi Kategori</h3>
                                 <p>Intensitas hujan per kategori</p>
                             </div>
                         </div>

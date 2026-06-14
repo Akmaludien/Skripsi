@@ -22,6 +22,7 @@
         .map-overlay-info .date { font-size: 0.78rem; color: #94a3b8; margin-top: 2px; }
         .map-overlay-info .label { font-size: 0.68rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
     </style>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
 </head>
 <body>
     <div class="app-layout">
@@ -46,13 +47,13 @@
 
         <div class="main-content">
             <header class="top-header">
-                <button class="mobile-menu-btn">☰</button><button class="sidebar-toggle" title="Toggle Sidebar">☰</button>
+                <button class="mobile-menu-btn"><i class="ri-menu-line"></i></button><button class="sidebar-toggle" title="Toggle Sidebar"><i class="ri-menu-line"></i></button>
                 <div class="header-title" style="display:flex;align-items:center;gap:14px;">
                     <img src="/img/stmkg-logo.png" alt="STMKG" style="height:46px;width:auto;object-fit:contain">
                     <div><h1>Peta Sebaran Curah Hujan Real-time</h1><span>Thiessen Polygon • Data Terbaru dari 50 Stasiun</span></div>
                 </div>
                 <div class="header-actions">
-                    <button class="btn-icon" id="themeToggle" title="Toggle Theme">🌙</button>
+                    <button class="btn-icon" id="themeToggle" title="Toggle Theme"><i class="ri-moon-line"></i></button>
                 </div>
             </header>
 
@@ -206,7 +207,7 @@
                             <strong style="font-size:0.85rem">${names[i]}</strong>
                         </div>
                         <div style="font-size:0.9rem;margin-top:8px">
-                            🌧️ Curah Hujan: <strong style="color:${color}">${rr.toFixed(1)} mm</strong>
+                            <i class="ri-rainy-line"></i> Curah Hujan: <strong style="color:${color}">${rr.toFixed(1)} mm</strong>
                         </div>
                         <div style="font-size:0.72rem;color:#94a3b8;margin-top:4px">${getRainfallCategory(rr).label}</div>
                     </div>

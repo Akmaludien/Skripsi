@@ -12,6 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <link rel="stylesheet" href="/css/style.css?v=5">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
 </head>
 
 <body>
@@ -45,7 +46,7 @@
 
         <div class="main-content">
             <header class="top-header">
-                <button class="mobile-menu-btn">☰</button><button class="sidebar-toggle" title="Toggle Sidebar">☰</button>
+                <button class="mobile-menu-btn"><i class="ri-menu-line"></i></button><button class="sidebar-toggle" title="Toggle Sidebar"><i class="ri-menu-line"></i></button>
                 <div class="header-title" style="display:flex;align-items:center;gap:14px;">
                     <img src="/img/stmkg-logo.png" alt="STMKG"
                         style="height:46px;width:auto;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.1))">
@@ -55,15 +56,15 @@
                     </div>
                 </div>
                 <div class="header-actions">
-                    <button class="btn-icon" id="themeToggle" title="Toggle Theme">🌙</button>
+                    <button class="btn-icon" id="themeToggle" title="Toggle Theme"><i class="ri-moon-line"></i></button>
                     <div class="notif-wrapper">
-                        <button class="btn-icon" title="Notifikasi Hujan" id="notifBtn">🔔</button>
+                        <button class="btn-icon" title="Notifikasi Hujan" id="notifBtn"><i class="ri-notification-3-line"></i></button>
                         <span class="notif-badge" id="notifBadge" style="display:none">0</span>
                         <div class="notif-dropdown" id="notifDropdown">
                             <div class="notif-header">
-                                <strong>⚠️ Peringatan Hujan Lebat</strong>
+                                <strong><i class="ri-error-warning-line"></i> Peringatan Hujan Lebat</strong>
                                 <button class="notif-close"
-                                    onclick="document.getElementById('notifDropdown').classList.remove('show')">✕</button>
+                                    onclick="document.getElementById('notifDropdown').classList.remove('show')"><i class="ri-close-line"></i></button>
                             </div>
                             <div class="notif-body" id="notifBody">
                                 <div class="notif-empty">Tidak ada peringatan saat ini</div>
@@ -92,7 +93,7 @@
                     <!-- Card 1: Device Information -->
                     <div class="card" style="padding: 24px; margin-bottom: 0;">
                         <h3 style="font-size: 1.1rem; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
-                            <span style="color: var(--primary);">🔵</span> Device Information
+                            <span style="color: var(--primary);"><i class="ri-checkbox-blank-circle-fill" style="color:var(--primary)"></i></span> Device Information
                         </h3>
                         <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 12px; font-size: 0.9rem;">
                             <div style="color: var(--text-muted);">Station Name</div>
@@ -109,7 +110,7 @@
                     <!-- Card 2: Live Status & Location -->
                     <div class="card" style="padding: 24px; margin-bottom: 0;">
                         <h3 style="font-size: 1.1rem; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
-                            <span style="color: var(--primary);">📡</span> Live Status & Location
+                            <span style="color: var(--primary);"><i class="ri-radar-line"></i></span> Live Status & Location
                         </h3>
                         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px; background: rgba(34, 197, 94, 0.1); padding: 8px 16px; border-radius: 8px; width: fit-content;">
                             <span class="status-dot online" id="statusDot" style="width:10px;height:10px"></span>
@@ -132,7 +133,7 @@
                 <div id="healthSection" class="card" style="display: none; margin-bottom: 24px; padding: 20px; border-left: 4px solid #10b981;">
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
                         <div style="display: flex; align-items: center; gap: 12px;">
-                            <div style="font-size: 2rem;">🛡️</div>
+                            <div style="font-size: 2rem;"><i class="ri-shield-line"></i></div>
                             <div>
                                 <h3 style="font-size: 1.1rem; margin-bottom: 2px;">Device Health & Power Analytics</h3>
                                 <p style="font-size: 0.8rem; color: var(--text-muted);">Monitoring logger stability and battery performance</p>
@@ -184,8 +185,8 @@
                             <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 4px;">Detailed historical readings for the past 24 hours</p>
                         </div>
                         <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
-                            <button id="btn-export" class="btn-sm" style="background:var(--bg-main);border:1px solid var(--border-color);color:var(--text-secondary);padding:6px 12px;border-radius:6px;font-size:0.85rem;cursor:pointer;">📥 Export CSV</button>
-                            <button id="btn-print" class="btn-sm" style="background:var(--bg-main);border:1px solid var(--border-color);color:var(--text-secondary);padding:6px 12px;border-radius:6px;font-size:0.85rem;cursor:pointer;">🖨️ Cetak Laporan</button>
+                            <button id="btn-export" class="btn-sm" style="background:var(--bg-main);border:1px solid var(--border-color);color:var(--text-secondary);padding:6px 12px;border-radius:6px;font-size:0.85rem;cursor:pointer;"><i class="ri-inbox-line"></i> Export CSV</button>
+                            <button id="btn-print" class="btn-sm" style="background:var(--bg-main);border:1px solid var(--border-color);color:var(--text-secondary);padding:6px 12px;border-radius:6px;font-size:0.85rem;cursor:pointer;"><i class="ri-printer-line"></i> Cetak Laporan</button>
                             <select id="chartParamSelect" class="filter-select" style="padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-primary);">
                                 <option value="all">Semua Parameter Utama</option>
                                 <!-- Options populated dynamically by JS based on station type -->
@@ -213,7 +214,7 @@
                 <div class="card chart-card" id="predictionSection">
                     <div class="card-header">
                         <div>
-                            <h3>🔮 Prediksi Curah Hujan 7 Hari Kedepan</h3>
+                            <h3><i class="ri-magic-line"></i> Prediksi Curah Hujan 7 Hari Kedepan</h3>
                             <p>Hasil analisis model LSTM untuk stasiun ini</p>
                         </div>
                     </div>

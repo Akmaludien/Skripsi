@@ -59,6 +59,7 @@
         .diff-neg { color: #22c55e; font-weight: 600; }
         .diff-neutral { color: var(--text-muted); }
     </style>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
 </head>
 <body>
     <div class="app-layout">
@@ -92,7 +93,7 @@
 
         <div class="main-content">
             <header class="top-header">
-                <button class="mobile-menu-btn">☰</button><button class="sidebar-toggle" title="Toggle Sidebar">☰</button>
+                <button class="mobile-menu-btn"><i class="ri-menu-line"></i></button><button class="sidebar-toggle" title="Toggle Sidebar"><i class="ri-menu-line"></i></button>
                 <div class="header-title" style="display:flex;align-items:center;gap:14px;">
                     <img src="/img/stmkg-logo.png" alt="STMKG" style="height:46px;width:auto;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.1))">
                     <div>
@@ -101,15 +102,15 @@
                     </div>
                 </div>
                 <div class="header-actions">
-                    <button class="btn-icon" id="themeToggle" title="Toggle Theme">🌙</button>
+                    <button class="btn-icon" id="themeToggle" title="Toggle Theme"><i class="ri-moon-line"></i></button>
                     <div class="notif-wrapper">
-                        <button class="btn-icon" title="Notifikasi Hujan" id="notifBtn">🔔</button>
+                        <button class="btn-icon" title="Notifikasi Hujan" id="notifBtn"><i class="ri-notification-3-line"></i></button>
                         <span class="notif-badge" id="notifBadge" style="display:none">0</span>
                         <div class="notif-dropdown" id="notifDropdown">
                             <div class="notif-header">
-                                <strong>⚠️ Peringatan Hujan Lebat</strong>
+                                <strong><i class="ri-error-warning-line"></i> Peringatan Hujan Lebat</strong>
                                 <button class="notif-close"
-                                    onclick="document.getElementById('notifDropdown').classList.remove('show')">✕</button>
+                                    onclick="document.getElementById('notifDropdown').classList.remove('show')"><i class="ri-close-line"></i></button>
                             </div>
                             <div class="notif-body" id="notifBody">
                                 <div class="notif-empty">Tidak ada peringatan saat ini</div>
@@ -173,7 +174,7 @@
 
                 <div class="card" style="padding: 24px; margin-bottom: 24px;">
                     <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                        <h2 style="font-size: 1.2rem;">🗺️ Sebaran Spasial Error Prediksi</h2>
+                        <h2 style="font-size: 1.2rem;"><i class="ri-map-2-line"></i> Sebaran Spasial Error Prediksi</h2>
                         <span style="font-size: 0.8rem; color: var(--text-muted);">Warna mewakili selisih (Error) | Ukuran mewakili besarnya selisih</span>
                     </div>
                     <div id="errorMap" style="height: 450px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color);"></div>
@@ -181,7 +182,7 @@
 
                 <div class="card" style="padding: 24px; margin-bottom: 24px;">
                     <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                        <h2 style="font-size: 1.2rem;">📈 Grafik Perbandingan Prediksi vs Aktual</h2>
+                        <h2 style="font-size: 1.2rem;"><i class="ri-line-chart-line"></i> Grafik Perbandingan Prediksi vs Aktual</h2>
                         <div style="display: flex; gap: 12px;">
                             <select id="stationFilter" class="btn-sm" style="background: var(--bg-body); border: 1px solid var(--border-color); color: var(--text-main); padding: 8px 12px; border-radius: 8px;">
                                 <option value="all">Semua Stasiun</option>
@@ -195,13 +196,13 @@
 
                 <div class="verification-grid">
                     <div class="card" style="padding: 24px;">
-                        <h2 style="font-size: 1.1rem; margin-bottom: 16px;">📊 Error Distribution</h2>
+                        <h2 style="font-size: 1.1rem; margin-bottom: 16px;"><i class="ri-bar-chart-line"></i> Error Distribution</h2>
                         <div style="height: 300px;">
                             <canvas id="errorDistChart"></canvas>
                         </div>
                     </div>
                     <div class="card" style="padding: 24px;">
-                        <h2 style="font-size: 1.1rem; margin-bottom: 16px;">🔍 Confusion Matrix (Kategori Intensitas)</h2>
+                        <h2 style="font-size: 1.1rem; margin-bottom: 16px;"><i class="ri-search-line"></i> Confusion Matrix (Kategori Intensitas)</h2>
                         <div style="height: 300px;">
                             <canvas id="confusionMatrixChart"></canvas>
                         </div>
@@ -210,14 +211,14 @@
                 
                 <div class="verification-grid" style="margin-top: 24px;">
                     <div class="card" style="padding: 24px;">
-                        <h2 style="font-size: 1.1rem; margin-bottom: 16px;">🏢 Performa Berdasarkan Tiper Stasiun</h2>
+                        <h2 style="font-size: 1.1rem; margin-bottom: 16px;"><i class="ri-building-line"></i> Performa Berdasarkan Tiper Stasiun</h2>
                         <div style="height: 300px;">
                             <canvas id="typeBreakdownChart"></canvas>
                         </div>
                     </div>
                     <div class="card" style="padding: 24px;">
                         <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                            <h2 style="font-size: 1.1rem;">📋 Log Verifikasi Terakhir</h2>
+                            <h2 style="font-size: 1.1rem;"><i class="ri-file-list-3-line"></i> Log Verifikasi Terakhir</h2>
                             <input type="text" id="verifySearch" placeholder="Cari stasiun..." style="padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-body); color: var(--text-main); font-size: 0.85rem;">
                         </div>
                         <div style="overflow-x: auto; max-height: 400px; overflow-y: auto;">

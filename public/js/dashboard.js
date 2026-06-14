@@ -96,10 +96,10 @@ function renderSummary(data, stations) {
 
     if (maxRain === 0) {
         document.getElementById('maxRainfall').innerHTML = `0.0 <span style="font-size:0.9rem;font-weight:400">mm</span>`;
-        document.getElementById('maxRainfallStation').textContent = `☀️ Cerah / Tidak Ada Hujan`;
+        document.getElementById('maxRainfallStation').textContent = `<i class="ri-sun-line"></i> Cerah / Tidak Ada Hujan`;
     } else {
         document.getElementById('maxRainfall').innerHTML = `${formatNumber(maxRain)} <span style="font-size:0.9rem;font-weight:400">mm</span>`;
-        document.getElementById('maxRainfallStation').textContent = `📍 ${maxStationName}`;
+        document.getElementById('maxRainfallStation').textContent = `<i class="ri-map-pin-line"></i> ${maxStationName}`;
     }
 }
 
@@ -192,14 +192,14 @@ function initMap(stations) {
             <div class="map-popup">
                 <span class="badge-type ${s.type.toLowerCase()}">${s.type}</span>
                 <h4>${s.name}</h4>
-                <p>📍 ${s.location}</p>
-                <p>🌧️ Curah Hujan: <strong>${formatNumber(s.latest_rr != null ? s.latest_rr : 0)} mm</strong></p>
+                <p><i class="ri-map-pin-line"></i> ${s.location}</p>
+                <p><i class="ri-rainy-line"></i> Curah Hujan: <strong>${formatNumber(s.latest_rr != null ? s.latest_rr : 0)} mm</strong></p>
                 ${s.type !== 'ARG' ? `
-                <p>🌡️ Suhu: <strong>${s.latest_temp != null ? formatNumber(s.latest_temp) + '°C' : '-'}</strong></p>
-                <p>💧 RH: <strong>${s.latest_rh != null ? formatNumber(s.latest_rh) + '%' : '-'}</strong></p>
-                ${s.latest_ws != null ? `<p>💨 Angin: <strong>${formatNumber(s.latest_ws)} m/s</strong></p>` : ''}
+                <p><i class="ri-temp-hot-line"></i> Suhu: <strong>${s.latest_temp != null ? formatNumber(s.latest_temp) + '°C' : '-'}</strong></p>
+                <p><i class="ri-drop-line"></i> RH: <strong>${s.latest_rh != null ? formatNumber(s.latest_rh) + '%' : '-'}</strong></p>
+                ${s.latest_ws != null ? `<p><i class="ri-windy-line"></i> Angin: <strong>${formatNumber(s.latest_ws)} m/s</strong></p>` : ''}
                 ` : ''}
-                <p style="font-size:0.75rem;color:#94a3b8;margin-top:4px">⏱️ ${s.latest_data_time ? timeAgo(s.latest_data_time) : 'Belum ada data'}</p>
+                <p style="font-size:0.75rem;color:#94a3b8;margin-top:4px"><i class="ri-timer-line"></i> ${s.latest_data_time ? timeAgo(s.latest_data_time) : 'Belum ada data'}</p>
                 <p style="margin-top:6px"><a href="/detail.html?id=${s.id}" style="color:#3b82f6;font-weight:600">Lihat Detail →</a></p>
             </div>
         `);
@@ -212,7 +212,7 @@ function initMap(stations) {
         div.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; min-width:140px" id="legendToggleBtn">
                 <h4 style="margin:0; font-size:0.75rem; font-weight:bold; color:var(--text-primary);">Tampilkan Legenda</h4>
-                <span id="legendToggleIcon" style="font-size:0.8rem; margin-left: 8px;">👁️</span>
+                <span id="legendToggleIcon" style="font-size:0.8rem; margin-left: 8px;"><i class="ri-eye-line"></i></span>
             </div>
             <div id="legendContent" style="display:none; margin-top:12px;">
                 <h4>Tipe Stasiun <span style="font-size:0.7rem;font-weight:normal;color:#64748b">(Klik Filter)</span></h4>
@@ -239,11 +239,11 @@ function initMap(stations) {
                 toggleBtn.onclick = () => {
                     if (content.style.display === 'none') {
                         content.style.display = 'block';
-                        icon.textContent = '🙈';
+                        icon.innerHTML = '<i class="ri-eye-off-line"></i>';
                         title.textContent = 'Sembunyikan Legenda';
                     } else {
                         content.style.display = 'none';
-                        icon.textContent = '👁️';
+                        icon.innerHTML = '<i class="ri-eye-line"></i>';
                         title.textContent = 'Tampilkan Legenda';
                     }
                 };
@@ -373,26 +373,26 @@ function renderStationCards(stations) {
                 </span>
             </div>
             <div class="station-card-name">${s.name}</div>
-            <div class="station-card-meta">📍 ${s.location}</div>
+            <div class="station-card-meta"><i class="ri-map-pin-line"></i> ${s.location}</div>
             <div class="station-metrics">
                 <div class="metric-circle ${!rrQC.valid ? 'qc-warning' : ''}" title="${!rrQC.valid ? rrQC.message : ''}">
                     ${createCircleProgress(s.latest_rr || 0, 100, rrQC.valid ? getTypeColor(s.type) : '#ef4444')}
-                    <div class="metric-label">Curah Hujan<br>(mm) ${!rrQC.valid ? '⚠️' : ''}</div>
+                    <div class="metric-label">Curah Hujan<br>(mm) ${!rrQC.valid ? '<i class="ri-error-warning-line"></i>' : ''}</div>
                     <div style="font-size:0.6rem; font-weight:700; color:${getRainfallCategory(s.latest_rr).color}; text-align:center; margin-top:2px;">${getRainfallCategory(s.latest_rr).label}</div>
                 </div>
                 ${s.type === 'ARG' ? `
                 <div class="metric-circle ${!tempQC.valid ? 'qc-warning' : ''}" title="${!tempQC.valid ? tempQC.message : ''}">
                     ${createCircleProgress(s.latest_log_temp || 0, 40, tempQC.valid ? '#f97316' : '#ef4444')}
-                    <div class="metric-label">Log Temp (°C) ${!tempQC.valid ? '⚠️' : ''}</div>
+                    <div class="metric-label">Log Temp (°C) ${!tempQC.valid ? '<i class="ri-error-warning-line"></i>' : ''}</div>
                 </div>
                 <div class="metric-circle ${!battQC.valid ? 'qc-warning' : ''}" title="${!battQC.valid ? battQC.message : ''}">
                     ${createCircleProgress(s.latest_batt || 0, 15, battQC.valid ? '#eab308' : '#ef4444')}
-                    <div class="metric-label">Baterai (V) ${!battQC.valid ? '⚠️' : ''}</div>
+                    <div class="metric-label">Baterai (V) ${!battQC.valid ? '<i class="ri-error-warning-line"></i>' : ''}</div>
                 </div>
                 ` : `
                 <div class="metric-circle ${!tempQC.valid ? 'qc-warning' : ''}" title="${!tempQC.valid ? tempQC.message : ''}">
                     ${createCircleProgress(s.latest_temp || 0, 40, tempQC.valid ? '#f97316' : '#ef4444')}
-                    <div class="metric-label">Suhu (°C) ${!tempQC.valid ? '⚠️' : ''}</div>
+                    <div class="metric-label">Suhu (°C) ${!tempQC.valid ? '<i class="ri-error-warning-line"></i>' : ''}</div>
                 </div>
                 <div class="metric-circle">
                     ${createCircleProgress(s.latest_rh || 0, 100, '#06b6d4')}
@@ -494,10 +494,10 @@ function handleRealtimeUpdate(data) {
         if (maxRainfallEl && maxRainfallStationEl) {
             if (maxRain === 0) {
                 maxRainfallEl.innerHTML = `0.0 <span style="font-size:0.9rem;font-weight:400">mm</span>`;
-                maxRainfallStationEl.textContent = `☀️ Cerah / Tidak Ada Hujan`;
+                maxRainfallStationEl.textContent = `<i class="ri-sun-line"></i> Cerah / Tidak Ada Hujan`;
             } else {
                 maxRainfallEl.innerHTML = `${formatNumber(maxRain)} <span style="font-size:0.9rem;font-weight:400">mm</span>`;
-                maxRainfallStationEl.textContent = `📍 ${maxStationName}`;
+                maxRainfallStationEl.textContent = `<i class="ri-map-pin-line"></i> ${maxStationName}`;
             }
         }
     }
@@ -624,7 +624,7 @@ if (extremeBtn) {
             else impact = 'sedang hingga lebat yang perlu diwaspadai';
             
             if (extremeStory) {
-                extremeStory.innerHTML = `💡 <strong>Analitik Cerdas:</strong> Dalam 30 hari terakhir, wilayah <strong>${topStation.location} (${topStation.station_name})</strong> menjadi titik paling rawan. Stasiun ini mencatatkan curah hujan tertinggi mencapai <strong>${topStation.max_rainfall} mm</strong>, masuk dalam kategori hujan ${impact}.`;
+                extremeStory.innerHTML = `<i class="ri-lightbulb-line"></i> <strong>Analitik Cerdas:</strong> Dalam 30 hari terakhir, wilayah <strong>${topStation.location} (${topStation.station_name})</strong> menjadi titik paling rawan. Stasiun ini mencatatkan curah hujan tertinggi mencapai <strong>${topStation.max_rainfall} mm</strong>, masuk dalam kategori hujan ${impact}.`;
             }
 
             data.forEach((st, idx) => {
@@ -633,11 +633,11 @@ if (extremeBtn) {
                 // Wording Label
                 let labelHtml = '';
                 if (st.max_rainfall > 100) {
-                    labelHtml = `<div style="font-size: 0.75rem; color: #ef4444; margin-top: 4px;">🚨 Sangat Lebat (Siaga Banjir)</div>`;
+                    labelHtml = `<div style="font-size: 0.75rem; color: #ef4444; margin-top: 4px;"><i class="ri-alarm-warning-line"></i> Sangat Lebat (Siaga Banjir)</div>`;
                 } else if (st.max_rainfall >= 50) {
-                    labelHtml = `<div style="font-size: 0.75rem; color: #f59e0b; margin-top: 4px;">⚠️ Lebat (Waspada Genangan)</div>`;
+                    labelHtml = `<div style="font-size: 0.75rem; color: #f59e0b; margin-top: 4px;"><i class="ri-error-warning-line"></i> Lebat (Waspada Genangan)</div>`;
                 } else {
-                    labelHtml = `<div style="font-size: 0.75rem; color: #10b981; margin-top: 4px;">🟢 Sedang (Kategori Aman)</div>`;
+                    labelHtml = `<div style="font-size: 0.75rem; color: #10b981; margin-top: 4px;"><i class="ri-checkbox-blank-circle-fill" style="color:var(--success)"></i> Sedang (Kategori Aman)</div>`;
                 }
 
                 html += `
