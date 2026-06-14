@@ -2431,7 +2431,7 @@ button {
 }
 
 .leaflet-popup-content, .leaflet-popup-content-wrapper, .leaflet-popup-content * {
-    color: #1e293b !important;
+    color: var(--text-primary) !important;
 }
 
 /* ─── Print Styles ──────────────────────────────── */
@@ -2626,7 +2626,7 @@ button {
 }
 
 .leaflet-popup-content, .leaflet-popup-content-wrapper, .leaflet-popup-content * {
-    color: #1e293b !important;
+    color: var(--text-primary) !important;
 }
 
 /* ─── Print Styles ──────────────────────────────── */
