@@ -76,8 +76,8 @@ const MQTT_TOPICS = [
 const MQTT_TOPIC_CMD = 'stmkg/station/command';
 
 // â”€â”€â”€ Database Setup â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-const db = require('better-sqlite3')(path.join(__dirname, 'data', 'monitoring.db'));
-const mqttConfig = require('./reklim_config.json');
+const dbPath = path.join(__dirname, 'data', 'monitoring.db');
+const dataDir = path.dirname(dbPath);
 
 // --- ML Inference Module Initialization ---
 // Impor fungsi inisialisasi dan prediksi
