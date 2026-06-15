@@ -254,17 +254,6 @@ def run_predictions():
                         pred_val = float(pred_scaled[0, 0] * max_rain_val)
                         pred_val = np.clip(pred_val, 0, 200)
 
-                        # --- ADAPTIVE SEASONAL FILTER ---
-                        # Bulan Kemarau di Jabar (Mei - Oktober). 
-                        current_month = datetime.now().month
-                        is_dry_season = 5 <= current_month <= 10
-                        
-                        # AWS (4 fitur) lebih rentan noise RH tinggi di musim kemarau.
-                        # Terapkan batas toleransi noise otomatis tanpa perlu ganti manual.
-                        noise_gate = 2.0 if (is_dry_season and num_features == 4) else 0.5
-                        if pred_val < noise_gate:
-                            pred_val = 0.0
-
                         predicted_rain_7days.append(pred_val)
 
                         new_row = np.zeros(num_features)
@@ -274,6 +263,12 @@ def run_predictions():
                             new_row[2] = current_input[-1, 2]
                             new_row[3] = current_input[-1, 3]
                         current_input = np.vstack([current_input[1:], new_row])
+                    # --- ADAPTIVE SEASONAL FILTER (Applied after autoregression) ---
+                    current_month = datetime.now().month
+                    is_dry_season = 5 <= current_month <= 10
+                    noise_gate = 2.0 if (is_dry_season and num_features == 4) else 0.5
+                    predicted_rain_7days = [0.0 if p < noise_gate else p for p in predicted_rain_7days]
+
                 else:
                     print(f"  -> No data for {station_id}. Skipping.")
                     continue
