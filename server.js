@@ -1058,7 +1058,6 @@ app.get('/api/rainfall-map', async (req, res) => {
             from(bucket: "${INFLUX_BUCKET}")
               |> range(start: -${hours}h)
               |> filter(fn: (r) => (r["_measurement"] == "AWS" or r["_measurement"] == "ARG" or r["_measurement"] == "AAWS") and r["_field"] == "rain")
-              |> group(columns: ["id"])
               |> max()
         `;
         
