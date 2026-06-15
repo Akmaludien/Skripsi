@@ -7,6 +7,21 @@ let modelARG = null;
 let scalerAWS = null;
 let scalerARG = null;
 
+class LocalFileIO {
+    constructor(filePath) { this.filePath = filePath.replace('file://', ''); }
+    async load() {
+        const modelJSON = JSON.parse(fs.readFileSync(this.filePath, 'utf8'));
+        const dir = path.dirname(this.filePath);
+        const weightFile = modelJSON.weightsManifest[0].paths[0];
+        const weightData = new Uint8Array(fs.readFileSync(path.join(dir, weightFile))).buffer;
+        return {
+            modelTopology: modelJSON.modelTopology,
+            weightSpecs: modelJSON.weightsManifest[0].weights,
+            weightData: weightData
+        };
+    }
+}
+
 async function initModels() {
     try {
         console.log("[ML Inference] Starting model initialization...");
@@ -16,14 +31,14 @@ async function initModels() {
         const argScalerPath = path.join(__dirname, '../models/arg/scaler_arg.json');
 
         if (fs.existsSync(awsModelPath)) {
-            modelAWS = await tf.loadLayersModel(`file://${awsModelPath}`);
+            modelAWS = await tf.loadLayersModel(new LocalFileIO(awsModelPath));
             console.log("[ML Inference] Model AWS loaded successfully.");
         } else {
             console.warn(`[ML Warn] AWS model not found at ${awsModelPath}`);
         }
 
         if (fs.existsSync(argModelPath)) {
-            modelARG = await tf.loadLayersModel(`file://${argModelPath}`);
+            modelARG = await tf.loadLayersModel(new LocalFileIO(argModelPath));
             console.log("[ML Inference] Model ARG loaded successfully.");
         } else {
             console.warn(`[ML Warn] ARG model not found at ${argModelPath}`);
