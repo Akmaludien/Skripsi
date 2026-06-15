@@ -143,16 +143,26 @@
         // Update active class
         document.querySelectorAll('.day-tab').forEach(b => b.classList.remove('active'));
         if(btnElem) btnElem.classList.add('active');
-        
-        // Update time overlay text
+
+        // Disable tabs during load
+        document.querySelectorAll('.day-tab').forEach(b => b.disabled = true);
+
+        // Show loading state on overlay
+        const timeEl = document.getElementById('mapTime');
+        const dateEl = document.getElementById('mapDate');
         if (hours > 0) {
-            document.getElementById('mapTime').textContent = hours === 24 ? 'Akumulasi 24 Jam' : `Maks ${hours} Jam Terakhir`;
-            document.getElementById('mapDate').textContent = 'Data Historis';
+            const label = hours < 24 ? `${hours} Jam Terakhir` : `${hours / 24} Hari Terakhir`;
+            timeEl.textContent = 'Memuat...';
+            dateEl.textContent = `Akumulasi ${label}`;
         } else {
-            updateMapClock(); // reset to live clock
+            timeEl.textContent = 'Memuat...';
+            dateEl.textContent = 'Data Real-time';
         }
-        
+
         await loadRainfallData(hours);
+
+        // Re-enable tabs
+        document.querySelectorAll('.day-tab').forEach(b => b.disabled = false);
     }
 
     async function loadRainfallData(hours = 0) {
@@ -160,7 +170,7 @@
             const endpoint = hours === 0 ? '/api/stations' : `/api/rainfall-map?hours=${hours}`;
             const stations = await API.get(endpoint);
 
-            // Remove old polygons
+            // Remove old polygons and circle markers
             rfMap.eachLayer(layer => {
                 if (layer instanceof L.Polygon || layer instanceof L.CircleMarker) {
                     rfMap.removeLayer(layer);
@@ -225,6 +235,21 @@
 
         } catch (e) {
             console.error('Failed to load rainfall data:', e);
+            document.getElementById('mapTime').textContent = 'Error';
+            document.getElementById('mapDate').textContent = 'Gagal memuat data';
+        }
+
+        // Update overlay after data loads
+        if (hours === 0) {
+            updateMapClock();
+        } else {
+            const label = hours < 24 ? `${hours} Jam Terakhir` : `${hours / 24} Hari Terakhir`;
+            const now = new Date();
+            const past = new Date(now.getTime() - hours * 3600000);
+            const fmtDate = d => d.toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta', day: 'numeric', month: 'short' });
+            const fmtTime = d => d.toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit' });
+            document.getElementById('mapTime').textContent = `Akumulasi ${label}`;
+            document.getElementById('mapDate').textContent = `${fmtDate(past)} ${fmtTime(past)} — ${fmtDate(now)} ${fmtTime(now)} WIB`;
         }
     }
     </script>

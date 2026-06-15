@@ -1053,31 +1053,25 @@ app.get('/api/rainfall-map', async (req, res) => {
             })));
         }
 
-        // Query InfluxDB for raw rainfall in the requested time window and compute max in JS
+        // Query InfluxDB for max rainfall per station in the time window (server-side aggregation)
         const query = `
             from(bucket: "${INFLUX_BUCKET}")
               |> range(start: -${hours}h)
               |> filter(fn: (r) => (r["_measurement"] == "AWS" or r["_measurement"] == "ARG" or r["_measurement"] == "AAWS") and r["_field"] == "rain")
+              |> group(columns: ["id"])
+              |> max()
         `;
         
         let rows = [];
         try {
             rows = await queryApi.collectRows(query);
         } catch (influxErr) {
-            console.error('[API] InfluxDB query failed, falling back to 0:', influxErr.message);
+            console.error('[API] InfluxDB rainfall-map query failed:', influxErr.message);
         }
         
         const actualMap = {};
         rows.forEach(r => { 
-            const val = r._value || 0;
-            if (actualMap[r.id] === undefined || val > actualMap[r.id]) {
-                actualMap[r.id] = val;
-            }
-        });
-        
-        // Round final values
-        Object.keys(actualMap).forEach(k => {
-            actualMap[k] = Math.round(actualMap[k] * 10) / 10;
+            actualMap[r.id] = Math.round((r._value || 0) * 10) / 10;
         });
 
         const data = stations.map(s => ({
