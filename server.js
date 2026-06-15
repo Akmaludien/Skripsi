@@ -76,8 +76,15 @@ const MQTT_TOPICS = [
 const MQTT_TOPIC_CMD = 'stmkg/station/command';
 
 // â”€â”€â”€ Database Setup â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-const dbPath = path.join(__dirname, 'data', 'monitoring.db');
-const dataDir = path.dirname(dbPath);
+const db = require('better-sqlite3')(path.join(__dirname, 'data', 'monitoring.db'));
+const mqttConfig = require('./reklim_config.json');
+
+// --- ML Inference Module Initialization ---
+// Impor fungsi inisialisasi dan prediksi
+const { initModels, predictWeather } = require('./ml_service/inference');
+// Jalankan loading model ke RAM saat server start (non-blocking)
+initModels();
+
 const stationMapper = {
     // AAWS
     "AAWS3010": "AAWS Dramaga", "STA3008": "AAWS Pelabuhan Ratu", "STA3005": "AAWS Ujung Genteng",
