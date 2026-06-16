@@ -48,9 +48,9 @@ INFLUX_ORG = os.getenv("INFLUX_ORG", "SKRIPSI")
 INFLUX_BUCKET = os.getenv("INFLUX_BUCKET", "skripsi")
 
 DB_PATH = os.path.join(os.path.dirname(__file__), 'data', 'monitoring.db')
-MODEL_AWS_PATH = os.path.join(os.path.dirname(__file__), 'models', 'aws_aaws', 'model_aws.h5')
+MODEL_AWS_PATH = os.path.join(os.path.dirname(__file__), 'models', 'aws_aaws', 'model_aws_10y.keras')
 SCALER_AWS_PATH = os.path.join(os.path.dirname(__file__), 'models', 'aws_aaws', 'scaler_aws.json')
-MODEL_ARG_PATH = os.path.join(os.path.dirname(__file__), 'models', 'arg', 'model_arg.h5')
+MODEL_ARG_PATH = os.path.join(os.path.dirname(__file__), 'models', 'arg', 'model_arg_10y.keras')
 SCALER_ARG_PATH = os.path.join(os.path.dirname(__file__), 'models', 'arg', 'scaler_arg.json')
 
 def get_db_connection():
