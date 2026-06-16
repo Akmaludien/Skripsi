@@ -380,7 +380,7 @@ def run_predictions():
                         input_scaled = np.clip(input_scaled, 0.0, 1.0) # Prevent out-of-bounds explosion
                         input_seq = input_scaled.reshape(1, 14, num_features)
                         pred_scaled = current_model.predict(input_seq, verbose=0)
-                        pred_val = float(pred_scaled[0, 0] * max_rain_val)
+                        pred_val = float(pred_scaled[0, 0])
                         pred_val = np.clip(pred_val, 0, 200)
 
                         predicted_rain_7days.append(pred_val)
@@ -393,8 +393,8 @@ def run_predictions():
                             new_row[3] = current_input[-1, 3]
                         current_input = np.vstack([current_input[1:], new_row])
                     # --- ADAPTIVE SEASONAL FILTER (Applied after autoregression) ---
-                    # Filter out micro-drizzles (< 0.5mm) which are usually model noise
-                    noise_gate = 0.5
+                    # Filter out micro-drizzles (< 0.1mm) which are usually model noise
+                    noise_gate = 0.1
                     predicted_rain_7days = [0.0 if p < noise_gate else p for p in predicted_rain_7days]
 
                 else:
