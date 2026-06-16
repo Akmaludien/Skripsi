@@ -1,6 +1,8 @@
 import os
 os.environ['CUDA_VISIBLE_DEVICES'] = ''
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+# Force Keras 2 compatibility for .h5 models in TensorFlow 2.16+
+os.environ["TF_USE_LEGACY_KERAS"] = "1"
 import re
 import sqlite3
 import json

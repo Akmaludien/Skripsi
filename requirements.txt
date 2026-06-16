@@ -1,5 +1,6 @@
-﻿numpy
+numpy
 pandas
 scikit-learn
 tensorflow
+tf_keras
 influxdb-client
