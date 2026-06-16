@@ -203,7 +203,9 @@ def run_predictions():
             print(f"[predict.py] ARG model loaded: input={model_arg.input_shape}, output={model_arg.output_shape}")
 
         except Exception as e:
+            import traceback
             print(f"[predict.py] Error loading models: {e}. Cannot predict.")
+            traceback.print_exc()
             HAS_TF = False
 
     conn = get_db_connection()

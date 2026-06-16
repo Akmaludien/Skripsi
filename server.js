@@ -127,7 +127,7 @@ if (!dbExists) {
     if (fs.existsSync(schemaPath)) {
         const schema = fs.readFileSync(schemaPath, 'utf-8');
         db.exec(schema);
-        console.log('âœ“ Database schema initialized');
+        console.log('[OK] Database schema initialized');
     }
 }
 
@@ -229,7 +229,7 @@ if (stationCount && stationCount.cnt === 0) {
             }
         });
         seedTx();
-        console.log(`[DB] âœ“ ${seedStations.length} stations seeded inline`);
+        console.log(`[DB] [OK] ${seedStations.length} stations seeded inline`);
     } catch (e) {
         console.error('[DB] Auto-seed failed:', e.message);
     }
@@ -242,12 +242,12 @@ try {
         // No row exists, insert one
         db.prepare(`INSERT INTO model_performance (rmse, mae, r_squared, accuracy, training_date, model_version, notes) VALUES (?, ?, ?, ?, ?, ?, ?)`)
             .run(17.936, 13.883, 0.031, 3.1, new Date().toISOString().split('T')[0], 'BiLSTM-v3.0', 'Bi-LSTM 4 Fitur. Verified on actual BMKG data.');
-        console.log('[DB] âœ“ Model performance metrics initialized');
+        console.log('[DB] [OK] Model performance metrics initialized');
     } else if ((perf.rmse === 0 && perf.mae === 0 && perf.r_squared === 0) || perf.rmse > 10) {
         // Row exists but metrics are zero (from seed.js placeholder) or outdated (old LSTM values), update with real training values
         db.prepare(`UPDATE model_performance SET rmse=1.909, mae=1.573, r_squared=0.921, accuracy=92.1, model_version='BiLSTM-v2.0', training_date='2026-05-23', notes='Bi-LSTM (128-64-32) log-transform. Verified on training data.' WHERE id=(SELECT id FROM model_performance ORDER BY id DESC LIMIT 1)`)
             .run();
-        console.log('[DB] âœ“ Model performance metrics updated from training results');
+        console.log('[DB] [OK] Model performance metrics updated from training results');
     }
 } catch (e) {
     // Table might not exist yet, ignore
@@ -630,7 +630,7 @@ function connectReklimStations() {
                 client.subscribe(topic, { qos: 0 }, (err, granted) => {
                     const qos = granted && granted[0] ? granted[0].qos : -1;
                     if (qos !== 128 && !err) {
-                        console.log(`[Reklim] âœ“ Subscribed ${station.id}: ${topic}`);
+                        console.log(`[Reklim] [OK] Subscribed ${station.id}: ${topic}`);
                     }
                 });
             });
@@ -1644,15 +1644,13 @@ function runPrediction() {
     exec(`${pythonCmd} "${scriptPath}"`, { timeout: 300000 }, (err, stdout, stderr) => {
         // Log stdout (prediction results)
         if (stdout) {
-            const lines = stdout.trim().split('\n');
-            // Show last 3 lines for summary
-            const summary = lines.slice(-3).join(' | ');
-            console.log('[Cron] Prediction output:', summary);
+            console.log('[Cron] Prediction output:\n' + stdout.trim());
         }
-        // Log real errors (filter out TensorFlow/CUDA warnings)
+        // Log real errors (filter out TensorFlow/CUDA/absl noise)
         if (stderr) {
+            const tfNoise = ['onednn', 'cuda', 'tensorflow', 'deprecationwarning', 'absl::', 'initializelog', 'i0000', 'w0000', 'cudart_stub', 'xl_flags', 'tf_cpp', 'xla'];
             const realErrors = stderr.split('\n')
-                .filter(l => l.trim() && !l.includes('oneDNN') && !l.includes('CUDA') && !l.includes('tensorflow') && !l.includes('DeprecationWarning'))
+                .filter(l => l.trim() && !tfNoise.some(p => l.toLowerCase().includes(p)))
                 .join('\n');
             if (realErrors.trim()) {
                 console.error('[Cron] Prediction stderr:', realErrors.trim().substring(0, 500));
