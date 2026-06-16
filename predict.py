@@ -289,9 +289,8 @@ def run_predictions():
                             new_row[3] = current_input[-1, 3]
                         current_input = np.vstack([current_input[1:], new_row])
                     # --- ADAPTIVE SEASONAL FILTER (Applied after autoregression) ---
-                    current_month = datetime.now().month
-                    is_dry_season = 5 <= current_month <= 10
-                    noise_gate = 2.0 if (is_dry_season and num_features == 4) else 0.5
+                    # Filter out micro-drizzles (< 0.5mm) which are usually model noise
+                    noise_gate = 0.5
                     predicted_rain_7days = [0.0 if p < noise_gate else p for p in predicted_rain_7days]
 
                 else:
