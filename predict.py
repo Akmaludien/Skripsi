@@ -326,12 +326,10 @@ def run_predictions():
             current_model = model_arg
             current_scaler = scaler_arg
             num_features = 2
-            max_rain_val = 155.1  # Using scaler_arg max for RR_lag1
         else:
             current_model = model_aws
             current_scaler = scaler_aws
             num_features = 4
-            max_rain_val = 171.95 # Using scaler_aws max for RR_lag1
 
         df = fetch_data_from_influx(station_id, days_back=65)
 
@@ -380,7 +378,13 @@ def run_predictions():
                         input_scaled = np.clip(input_scaled, 0.0, 1.0) # Prevent out-of-bounds explosion
                         input_seq = input_scaled.reshape(1, 14, num_features)
                         pred_scaled = current_model.predict(input_seq, verbose=0)
-                        pred_val = float(pred_scaled[0, 0])
+                        
+                        # Inverse Transform khusus untuk Curah Hujan (Index 0 dari scaler)
+                        # Sesuai instruksi: model dilatih dengan target yang di-scale pakai min/max index 0
+                        min_hujan = current_scaler.data_min[0]
+                        range_hujan = current_scaler.data_range[0]
+                        pred_val = float((pred_scaled[0, 0] * range_hujan) + min_hujan)
+                        
                         pred_val = np.clip(pred_val, 0, 200)
 
                         predicted_rain_7days.append(pred_val)
