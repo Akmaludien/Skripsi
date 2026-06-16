@@ -221,7 +221,7 @@ if (stationCount && stationCount.cnt === 0) {
             { id: '14032801', name: 'ARG Cidaun', type: 'ARG', location: 'Kab. Cianjur', lat: -7.49112, lng: 107.36078, elevation: 0 },
             { id: 'STA0254', name: 'ARG Rekayasa Sukajaya', type: 'ARG', location: 'Kab. Bogor', lat: -6.62387, lng: 106.49531, elevation: 0 }
         ];
-        const insertSt = db.prepare(`INSERT OR REPLACE INTO stations (id, name, type, location, region, elevation, latitude, longitude, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Active / Normal')`);
+        const insertSt = db.prepare(`INSERT OR REPLACE INTO stations (id, name, type, location, region, elevation, latitude, longitude, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Online')`);
         const seedTx = db.transaction(() => {
             for (const s of seedStations) {
                 const region = s.location.replace('Kab. ', '').replace('Kota ', '');
@@ -746,7 +746,7 @@ async function handleSensorData(data) {
 
         // Update station last_update and status
         try {
-            db.prepare(`UPDATE stations SET last_update = ?, status = 'Active / Normal' WHERE id = ?`)
+            db.prepare(`UPDATE stations SET last_update = ?, status = 'Online' WHERE id = ?`)
                 .run(new Date().toISOString(), stationId);
         } catch(e) { console.error('[DB] Update station status failed:', e.message); }
 
@@ -999,7 +999,7 @@ app.get('/api/stations', async (req, res) => {
         
         // If InfluxDB has data for this station, it's actually online regardless of SQLite status
         if (influxData && (influxData.latest_rr != null || influxData.latest_temp != null)) {
-            return { ...s, status: 'Active / Normal', ...influxData };
+            return { ...s, status: 'Online', ...influxData };
         }
         
         // No InfluxDB data â€” check SQLite sensor_data as fallback

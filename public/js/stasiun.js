@@ -88,8 +88,6 @@ function renderTable() {
 
 function getStatusClass(status) {
     if (!status) return 'status-offline';
-    if (status.includes('Alert')) return 'status-alert';
-    if (status.includes('Warning')) return 'status-warning';
     if (status === 'Offline') return 'status-offline';
     return 'status-normal';
 }
@@ -99,17 +97,13 @@ function renderStatusSummary() {
     const container = document.getElementById('statusSummary');
     const counts = {
         total: filteredStations.length,
-        normal: filteredStations.filter(s => s.status === 'Active / Normal').length,
-        alert: filteredStations.filter(s => s.status === 'Active / Alert').length,
-        warning: filteredStations.filter(s => s.status === 'Active / Warning').length,
+        online: filteredStations.filter(s => s.status === 'Online').length,
         offline: filteredStations.filter(s => s.status === 'Offline').length,
     };
 
     container.innerHTML = `
         <span class="stat-pill"><span class="count" style="color: var(--text-primary)">${counts.total}</span> Total</span>
-        <span class="stat-pill normal"><span class="count">${counts.normal}</span> Normal</span>
-        <span class="stat-pill alert"><span class="count">${counts.alert}</span> Alert</span>
-        <span class="stat-pill warning"><span class="count">${counts.warning}</span> Warning</span>
+        <span class="stat-pill normal"><span class="count">${counts.online}</span> Online</span>
         <span class="stat-pill offline"><span class="count">${counts.offline}</span> Offline</span>
     `;
 }
