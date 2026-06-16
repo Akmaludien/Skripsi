@@ -148,6 +148,11 @@ button {
     font-family: inherit;
 }
 
+select option {
+    background-color: var(--bg-card);
+    color: var(--text-primary);
+}
+
 /* ─── Layout ──────────────────────────────────── */
 .app-layout {
     display: flex;

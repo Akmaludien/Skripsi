@@ -1249,6 +1249,7 @@ app.get('/api/model-performance', (req, res) => {
     const perf = db.prepare('SELECT * FROM model_performance ORDER BY training_date DESC LIMIT 1').get();
     res.json(perf || { 
         rmse: 6.063, 
+        baseline_rmse: 11.45,
         mae: 4.129, 
         r_squared: 0.813, 
         accuracy: 81.3, 
