@@ -18,6 +18,7 @@ except ImportError:
 
 try:
     import tensorflow as tf
+    print(f"[predict.py] TensorFlow version active: {tf.__version__}")
     from tensorflow.keras.models import load_model
     from sklearn.preprocessing import MinMaxScaler
     HAS_TF = True
@@ -195,23 +196,38 @@ def run_predictions():
                 print(f"[predict.py] AWS model size: {os.path.getsize(MODEL_AWS_PATH)} bytes")
             
             def robust_load_model(path):
-                # Strategy 1: Standard load_model (works if TF_USE_LEGACY_KERAS=1 is respected)
+                print(f"  -> [DEBUG] Checking model: {path}")
+                if not os.path.exists(path):
+                    print(f"  -> [ERROR] Model file not found!")
+                    return None
+                print(f"  -> [DEBUG] Model size: {os.path.getsize(path)} bytes")
                 try:
-                    return load_model(path, compile=False)
+                    import h5py
+                    with h5py.File(path, 'r') as f:
+                        if 'keras_version' in f.attrs:
+                            keras_version = f.attrs.get('keras_version')
+                            if isinstance(keras_version, bytes):
+                                keras_version = keras_version.decode('utf-8')
+                            print(f"  -> [DEBUG] Keras version in .h5: {keras_version}")
+                        else:
+                            print(f"  -> [DEBUG] No Keras version found in .h5 attributes")
+                except Exception as e_h5:
+                    print(f"  -> [DEBUG] Could not read h5py attrs: {e_h5}")
+
+                # Strategy 1: tf.keras.models.load_model
+                try:
+                    print("  -> Trying Strategy 1: tf.keras.models.load_model")
+                    return tf.keras.models.load_model(path, compile=False)
                 except Exception as e1:
                     print(f"  -> Strategy 1 failed: {e1}")
-                    # Strategy 2: tf.keras.models.load_model with legacy Adam
+                    # Strategy 2: tf_keras.models.load_model
                     try:
-                        return tf.keras.models.load_model(
-                            path, 
-                            custom_objects={'Adam': tf.keras.optimizers.legacy.Adam},
-                            compile=False
-                        )
+                        print("  -> Trying Strategy 2: tf_keras.models.load_model")
+                        import tf_keras
+                        return tf_keras.models.load_model(path, compile=False)
                     except Exception as e2:
                         print(f"  -> Strategy 2 failed: {e2}")
-                        # Strategy 3: keras.saving.load_model (Keras 3 native fallback)
-                        import keras
-                        return keras.saving.load_model(path)
+                        return None
             
             model_aws = robust_load_model(MODEL_AWS_PATH)
             model_aws.compile(optimizer='adam', loss='mse')
