@@ -6,12 +6,12 @@ import os
 def calculate_and_update_baseline():
     print("Menghitung RMSE Baseline (Model Persistensi)...")
     
-    db_path = 'stmkg_data.db' # Path default di root atau di folder database
+    db_path = 'weather.db' # Path default di root atau di folder database
     if not os.path.exists(db_path):
-        db_path = 'database/stmkg_data.db'
+        db_path = 'database/weather.db'
         
     if not os.path.exists(db_path):
-        print("Database stmkg_data.db tidak ditemukan!")
+        print(f"Database {db_path} tidak ditemukan!")
         return
 
     # 1. Konek ke database
