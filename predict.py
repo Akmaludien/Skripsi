@@ -128,23 +128,20 @@ def save_prediction(station_id, prediction_date, predicted_rainfall, day_horizon
     conn.commit()
     conn.close()
 
-def _load_json_scaler(path):
-    """Load a MinMaxScaler from a JSON file (custom format)."""
-    with open(path, 'r') as f:
-        s = json.load(f)
-    scaler = MinMaxScaler()
-    data_min = np.array(s['min'])
-    data_max = np.array(s['max'])
-    data_range = data_max - data_min
-    data_range[data_range == 0] = 1.0
-    scaler.min_ = -data_min / data_range
-    scaler.scale_ = 1.0 / data_range
-    scaler.data_min_ = data_min
-    scaler.data_max_ = data_max
-    scaler.data_range_ = data_range
-    scaler.n_features_in_ = len(data_min)
-    scaler.feature_range = (0, 1)
-    return scaler
+class CustomScaler:
+    def __init__(self, data_min, data_max):
+        self.data_min = np.array(data_min)
+        self.data_max = np.array(data_max)
+        self.data_range = self.data_max - self.data_min
+        self.data_range[self.data_range == 0] = 1.0
+    def transform(self, X):
+        return (np.array(X) - self.data_min) / self.data_range
+
+def _load_json_scaler(filepath):
+    import json
+    with open(filepath, 'r') as f:
+        data = json.load(f)
+    return CustomScaler(data['min'], data['max'])
 
 def _statistical_fallback(df, station_type):
     """Generate 7-day predictions using historical daily average + decay.
