@@ -22,14 +22,22 @@ try:
 except ImportError:
     pass
 
+import warnings
+try:
+    from influxdb_client.client.warnings import MissingPivotFunction
+    warnings.filterwarnings('ignore', category=MissingPivotFunction)
+except Exception:
+    pass  # Older influxdb-client versions may not have this class
+
+global_tf_error_traceback = ''
 try:
     import tensorflow as tf
     print(f"[predict.py] TensorFlow version active: {tf.__version__}")
     from tensorflow.keras.models import load_model
     from sklearn.preprocessing import MinMaxScaler
     HAS_TF = True
-except ImportError:
-    print("[predict.py] TensorFlow not installed or incompatible (Python 3.14+).")
+except Exception as e:
+    print(f"[predict.py] TensorFlow failed to import: {type(e).__name__}: {e}")
     print("[predict.py] Using 'Statistical Naive Fallback' for predictions...")
     HAS_TF = False
 
@@ -40,8 +48,8 @@ INFLUX_ORG = os.getenv("INFLUX_ORG", "SKRIPSI")
 INFLUX_BUCKET = os.getenv("INFLUX_BUCKET", "skripsi")
 
 DB_PATH = os.path.join(os.path.dirname(__file__), 'data', 'monitoring.db')
-MODEL_AWS_PATH = os.path.join(os.path.dirname(__file__), 'models', 'aws_aaws', 'model_aws_aaws.h5')
-SCALER_AWS_PATH = os.path.join(os.path.dirname(__file__), 'models', 'aws_aaws', 'scaler_aws_aaws.json')
+MODEL_AWS_PATH = os.path.join(os.path.dirname(__file__), 'models', 'aws_aaws', 'model_aws.h5')
+SCALER_AWS_PATH = os.path.join(os.path.dirname(__file__), 'models', 'aws_aaws', 'scaler_aws.json')
 MODEL_ARG_PATH = os.path.join(os.path.dirname(__file__), 'models', 'arg', 'model_arg.h5')
 SCALER_ARG_PATH = os.path.join(os.path.dirname(__file__), 'models', 'arg', 'scaler_arg.json')
 
@@ -333,8 +341,8 @@ def run_predictions():
                     df_rain_all = df['rain'].resample('1D').max() if 'rain' in df.columns else pd.Series(dtype=float)
 
                     if len(df_rain_all) < 14:
-                        print(f"  -> Not enough daily data ({len(df_rain_all)}/14). Skipping.")
-                        continue
+                        print(f"  -> Not enough daily data ({len(df_rain_all)}/14). Using statistical fallback.")
+                        predicted_rain_7days = _statistical_fallback(df, station_type)
 
                     rr_ma3_all = df_rain_all.rolling(window=3, min_periods=1).mean()
 
@@ -380,8 +388,8 @@ def run_predictions():
                     predicted_rain_7days = [0.0 if p < noise_gate else p for p in predicted_rain_7days]
 
                 else:
-                    print(f"  -> No data for {station_id}. Skipping.")
-                    continue
+                    print(f"  -> No InfluxDB data for {station_id}. Using statistical fallback.")
+                    predicted_rain_7days = _statistical_fallback(df, station_type)
             except Exception as e:
                 print(f"  -> Bi-LSTM failed: {e}. Using statistical fallback.")
                 predicted_rain_7days = _statistical_fallback(df, station_type)
