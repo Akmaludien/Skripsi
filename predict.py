@@ -188,16 +188,42 @@ def run_predictions():
 
     if HAS_TF:
         try:
-            # Load AWS/AAWS model (4 features: RR_MA3, RR_lag1, TAVG, RH_AVG)
+            print(f"[predict.py] TensorFlow version: {tf.__version__}")
             print(f"[predict.py] Loading AWS/AAWS model from {MODEL_AWS_PATH}")
-            model_aws = load_model(MODEL_AWS_PATH, compile=False)
+            print(f"[predict.py] AWS model exists: {os.path.exists(MODEL_AWS_PATH)}")
+            if os.path.exists(MODEL_AWS_PATH):
+                print(f"[predict.py] AWS model size: {os.path.getsize(MODEL_AWS_PATH)} bytes")
+            
+            def robust_load_model(path):
+                # Strategy 1: Standard load_model (works if TF_USE_LEGACY_KERAS=1 is respected)
+                try:
+                    return load_model(path, compile=False)
+                except Exception as e1:
+                    print(f"  -> Strategy 1 failed: {e1}")
+                    # Strategy 2: tf.keras.models.load_model with legacy Adam
+                    try:
+                        return tf.keras.models.load_model(
+                            path, 
+                            custom_objects={'Adam': tf.keras.optimizers.legacy.Adam},
+                            compile=False
+                        )
+                    except Exception as e2:
+                        print(f"  -> Strategy 2 failed: {e2}")
+                        # Strategy 3: keras.saving.load_model (Keras 3 native fallback)
+                        import keras
+                        return keras.saving.load_model(path)
+            
+            model_aws = robust_load_model(MODEL_AWS_PATH)
             model_aws.compile(optimizer='adam', loss='mse')
             scaler_aws = _load_json_scaler(SCALER_AWS_PATH)
             print(f"[predict.py] AWS/AAWS model loaded: input={model_aws.input_shape}, output={model_aws.output_shape}")
 
-            # Load ARG model (2 features: RR_MA3, RR_lag1)
             print(f"[predict.py] Loading ARG model from {MODEL_ARG_PATH}")
-            model_arg = load_model(MODEL_ARG_PATH, compile=False)
+            print(f"[predict.py] ARG model exists: {os.path.exists(MODEL_ARG_PATH)}")
+            if os.path.exists(MODEL_ARG_PATH):
+                print(f"[predict.py] ARG model size: {os.path.getsize(MODEL_ARG_PATH)} bytes")
+                
+            model_arg = robust_load_model(MODEL_ARG_PATH)
             model_arg.compile(optimizer='adam', loss='mse')
             scaler_arg = _load_json_scaler(SCALER_ARG_PATH)
             print(f"[predict.py] ARG model loaded: input={model_arg.input_shape}, output={model_arg.output_shape}")
