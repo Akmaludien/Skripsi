@@ -12,7 +12,14 @@ from datetime import datetime, timedelta
 from influxdb_client import InfluxDBClient
 try:
     from dotenv import load_dotenv
-    load_dotenv()
+    # Cari .env dari direktori file ini, bukan dari cwd
+    _env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env')
+    if os.path.exists(_env_path):
+        load_dotenv(_env_path)
+        print(f"[predict.py] Loaded .env from: {_env_path}")
+    else:
+        load_dotenv()  # fallback ke cwd
+        print(f"[predict.py] .env not found at {_env_path}, trying cwd")
 except ImportError:
     pass
 
@@ -198,41 +205,73 @@ def run_predictions():
             def robust_load_model(path):
                 print(f"  -> [DEBUG] Checking model: {path}")
                 if not os.path.exists(path):
-                    print(f"  -> [ERROR] Model file not found!")
+                    print(f"  -> [ERROR] Model file not found: {path}")
                     return None
-                print(f"  -> [DEBUG] Model size: {os.path.getsize(path)} bytes")
+                file_size = os.path.getsize(path)
+                print(f"  -> [DEBUG] Model size: {file_size} bytes")
+                if file_size < 1000:
+                    print(f"  -> [ERROR] Model file too small, likely corrupted!")
+                    return None
+
+                # Baca metadata keras version dari h5
                 try:
                     import h5py
                     with h5py.File(path, 'r') as f:
-                        if 'keras_version' in f.attrs:
-                            keras_version = f.attrs.get('keras_version')
-                            if isinstance(keras_version, bytes):
-                                keras_version = keras_version.decode('utf-8')
-                            print(f"  -> [DEBUG] Keras version in .h5: {keras_version}")
-                        else:
-                            print(f"  -> [DEBUG] No Keras version found in .h5 attributes")
+                        keras_ver = f.attrs.get('keras_version', b'unknown')
+                        if isinstance(keras_ver, bytes):
+                            keras_ver = keras_ver.decode('utf-8')
+                        print(f"  -> [DEBUG] Keras version in .h5: {keras_ver}")
                 except Exception as e_h5:
                     print(f"  -> [DEBUG] Could not read h5py attrs: {e_h5}")
 
-                # Strategy 1: tf.keras.models.load_model
+                # Strategy 1: tf.keras.models.load_model langsung
                 try:
-                    print("  -> Trying Strategy 1: tf.keras.models.load_model")
-                    return tf.keras.models.load_model(path, compile=False)
+                    print("  -> Trying Strategy 1: tf.keras.models.load_model(compile=False)")
+                    model = tf.keras.models.load_model(path, compile=False)
+                    print("  -> [OK] Strategy 1 berhasil!")
+                    return model
                 except Exception as e1:
-                    print(f"  -> Strategy 1 failed: {e1}")
-                    # Strategy 2: tf_keras.models.load_model
-                    try:
-                        print("  -> Trying Strategy 2: tf_keras.models.load_model")
-                        import tf_keras
-                        return tf_keras.models.load_model(path, compile=False)
-                    except Exception as e2:
-                        print(f"  -> Strategy 2 failed: {e2}")
-                        return None
+                    print(f"  -> Strategy 1 failed: {type(e1).__name__}: {e1}")
+
+                # Strategy 2: tf_keras standalone (untuk TF 2.16+)
+                try:
+                    print("  -> Trying Strategy 2: tf_keras.models.load_model(compile=False)")
+                    import tf_keras
+                    model = tf_keras.models.load_model(path, compile=False)
+                    print("  -> [OK] Strategy 2 berhasil!")
+                    return model
+                except Exception as e2:
+                    print(f"  -> Strategy 2 failed: {type(e2).__name__}: {e2}")
+
+                # Strategy 3: keras.saving.load_model (Keras 3 native)
+                try:
+                    print("  -> Trying Strategy 3: keras.saving.load_model(compile=False)")
+                    import keras
+                    model = keras.saving.load_model(path, compile=False)
+                    print("  -> [OK] Strategy 3 berhasil!")
+                    return model
+                except Exception as e3:
+                    print(f"  -> Strategy 3 failed: {type(e3).__name__}: {e3}")
+
+                # Strategy 4: safe_mode=False untuk bypass security check Keras 3
+                try:
+                    print("  -> Trying Strategy 4: tf.keras.models.load_model(safe_mode=False)")
+                    model = tf.keras.models.load_model(path, compile=False, safe_mode=False)
+                    print("  -> [OK] Strategy 4 berhasil!")
+                    return model
+                except Exception as e4:
+                    print(f"  -> Strategy 4 failed: {type(e4).__name__}: {e4}")
+
+                print(f"  -> [ERROR] Semua strategy gagal untuk {path}. Akan pakai statistical fallback.")
+                return None
             
             model_aws = robust_load_model(MODEL_AWS_PATH)
-            model_aws.compile(optimizer='adam', loss='mse')
-            scaler_aws = _load_json_scaler(SCALER_AWS_PATH)
-            print(f"[predict.py] AWS/AAWS model loaded: input={model_aws.input_shape}, output={model_aws.output_shape}")
+            if model_aws is not None:
+                model_aws.compile(optimizer='adam', loss='mse')
+                scaler_aws = _load_json_scaler(SCALER_AWS_PATH)
+                print(f"[predict.py] AWS/AAWS model loaded: input={model_aws.input_shape}, output={model_aws.output_shape}")
+            else:
+                print(f"[predict.py] WARNING: AWS/AAWS model failed to load. Will use statistical fallback for AWS/AAWS stations.")
 
             print(f"[predict.py] Loading ARG model from {MODEL_ARG_PATH}")
             print(f"[predict.py] ARG model exists: {os.path.exists(MODEL_ARG_PATH)}")
@@ -240,9 +279,12 @@ def run_predictions():
                 print(f"[predict.py] ARG model size: {os.path.getsize(MODEL_ARG_PATH)} bytes")
                 
             model_arg = robust_load_model(MODEL_ARG_PATH)
-            model_arg.compile(optimizer='adam', loss='mse')
-            scaler_arg = _load_json_scaler(SCALER_ARG_PATH)
-            print(f"[predict.py] ARG model loaded: input={model_arg.input_shape}, output={model_arg.output_shape}")
+            if model_arg is not None:
+                model_arg.compile(optimizer='adam', loss='mse')
+                scaler_arg = _load_json_scaler(SCALER_ARG_PATH)
+                print(f"[predict.py] ARG model loaded: input={model_arg.input_shape}, output={model_arg.output_shape}")
+            else:
+                print(f"[predict.py] WARNING: ARG model failed to load. Will use statistical fallback for ARG stations.")
 
         except Exception as e:
             import traceback
