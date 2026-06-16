@@ -12,14 +12,13 @@ from datetime import datetime, timedelta
 from influxdb_client import InfluxDBClient
 try:
     from dotenv import load_dotenv
-    # Cari .env dari direktori file ini, bukan dari cwd
     _env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env')
     if os.path.exists(_env_path):
-        load_dotenv(_env_path)
-        print(f"[predict.py] Loaded .env from: {_env_path}")
+        load_dotenv(_env_path, override=True)
+        print(f"[predict.py] Loaded .env from: {_env_path} (OVERRIDE=True)")
     else:
-        load_dotenv()  # fallback ke cwd
-        print(f"[predict.py] .env not found at {_env_path}, trying cwd")
+        load_dotenv(override=True)
+        print(f"[predict.py] .env not found at {_env_path}, trying cwd (OVERRIDE=True)")
 except ImportError:
     pass
 
@@ -288,8 +287,10 @@ def run_predictions():
 
         except Exception as e:
             import traceback
+            global global_tf_error_traceback
+            global_tf_error_traceback = traceback.format_exc()
             print(f"[predict.py] Error loading models: {e}. Cannot predict.")
-            traceback.print_exc()
+            print(global_tf_error_traceback)
             HAS_TF = False
 
     conn = get_db_connection()
@@ -485,3 +486,11 @@ if __name__ == "__main__":
         print(f"[Metrics] Update failed: {e}")
 
     print("Prediction task completed.")
+    if not HAS_TF:
+        print("\n" + "="*50)
+        print("CRITICAL TENSORFLOW ERROR SUMMARY:")
+        try:
+            print(global_tf_error_traceback)
+        except:
+            print("TensorFlow failed to load, but no traceback was captured.")
+        print("="*50 + "\n")

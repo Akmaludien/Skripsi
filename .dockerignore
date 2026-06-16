@@ -10,7 +10,6 @@ venv312
 .dockerignore
 
 # Environment & Secrets (NEVER bake into image)
-.env
 .env.influxdb
 
 # Database files (created at runtime)
