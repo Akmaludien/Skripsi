@@ -266,6 +266,7 @@ app.use(helmet({
                 "https://unpkg.com",         // Leaflet.js
                 "https://cdn.jsdelivr.net"   // Chart.js
             ],
+            scriptSrcAttr: ["'unsafe-inline'"],
             styleSrc: [
                 "'self'",
                 "'unsafe-inline'",          // Required: inline <style> blocks
