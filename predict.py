@@ -321,12 +321,10 @@ def run_predictions():
             current_model = model_arg
             current_scaler = scaler_arg
             num_features = 2
-            max_rain_val = 49.6
         else:
             current_model = model_aws
             current_scaler = scaler_aws
             num_features = 4
-            max_rain_val = 171.95
 
         df = fetch_data_from_influx(station_id, days_back=65)
 
@@ -374,7 +372,7 @@ def run_predictions():
                         input_scaled = current_scaler.transform(current_input)
                         input_seq = input_scaled.reshape(1, 14, num_features)
                         pred_scaled = current_model.predict(input_seq, verbose=0)
-                        pred_val = float(pred_scaled[0, 0] * max_rain_val)
+                        pred_val = float(pred_scaled[0, 0])
                         pred_val = np.clip(pred_val, 0, 200)
 
                         predicted_rain_7days.append(pred_val)
