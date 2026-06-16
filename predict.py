@@ -144,6 +144,31 @@ def _load_json_scaler(path):
     scaler.feature_range = (0, 1)
     return scaler
 
+def _statistical_fallback(df, station_type):
+    """Generate 7-day predictions using historical daily average + decay.
+    Used when TensorFlow/Bi-LSTM is unavailable or fails."""
+    if df.empty or 'rain' not in df.columns:
+        return [0.0] * 7
+    df_rain = df['rain'].resample('1D').max().dropna()
+    if len(df_rain) < 3:
+        return [0.0] * 7
+    recent = df_rain.tail(14)
+    avg_rain = float(recent.mean()) if len(recent) > 0 else 0.0
+    last_rain = float(recent.iloc[-1]) if len(recent) > 0 else 0.0
+    predictions = []
+    for day in range(7):
+        if day == 0:
+            val = last_rain * 0.6 + avg_rain * 0.4
+        else:
+            val = avg_rain * (0.92 ** day)
+        # Seasonal adjustment
+        current_month = datetime.now().month
+        if 5 <= current_month <= 10:  # Dry season in West Java
+            val *= 0.7
+        val = max(0.0, min(200.0, round(val, 1)))
+        predictions.append(val)
+    return predictions
+
 def run_predictions():
     global HAS_TF, model_rmse
     model_aws = None
@@ -273,10 +298,14 @@ def run_predictions():
                     print(f"  -> No data for {station_id}. Skipping.")
                     continue
             except Exception as e:
-                print(f"  -> Bi-LSTM prediction failed: {e}. Skipping station.")
-                continue
+                print(f"  -> Bi-LSTM failed: {e}. Using statistical fallback.")
+                predicted_rain_7days = _statistical_fallback(df, station_type)
         else:
-            print(f"  -> TensorFlow/model not available for {station_type}. Skipping.")
+            print(f"  -> TensorFlow/model not available, using statistical fallback.")
+            predicted_rain_7days = _statistical_fallback(df, station_type)
+
+        # Skip saving only if no predictions were generated
+        if not predicted_rain_7days:
             continue
 
         for i in range(7):

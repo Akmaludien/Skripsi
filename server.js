@@ -1642,16 +1642,25 @@ function runPrediction() {
     
     console.log('[Cron] Running prediction...');
     exec(`${pythonCmd} "${scriptPath}"`, { timeout: 300000 }, (err, stdout, stderr) => {
-        // TensorFlow prints warnings to stderr - ignore them
-        if (err && err.code !== 0 && !stderr.includes('oneDNN')) {
-            console.error('[Cron] Prediction failed:', err.message);
-            return;
-        }
+        // Log stdout (prediction results)
         if (stdout) {
             const lines = stdout.trim().split('\n');
-            console.log('[Cron]', lines[lines.length - 1]);
+            // Show last 3 lines for summary
+            const summary = lines.slice(-3).join(' | ');
+            console.log('[Cron] Prediction output:', summary);
         }
-        console.log('[Cron] Prediction completed successfully');
+        // Log real errors (filter out TensorFlow/CUDA warnings)
+        if (stderr) {
+            const realErrors = stderr.split('\n')
+                .filter(l => l.trim() && !l.includes('oneDNN') && !l.includes('CUDA') && !l.includes('tensorflow') && !l.includes('DeprecationWarning'))
+                .join('\n');
+            if (realErrors.trim()) {
+                console.error('[Cron] Prediction stderr:', realErrors.trim().substring(0, 500));
+            }
+        }
+        if (err) {
+            console.error('[Cron] Prediction process exited with error:', err.message);
+        }
     });
 }
 

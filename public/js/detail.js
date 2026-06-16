@@ -394,12 +394,21 @@ async function loadStationPredictions(stationId) {
             }
         }
 
-        // Determine flood risk
-        const maxRainfall = Math.max(...allDayPreds.map(p => p.predicted_rainfall));
-        const heavyDays = allDayPreds.filter(p => p.predicted_rainfall > 50);
-        const veryHeavyDays = allDayPreds.filter(p => p.predicted_rainfall > 100);
+        // Determine flood risk (only from real predictions, not empty fallbacks)
+        const realPreds = allDayPreds.filter(p => !p._empty);
+        const maxRainfall = realPreds.length > 0 ? Math.max(...realPreds.map(p => p.predicted_rainfall)) : 0;
+        const heavyDays = realPreds.filter(p => p.predicted_rainfall > 50);
+        const veryHeavyDays = realPreds.filter(p => p.predicted_rainfall > 100);
+        const allEmpty = realPreds.length === 0;
 
-        if (veryHeavyDays.length > 0) {
+        if (allEmpty) {
+            alert.style.background = 'rgba(148,163,184,0.08)';
+            alert.style.border = '1px solid rgba(148,163,184,0.15)';
+            icon.innerHTML = '<i class="ri-question-line"></i>';
+            title.textContent = 'Data Prediksi Belum Tersedia';
+            title.style.color = 'var(--text-muted)';
+            detail.textContent = 'Prediksi curah hujan 7 hari belum dihasilkan. Sistem sedang memproses data observasi untuk menghasilkan prakiraan.';
+        } else if (veryHeavyDays.length > 0) {
             alert.style.background = 'rgba(239,68,68,0.12)';
             alert.style.border = '1px solid rgba(239,68,68,0.3)';
             icon.innerHTML = '<i class="ri-checkbox-blank-circle-fill" style="color:var(--danger)"></i>';
@@ -437,6 +446,19 @@ async function loadStationPredictions(stationId) {
         tbody.innerHTML = allDayPreds.map(p => {
             const date = new Date(today.getTime() + p._day * 86400000);
             const dayLabel = p._day === 0 ? 'Hari Ini' : date.toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta', weekday: 'short', day: 'numeric', month: 'short' });
+
+            if (p._empty) {
+                return `
+                <tr style="border-bottom:1px solid rgba(148,163,184,0.1);opacity:0.6">
+                    <td style="padding:10px 8px;font-weight:600">${dayLabel}</td>
+                    <td style="padding:10px 8px;text-align:center;color:var(--text-muted)">N/A</td>
+                    <td style="padding:10px 8px;text-align:center">
+                        <span style="display:inline-block;padding:3px 8px;border-radius:4px;font-size:0.75rem;font-weight:700;background:rgba(148,163,184,0.1);color:var(--text-muted)">Belum Ada</span>
+                    </td>
+                    <td style="padding:10px 8px;text-align:center;color:var(--text-muted)">--</td>
+                </tr>`;
+            }
+
             const catColor = getCategoryColor(p.category);
             const confColor = p.confidence >= 85 ? '#22c55e' : p.confidence >= 70 ? '#eab308' : '#ef4444';
 
