@@ -34,6 +34,14 @@ def calculate_and_update_baseline():
     
     # 4. Update tabel model_performance di SQLite
     cursor = conn.cursor()
+    
+    # Otomatis tambahkan kolom baseline_rmse jika belum ada
+    try:
+        cursor.execute("ALTER TABLE model_performance ADD COLUMN baseline_rmse REAL DEFAULT 0")
+        conn.commit()
+    except sqlite3.OperationalError:
+        pass # Kolom sudah ada
+
     cursor.execute("SELECT id FROM model_performance ORDER BY training_date DESC LIMIT 1")
     row = cursor.fetchone()
     

@@ -98,6 +98,7 @@ CREATE TABLE IF NOT EXISTS commands (
 CREATE TABLE IF NOT EXISTS model_performance (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     rmse REAL DEFAULT 0,
+    baseline_rmse REAL DEFAULT 0,
     mae REAL DEFAULT 0,
     r_squared REAL DEFAULT 0,
     accuracy REAL DEFAULT 0,
