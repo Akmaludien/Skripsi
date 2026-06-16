@@ -16,7 +16,7 @@ const { InfluxDB, Point } = require('@influxdata/influxdb-client');
 
 // â”€â”€â”€ InfluxDB Config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const INFLUX_URL = process.env.INFLUX_URL || 'http://influxdb:8086';
-const INFLUX_TOKEN = 'stmkg-influx-token-2026'; // Hardcoded to override Coolify misconfiguration
+const INFLUX_TOKEN = process.env.INFLUX_TOKEN;
 const INFLUX_ORG = process.env.INFLUX_ORG || 'SKRIPSI';
 const INFLUX_BUCKET = process.env.INFLUX_BUCKET || 'skripsi';
 

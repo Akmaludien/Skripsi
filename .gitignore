@@ -3,7 +3,6 @@ node_modules/
 .venv/
 
 # Environment & Secrets
-.env
 .env.influxdb
 reklim_config.json
 
