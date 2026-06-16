@@ -5,3 +5,4 @@ tensorflow==2.15.1
 tf-keras==2.15.1
 influxdb-client
 h5py==3.11.0
+python-dotenv
