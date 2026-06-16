@@ -220,7 +220,6 @@ def run_predictions():
                     print(f"  -> [ERROR] Model file too small, likely corrupted!")
                     return None
 
-                # Baca metadata keras version dari h5
                 try:
                     import h5py
                     with h5py.File(path, 'r') as f:
@@ -231,16 +230,16 @@ def run_predictions():
                 except Exception as e_h5:
                     print(f"  -> [DEBUG] Could not read h5py attrs: {e_h5}")
 
-                # Strategy 1: tf.keras.models.load_model langsung
+                error_log = ""
                 try:
                     print("  -> Trying Strategy 1: tf.keras.models.load_model(compile=False)")
                     model = tf.keras.models.load_model(path, compile=False)
                     print("  -> [OK] Strategy 1 berhasil!")
                     return model
                 except Exception as e1:
+                    error_log += f"Strategy 1 failed: {type(e1).__name__}: {e1}\n"
                     print(f"  -> Strategy 1 failed: {type(e1).__name__}: {e1}")
 
-                # Strategy 2: tf_keras standalone (untuk TF 2.16+)
                 try:
                     print("  -> Trying Strategy 2: tf_keras.models.load_model(compile=False)")
                     import tf_keras
@@ -248,28 +247,33 @@ def run_predictions():
                     print("  -> [OK] Strategy 2 berhasil!")
                     return model
                 except Exception as e2:
+                    error_log += f"Strategy 2 failed: {type(e2).__name__}: {e2}\n"
                     print(f"  -> Strategy 2 failed: {type(e2).__name__}: {e2}")
 
-                # Strategy 3: keras.saving.load_model (Keras 3 native)
                 try:
-                    print("  -> Trying Strategy 3: keras.saving.load_model(compile=False)")
-                    import keras
-                    model = keras.saving.load_model(path, compile=False)
+                    print("  -> Trying Strategy 3: tf.keras.models.load_model with safe_mode=False")
+                    model = tf.keras.models.load_model(path, compile=False, safe_mode=False)
                     print("  -> [OK] Strategy 3 berhasil!")
                     return model
                 except Exception as e3:
+                    error_log += f"Strategy 3 failed: {type(e3).__name__}: {e3}\n"
                     print(f"  -> Strategy 3 failed: {type(e3).__name__}: {e3}")
-
-                # Strategy 4: safe_mode=False untuk bypass security check Keras 3
+                
                 try:
-                    print("  -> Trying Strategy 4: tf.keras.models.load_model(safe_mode=False)")
-                    model = tf.keras.models.load_model(path, compile=False, safe_mode=False)
+                    print("  -> Trying Strategy 4: keras.saving.load_model")
+                    import keras.saving
+                    model = keras.saving.load_model(path)
                     print("  -> [OK] Strategy 4 berhasil!")
                     return model
                 except Exception as e4:
+                    error_log += f"Strategy 4 failed: {type(e4).__name__}: {e4}\n"
                     print(f"  -> Strategy 4 failed: {type(e4).__name__}: {e4}")
 
                 print(f"  -> [ERROR] Semua strategy gagal untuk {path}. Akan pakai statistical fallback.")
+                global global_tf_error_traceback
+                global_tf_error_traceback += f"\n=== Errors for {path} ===\n{error_log}"
+                global HAS_TF
+                HAS_TF = False
                 return None
             
             model_aws = robust_load_model(MODEL_AWS_PATH)
