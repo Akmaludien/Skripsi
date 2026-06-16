@@ -178,8 +178,8 @@
             });
 
             // Prepare points for Voronoi
-            const points = stations.filter(s => s.latitude && s.longitude).map(s => [s.longitude, s.latitude]);
-            const rainfall = stations.filter(s => s.latitude && s.longitude).map(s => hours === 0 ? (s.latest_rr || 0) : (s.rainfall || 0));
+            const points = stations.filter(s => s.latitude && s.longitude).map(s => [parseFloat(s.longitude), parseFloat(s.latitude)]);
+            const rainfall = stations.filter(s => s.latitude && s.longitude).map(s => parseFloat(hours === 0 ? (s.latest_rr || 0) : (s.rainfall || 0)));
             const names = stations.filter(s => s.latitude && s.longitude).map(s => s.name);
             const types = stations.filter(s => s.latitude && s.longitude).map(s => s.type);
 
