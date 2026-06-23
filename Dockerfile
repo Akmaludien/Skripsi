@@ -25,6 +25,9 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # ─── Copy application code ───
 COPY . .
 
+# ─── Convert Keras (.h5) models to TensorFlow.js format ───
+RUN python3 convert_models.py
+
 # ─── Ensure data directory exists & seed database ───
 RUN mkdir -p /app/data && node database/seed.js
 

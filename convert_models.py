@@ -1,5 +1,6 @@
 import os
 import subprocess
+import sys
 
 def convert():
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -14,24 +15,35 @@ def convert():
         if not os.path.exists(out_dir):
             os.makedirs(out_dir)
 
-    tfjs_bin = os.path.join(base_dir, '.venv', 'Scripts', 'tensorflowjs_converter.exe')
-    if not os.path.exists(tfjs_bin):
-        tfjs_bin = "tensorflowjs_converter" # fallback to path
+    # Resolve tensorflowjs_converter: prefer same Python env, then system PATH
+    python_dir = os.path.dirname(sys.executable)
+    candidates = [
+        os.path.join(python_dir, 'tensorflowjs_converter'),
+        os.path.join(python_dir, 'tensorflowjs_converter.exe'),
+        os.path.join(python_dir, 'Scripts', 'tensorflowjs_converter.exe'),
+        'tensorflowjs_converter',
+    ]
+    tfjs_bin = next((c for c in candidates if os.path.exists(c)), 'tensorflowjs_converter')
 
-    try:
-        print("Converting AWS model...")
-        subprocess.run([tfjs_bin, "--input_format=keras", aws_h5, aws_out], check=True)
-        print("AWS model converted successfully.")
-        
-        print("Converting AAWS model...")
-        subprocess.run([tfjs_bin, "--input_format=keras", aaws_h5, aaws_out], check=True)
-        print("AAWS model converted successfully.")
-        
-        print("Converting ARG model...")
-        subprocess.run([tfjs_bin, "--input_format=keras", arg_h5, arg_out], check=True)
-        print("ARG model converted successfully.")
-    except Exception as e:
-        print(f"Error during conversion: {e}")
+    models = [
+        ('AWS',  aws_h5,  aws_out),
+        ('AAWS', aaws_h5, aaws_out),
+        ('ARG',  arg_h5,  arg_out),
+    ]
+
+    for name, h5_path, out_dir in models:
+        if not os.path.exists(h5_path):
+            print(f"[SKIP] {name} model not found at {h5_path}")
+            continue
+        try:
+            print(f"Converting {name} model...")
+            subprocess.run(
+                [tfjs_bin, '--input_format=keras', h5_path, out_dir],
+                check=True
+            )
+            print(f"{name} model converted successfully.")
+        except Exception as e:
+            print(f"[WARN] Failed to convert {name}: {e}")
 
 if __name__ == '__main__':
     convert()
