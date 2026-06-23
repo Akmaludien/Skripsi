@@ -48,8 +48,10 @@ INFLUX_ORG = os.getenv("INFLUX_ORG", "SKRIPSI")
 INFLUX_BUCKET = os.getenv("INFLUX_BUCKET", "skripsi")
 
 DB_PATH = os.path.join(os.path.dirname(__file__), 'data', 'monitoring.db')
-MODEL_AWS_PATH = os.path.join(os.path.dirname(__file__), 'models', 'aws_aaws', 'model_aws.h5')
-SCALER_AWS_PATH = os.path.join(os.path.dirname(__file__), 'models', 'aws_aaws', 'scaler_aws.json')
+MODEL_AWS_PATH = os.path.join(os.path.dirname(__file__), 'models', 'aws', 'model_aws.h5')
+SCALER_AWS_PATH = os.path.join(os.path.dirname(__file__), 'models', 'aws', 'scaler_aws.json')
+MODEL_AAWS_PATH = os.path.join(os.path.dirname(__file__), 'models', 'aaws', 'model_aaws.h5')
+SCALER_AAWS_PATH = os.path.join(os.path.dirname(__file__), 'models', 'aaws', 'scaler_aaws.json')
 MODEL_ARG_PATH = os.path.join(os.path.dirname(__file__), 'models', 'arg', 'model_arg.h5')
 SCALER_ARG_PATH = os.path.join(os.path.dirname(__file__), 'models', 'arg', 'scaler_arg.json')
 
@@ -192,6 +194,8 @@ def run_predictions():
     global HAS_TF, model_rmse
     model_aws = None
     scaler_aws = None
+    model_aaws = None
+    scaler_aaws = None
     model_arg = None
     scaler_arg = None
 
@@ -285,12 +289,20 @@ def run_predictions():
             if model_aws is not None:
                 model_aws.compile(optimizer='adam', loss='mse')
                 scaler_aws = _load_json_scaler(SCALER_AWS_PATH)
-                print(f"[predict.py] AWS/AAWS model loaded: input={model_aws.input_shape}, output={model_aws.output_shape}")
+                print(f"[predict.py] AWS model loaded: input={model_aws.input_shape}, output={model_aws.output_shape}")
             else:
-                print(f"[predict.py] WARNING: AWS/AAWS model failed to load. Will use statistical fallback for AWS/AAWS stations.")
+                print(f"[predict.py] WARNING: AWS model failed to load. Will use statistical fallback for AWS stations.")
+
+            print(f"[predict.py] Loading AAWS model from {MODEL_AAWS_PATH}")
+            model_aaws = robust_load_model(MODEL_AAWS_PATH)
+            if model_aaws is not None:
+                model_aaws.compile(optimizer='adam', loss='mse')
+                scaler_aaws = _load_json_scaler(SCALER_AAWS_PATH)
+                print(f"[predict.py] AAWS model loaded: input={model_aaws.input_shape}, output={model_aaws.output_shape}")
+            else:
+                print(f"[predict.py] WARNING: AAWS model failed to load. Will use statistical fallback for AAWS stations.")
 
             print(f"[predict.py] Loading ARG model from {MODEL_ARG_PATH}")
-            print(f"[predict.py] ARG model exists: {os.path.exists(MODEL_ARG_PATH)}")
             if os.path.exists(MODEL_ARG_PATH):
                 print(f"[predict.py] ARG model size: {os.path.getsize(MODEL_ARG_PATH)} bytes")
                 
@@ -325,11 +337,14 @@ def run_predictions():
         if station_type == 'ARG':
             current_model = model_arg
             current_scaler = scaler_arg
-            num_features = 2
+        elif station_type == 'AAWS':
+            current_model = model_aaws
+            current_scaler = scaler_aaws
         else:
             current_model = model_aws
             current_scaler = scaler_aws
-            num_features = 4
+        
+        num_features = 2
 
         df = fetch_data_from_influx(station_id, days_back=65)
 
@@ -358,18 +373,8 @@ def run_predictions():
                         'RR_lag1': df_rain_all.tail(14).values
                     })
 
-                    if num_features == 4:
-                        for col, mapped_col in [('temp', 'TAVG'), ('rh', 'RH_AVG')]:
-                            if col in df.columns and df[col].notna().any():
-                                df_daily_multi[mapped_col] = df[col].resample('1D').mean().tail(14).values
-                            else:
-                                defaults = {'temp': 26.0, 'rh': 80.0}
-                                df_daily_multi[mapped_col] = defaults[col]
-                        df_daily_multi = df_daily_multi.ffill().bfill().fillna(0)
-                        df_daily_multi = df_daily_multi[['RR_MA3', 'RR_lag1', 'TAVG', 'RH_AVG']]
-                    else:
-                        df_daily_multi = df_daily_multi.ffill().bfill().fillna(0)
-                        df_daily_multi = df_daily_multi[['RR_MA3', 'RR_lag1']]
+                    df_daily_multi = df_daily_multi.ffill().bfill().fillna(0)
+                    df_daily_multi = df_daily_multi[['RR_MA3', 'RR_lag1']]
 
                     current_input = df_daily_multi.values
 
@@ -392,9 +397,6 @@ def run_predictions():
                         new_row = np.zeros(num_features)
                         new_row[1] = pred_val
                         new_row[0] = (current_input[-2, 1] + current_input[-1, 1] + pred_val) / 3.0
-                        if num_features == 4:
-                            new_row[2] = current_input[-1, 2]
-                            new_row[3] = current_input[-1, 3]
                         current_input = np.vstack([current_input[1:], new_row])
                     # --- ADAPTIVE SEASONAL FILTER (Applied after autoregression) ---
                     # Filter out micro-drizzles (< 0.1mm) which are usually model noise

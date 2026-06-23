@@ -15,5 +15,6 @@ const fixWeights = (path) => {
     }
 };
 
-fixWeights('models/aws_aaws/tfjs/model.json');
+fixWeights('models/aws/tfjs/model.json');
+fixWeights('models/aaws/tfjs/model.json');
 fixWeights('models/arg/tfjs/model.json');

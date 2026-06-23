@@ -3,8 +3,10 @@ const fs = require('fs');
 const path = require('path');
 
 let modelAWS = null;
+let modelAAWS = null;
 let modelARG = null;
 let scalerAWS = null;
+let scalerAAWS = null;
 let scalerARG = null;
 
 class LocalFileIO {
@@ -25,9 +27,11 @@ class LocalFileIO {
 async function initModels() {
     try {
         console.log("[ML Inference] Starting model initialization...");
-        const awsModelPath = path.join(__dirname, '../models/aws_aaws/tfjs/model.json');
+        const awsModelPath = path.join(__dirname, '../models/aws/tfjs/model.json');
+        const aawsModelPath = path.join(__dirname, '../models/aaws/tfjs/model.json');
         const argModelPath = path.join(__dirname, '../models/arg/tfjs/model.json');
-        const awsScalerPath = path.join(__dirname, '../models/aws_aaws/scaler_aws.json');
+        const awsScalerPath = path.join(__dirname, '../models/aws/scaler_aws.json');
+        const aawsScalerPath = path.join(__dirname, '../models/aaws/scaler_aaws.json');
         const argScalerPath = path.join(__dirname, '../models/arg/scaler_arg.json');
 
         if (fs.existsSync(awsModelPath)) {
@@ -35,6 +39,13 @@ async function initModels() {
             console.log("[ML Inference] Model AWS loaded successfully.");
         } else {
             console.warn(`[ML Warn] AWS model not found at ${awsModelPath}`);
+        }
+
+        if (fs.existsSync(aawsModelPath)) {
+            modelAAWS = await tf.loadLayersModel(new LocalFileIO(aawsModelPath));
+            console.log("[ML Inference] Model AAWS loaded successfully.");
+        } else {
+            console.warn(`[ML Warn] AAWS model not found at ${aawsModelPath}`);
         }
 
         if (fs.existsSync(argModelPath)) {
@@ -46,6 +57,10 @@ async function initModels() {
 
         if (fs.existsSync(awsScalerPath)) {
             scalerAWS = JSON.parse(fs.readFileSync(awsScalerPath, 'utf8'));
+        }
+        
+        if (fs.existsSync(aawsScalerPath)) {
+            scalerAAWS = JSON.parse(fs.readFileSync(aawsScalerPath, 'utf8'));
         }
         
         if (fs.existsSync(argScalerPath)) {
@@ -93,10 +108,20 @@ async function predictWeather(stationType, dataHistoris) {
         
         inputData = fillNullValues(inputData, defaults);
 
-        const model = (stationType === 'AWS' || stationType === 'AAWS') ? modelAWS : modelARG;
-        const scaler = (stationType === 'AWS' || stationType === 'AAWS') ? scalerAWS : scalerARG;
+        let currentModel = modelAWS;
+        let currentScaler = scalerAWS;
+        let isArg = (stationType === 'ARG');
+        let isAaws = (stationType === 'AAWS');
 
-        if (!model || !scaler) {
+        if (isArg) {
+            currentModel = modelARG;
+            currentScaler = scalerARG;
+        } else if (isAaws) {
+            currentModel = modelAAWS;
+            currentScaler = scalerAAWS;
+        }
+
+        if (!currentModel || !currentScaler) {
             throw new Error(`Model atau scaler untuk ${stationType} belum ter-load.`);
         }
 
