@@ -328,10 +328,10 @@ function renderCharts(data) {
 }
 
 function renderConfusionMatrix(data) {
-    const ctx = document.getElementById('confusionMatrixChart').getContext('2d');
-    if (charts.confusion) charts.confusion.destroy();
+    const container = document.getElementById('confusionMatrixChart').parentElement;
+    // Hapus canvas yang ada
+    container.innerHTML = '';
     
-    // 5x5 Matrix including TIDAK HUJAN
     const cats = ['TIDAK HUJAN', 'RINGAN', 'SEDANG', 'LEBAT', 'SANGAT LEBAT'];
     
     const matrix = {
@@ -350,25 +350,41 @@ function renderConfusionMatrix(data) {
         }
     });
 
-    charts.confusion = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: cats.map(c => 'Act: ' + c),
-            datasets: [
-                { label: 'Pred Tidak Hujan', data: cats.map(c => matrix[c]['TIDAK HUJAN']), backgroundColor: '#94a3b8' },
-                { label: 'Pred Ringan', data: cats.map(c => matrix[c]['RINGAN']), backgroundColor: '#3b82f6' },
-                { label: 'Pred Sedang', data: cats.map(c => matrix[c]['SEDANG']), backgroundColor: '#22c55e' },
-                { label: 'Pred Lebat', data: cats.map(c => matrix[c]['LEBAT']), backgroundColor: '#eab308' },
-                { label: 'Pred Sgt Lebat', data: cats.map(c => matrix[c]['SANGAT LEBAT']), backgroundColor: '#ef4444' }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true, title: { display: true, text: 'Jumlah Observasi' } } },
-            plugins: { tooltip: { mode: 'index' } }
+    let html = `
+    <table class="verify-table" style="width: 100%; text-align: center; border-collapse: collapse;">
+        <thead>
+            <tr>
+                <th style="background: var(--bg-card); border-bottom: 2px solid var(--border-color);" colspan="2" rowspan="2"></th>
+                <th style="background: var(--bg-card); border-bottom: 1px solid var(--border-color);" colspan="5">Aktual (X)</th>
+            </tr>
+            <tr>
+                ${cats.map(c => `<th style="background: var(--bg-body); border-bottom: 2px solid var(--border-color); font-size: 0.8rem;">${c}</th>`).join('')}
+            </tr>
+        </thead>
+        <tbody>
+    `;
+
+    cats.forEach((catPred, idx) => {
+        html += `<tr>`;
+        if (idx === 0) {
+            html += `<td rowspan="5" style="background: var(--bg-card); font-weight: bold; border-right: 1px solid var(--border-color); vertical-align: middle;">
+                        <div style="writing-mode: vertical-rl; transform: rotate(180deg); margin: 0 auto;">Prediksi (Y)</div>
+                     </td>`;
         }
+        html += `<td style="background: var(--bg-body); font-weight: bold; font-size: 0.8rem; border-right: 2px solid var(--border-color); text-align: left;">${catPred}</td>`;
+        
+        cats.forEach(catAct => {
+            const count = matrix[catAct][catPred];
+            const isMatch = catAct === catPred;
+            // Highlight diagonal (benar) dengan warna hijau transparan
+            const bg = isMatch && count > 0 ? 'rgba(34, 197, 94, 0.2)' : (count > 0 ? 'rgba(239, 68, 68, 0.1)' : 'transparent');
+            html += `<td style="background: ${bg}; border: 1px solid var(--border-color);">${count === 0 ? '-' : count}</td>`;
+        });
+        html += `</tr>`;
     });
+
+    html += `</tbody></table>`;
+    container.innerHTML = html;
 }
 
 function renderTypeBreakdown(data) {
