@@ -38,21 +38,21 @@ async function initModels() {
             modelAWS = await tf.loadLayersModel(new LocalFileIO(awsModelPath));
             console.log("[ML Inference] Model AWS loaded successfully.");
         } else {
-            console.warn(`[ML Warn] AWS model not found at ${awsModelPath}`);
+            console.log(`[ML Info] TFJS model not used (AWS predictions handled by Python): ${awsModelPath}`);
         }
 
         if (fs.existsSync(aawsModelPath)) {
             modelAAWS = await tf.loadLayersModel(new LocalFileIO(aawsModelPath));
             console.log("[ML Inference] Model AAWS loaded successfully.");
         } else {
-            console.warn(`[ML Warn] AAWS model not found at ${aawsModelPath}`);
+            console.log(`[ML Info] TFJS model not used (AAWS predictions handled by Python): ${aawsModelPath}`);
         }
 
         if (fs.existsSync(argModelPath)) {
             modelARG = await tf.loadLayersModel(new LocalFileIO(argModelPath));
             console.log("[ML Inference] Model ARG loaded successfully.");
         } else {
-            console.warn(`[ML Warn] ARG model not found at ${argModelPath}`);
+            console.log(`[ML Info] TFJS model not used (ARG predictions handled by Python): ${argModelPath}`);
         }
 
         if (fs.existsSync(awsScalerPath)) {
