@@ -1,8 +1,7 @@
 numpy
 pandas
 scikit-learn
-tensorflow==2.15.1
-tf-keras==2.15.1
+tensorflow==2.16.1
 influxdb-client
 h5py==3.11.0
 python-dotenv
