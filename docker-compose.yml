@@ -35,7 +35,7 @@ services:
       - NODE_ENV=production
       - PORT=3001
       - INFLUX_URL=http://influxdb:8086
-      - PYTHON_CMD=/app/venv/bin/python3
+      - PYTHON_CMD=python3
     volumes:
       - app-data:/app/data
     healthcheck:
