@@ -1,44 +1,43 @@
-# ─── Multi-stage Dockerfile for STMKG Monitoring System ───
-# Stage 1: Node.js + Python (combined runtime)
+# Dockerfile for STMKG Monitoring System
+# Base: Python 3.11 (native TF support) + Node.js 22
 
-FROM node:22-slim AS base
+FROM python:3.11-slim AS base
 
-# Install Python 3.12 + system deps
+# Install Node.js 22 + system deps
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3 python3-pip python3-venv python3-dev \
-    build-essential curl \
+    curl build-essential \
+    && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# ─── Node.js dependencies ───
-COPY package.json package-lock.json ./
-RUN npm ci --omit=dev
-
-# ─── Python dependencies ───
-RUN python3 -m venv /app/venv
-ENV PATH="/app/venv/bin:$PATH"
+# Python dependencies
 COPY requirements.txt ./
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-# ─── Copy application code ───
+# Node.js dependencies
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
+
+# Copy application code
 COPY . .
 
-# ─── Ensure data directory exists & seed database ───
+# Ensure data directory exists and seed database
 RUN mkdir -p /app/data && node database/seed.js
 
-# ─── Environment ───
+# Environment
 ENV NODE_ENV=production
 ENV PORT=3001
-ENV PYTHON_CMD=/app/venv/bin/python3
+ENV PYTHON_CMD=python3
 
-# ─── Expose port ───
+# Expose port
 EXPOSE 3001
 
-# ─── Health check ───
+# Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s \
     CMD curl -f http://localhost:3001/api/stations || exit 1
 
-# ─── Start server ───
+# Start server
 CMD ["node", "server.js"]
