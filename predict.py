@@ -346,7 +346,7 @@ def run_predictions():
         
         num_features = 2
 
-        df = fetch_data_from_influx(station_id, days_back=65)
+        df = fetch_data_from_influx(station_id, days_back=100)
 
         if df.empty:
             print(f"  -> No data found for {station_id}.")
@@ -362,15 +362,15 @@ def run_predictions():
                 if not df.empty:
                     df_rain_all = df['rain'].resample('1D').max() if 'rain' in df.columns else pd.Series(dtype=float)
 
-                    if len(df_rain_all) < 14:
-                        print(f"  -> Not enough daily data ({len(df_rain_all)}/14). Using statistical fallback.")
+                    if len(df_rain_all) < 60:
+                        print(f"  -> Not enough daily data ({len(df_rain_all)}/60). Using statistical fallback.")
                         predicted_rain_7days = _statistical_fallback(df, station_type)
 
                     rr_ma3_all = df_rain_all.rolling(window=3, min_periods=1).mean()
 
                     df_daily_multi = pd.DataFrame({
-                        'RR_MA3': rr_ma3_all.tail(14).values,
-                        'RR_lag1': df_rain_all.tail(14).values
+                        'RR_MA3': rr_ma3_all.tail(60).values,
+                        'RR_lag1': df_rain_all.tail(60).values
                     })
 
                     df_daily_multi = df_daily_multi.ffill().bfill().fillna(0)
@@ -381,7 +381,7 @@ def run_predictions():
                     for day_ahead in range(7):
                         input_scaled = current_scaler.transform(current_input)
                         input_scaled = np.clip(input_scaled, 0.0, 1.0) # Prevent out-of-bounds explosion
-                        input_seq = input_scaled.reshape(1, 14, num_features)
+                        input_seq = input_scaled.reshape(1, 60, num_features)
                         pred_scaled = current_model.predict(input_seq, verbose=0)
                         
                         # Inverse Transform khusus untuk Curah Hujan (Index 0 dari scaler)
