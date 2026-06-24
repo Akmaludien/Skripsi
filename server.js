@@ -377,11 +377,6 @@ function connectMQTT() {
     mqttClient.on('message', (topic, message) => {
         try {
             const rawMessage = message.toString();
-            try {
-                if (Math.random() < 0.05) { // Only log 5% of the time to avoid spamming too much, but enough to get a screenshot
-                    console.log(`\n[RAW PAYLOAD AWS/ARG] Topic: ${topic}\n`, JSON.stringify(JSON.parse(rawMessage), null, 2));
-                }
-            } catch (e) {}
             // console.log(`\n[MQTT DEBUG] Topic: ${topic} | Raw Msg: ${rawMessage.substring(0, 100)}...`);
             let payload = JSON.parse(rawMessage);
             
@@ -644,7 +639,7 @@ function connectReklimStations() {
         client.on('message', (topic, message) => {
             try {
                 const rawMessage = message.toString();
-                console.log(`\n[RAW PAYLOAD AAWS] Topic: ${topic}\n`, JSON.stringify(JSON.parse(rawMessage), null, 2));
+                console.log(`[Reklim] DATA RECEIVED from ${station.id}! Topic: ${topic}`);
                 let payload = JSON.parse(rawMessage);
 
                 if (payload && payload.data && Array.isArray(payload.data) && payload.data[0]) {
