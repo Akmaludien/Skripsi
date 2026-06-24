@@ -432,8 +432,10 @@ if __name__ == "__main__":
         cursor = conn.cursor()
         yesterday = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
         preds = cursor.execute('''
-            SELECT p.station_id, p.predicted_rainfall 
-            FROM predictions p WHERE p.prediction_date = ?
+            SELECT p.station_id, p.predicted_rainfall, s.type 
+            FROM predictions p 
+            JOIN stations s ON p.station_id = s.id
+            WHERE p.prediction_date = ?
         ''', (yesterday,)).fetchall()
 
         if preds and INFLUX_TOKEN:
@@ -454,21 +456,30 @@ if __name__ == "__main__":
                     actual_map[r['id']] = r['_value'] or 0
 
             errors = []
-            for station_id, pred_val in preds:
+            type_errors = {'AWS': [], 'AAWS': [], 'ARG': []}
+            for station_id, pred_val, s_type in preds:
                 if station_id in actual_map:
-                    errors.append((pred_val, actual_map[station_id]))
+                    err_tup = (pred_val, actual_map[station_id])
+                    errors.append(err_tup)
+                    if s_type in type_errors:
+                        type_errors[s_type].append(err_tup)
 
             if len(errors) >= 5:
                 import math
-                n = len(errors)
-                mse = sum((p - a) ** 2 for p, a in errors) / n
-                rmse = math.sqrt(mse)
-                mae = sum(abs(p - a) for p, a in errors) / n
-                y_actual = [e[1] for e in errors]
-                ss_res = sum((a - p) ** 2 for p, a in errors)
-                mean_actual = sum(y_actual) / n
-                ss_tot = sum((a - mean_actual) ** 2 for a in y_actual)
-                r2 = 1 - (ss_res / ss_tot) if ss_tot > 0 else 0
+                def calc_metrics(err_list):
+                    if not err_list: return 0, 0, 0
+                    n = len(err_list)
+                    mse = sum((p - a) ** 2 for p, a in err_list) / n
+                    c_rmse = math.sqrt(mse)
+                    c_mae = sum(abs(p - a) for p, a in err_list) / n
+                    y_act = [e[1] for e in err_list]
+                    ss_res = sum((a - p) ** 2 for p, a in err_list)
+                    mean_act = sum(y_act) / n
+                    ss_tot = sum((a - mean_act) ** 2 for a in y_act)
+                    c_r2 = 1 - (ss_res / ss_tot) if ss_tot > 0 else 0
+                    return c_rmse, c_mae, c_r2
+
+                rmse, mae, r2 = calc_metrics(errors)
                 accuracy = max(0, min(100, r2 * 100))
 
                 if r2 >= 0.65:
@@ -482,6 +493,15 @@ if __name__ == "__main__":
                           datetime.now().strftime('%Y-%m-%d'),
                           f'Auto-verified against {len(errors)} stations on {yesterday}'))
                     print(f"[Metrics] Updated: RMSE={rmse:.2f}, MAE={mae:.2f}, R2={r2:.3f}")
+                    
+                    breakdown_str = []
+                    for t in ['AWS', 'AAWS', 'ARG']:
+                        if type_errors[t]:
+                            t_rmse, t_mae, t_r2 = calc_metrics(type_errors[t])
+                            breakdown_str.append(f"{t} (RMSE={t_rmse:.2f}, MAE={t_mae:.2f}, R2={t_r2:.3f})")
+                        else:
+                            breakdown_str.append(f"{t} (No Data)")
+                    print(f"  -> [Breakdown] {', '.join(breakdown_str)}")
                 else:
                     conn.execute('''
                         UPDATE model_performance 
