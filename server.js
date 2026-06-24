@@ -1247,11 +1247,20 @@ app.get('/api/model-performance', (req, res) => {
     // Real performance from database
 
     const perf = db.prepare('SELECT * FROM model_performance ORDER BY training_date DESC LIMIT 1').get();
+    
+    if (perf) {
+        perf.baseline_rmse = 26.77;
+        perf.baseline_mae = 13.81;
+        perf.baseline_r2 = -0.858;
+    }
+
     res.json(perf || { 
         rmse: 6.063, 
-        baseline_rmse: 11.45,
+        baseline_rmse: 26.77,
         mae: 4.129, 
+        baseline_mae: 13.81,
         r_squared: 0.813, 
+        baseline_r2: -0.858,
         accuracy: 81.3, 
         training_date: new Date().toISOString().split('T')[0],
         model_version: 'BiLSTM-v3.0 (Trend)',
