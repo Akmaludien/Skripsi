@@ -21,6 +21,9 @@ async function initVerifikasi() {
         document.getElementById('valBaselineRmse').textContent = perf.baseline_rmse ? perf.baseline_rmse.toFixed(2) : '0.0';
         document.getElementById('valMae').textContent = perf.mae ? perf.mae.toFixed(2) : '0.0';
         document.getElementById('valR2').textContent = perf.r_squared.toFixed(3);
+        if (document.getElementById('valBaselineR2')) {
+            document.getElementById('valBaselineR2').textContent = perf.baseline_r2 !== undefined ? perf.baseline_r2.toFixed(3) : '0.000';
+        }
         if (perf.accuracy !== undefined) {
             const accVal = perf.accuracy > 1 ? perf.accuracy : perf.accuracy * 100;
             document.getElementById('valAccuracy').textContent = accVal.toFixed(1) + '%';
