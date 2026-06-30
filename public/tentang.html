@@ -131,8 +131,8 @@
     <text x="70" y="510" class="layer-title" style="fill: #00796B; text-anchor: start; font-size: 18px;">LAYER 3: Application Server (Node.js + Express)</text>
     <rect x="100" y="530" width="230" height="130" fill="#00897B" rx="8" class="layer-bg"/>
     <text x="215" y="555" class="box-title" style="font-size: 14px;">Express REST API</text>
-    <text x="215" y="580" class="box-text">HTTP Endpoints</text>
-    <text x="215" y="600" class="box-text" style="font-size: 11px;">Data Query &amp; Serve</text>
+    <text x="215" y="580" class="box-text">Modular MVC (src/)</text>
+    <text x="215" y="600" class="box-text" style="font-size: 11px;">Controllers &amp; Routes</text>
     <text x="215" y="620" class="box-text" style="font-size: 11px; font-style: italic;">Port 3001</text>
     <rect x="360" y="530" width="230" height="130" fill="#00897B" rx="8" class="layer-bg"/>
     <text x="475" y="555" class="box-title" style="font-size: 14px;">MQTT Subscriber</text>
@@ -204,15 +204,22 @@
                     <div class="flow-step">
                         <div class="flow-num">3</div>
                         <div class="flow-content">
-                            <h4>🧠 Prediksi (Bi-LSTM)</h4>
-                            <p>Setiap 6 jam, model Bidirectional LSTM menganalisis 60 hari data historis dan menghasilkan prediksi curah hujan untuk 7 hari ke depan per stasiun.</p>
+                            <h4>🧠 Prediksi (Bi-LSTM) & Filter Musim</h4>
+                            <p>Setiap 6 jam, model Bidirectional LSTM menganalisis data historis dan menghasilkan prediksi 7 hari ke depan per stasiun. Terdapat <strong>Adaptive Seasonal Filter</strong> untuk penyesuaian intensitas saat musim kemarau demi menekan tingkat error over-prediction.</p>
                         </div>
                     </div>
                     <div class="flow-step">
                         <div class="flow-num">4</div>
                         <div class="flow-content">
+                            <h4><i class="ri-check-double-line"></i> Verifikasi Model & Metrik Aktual</h4>
+                            <p>Sistem memverifikasi hasil prediksi secara otomatis dan menghitung performa model harian (RMSE, MAE, R², POD, FAR, CSI) yang dapat dipantau langsung pada Dashboard Verifikasi untuk analisis Skripsi.</p>
+                        </div>
+                    </div>
+                    <div class="flow-step">
+                        <div class="flow-num">5</div>
+                        <div class="flow-content">
                             <h4><i class="ri-bar-chart-line"></i> Visualisasi & Alert (WebSocket)</h4>
-                            <p>Dashboard menampilkan data real-time via WebSocket. Jika curah hujan melebihi 50mm, sistem otomatis mengirim peringatan ke semua client yang terhubung.</p>
+                            <p>Dashboard menampilkan data real-time via WebSocket. Jika curah hujan melebihi ambang batas, sistem otomatis mengirim peringatan ke semua client yang terhubung.</p>
                         </div>
                     </div>
                     <div class="flow-step">
@@ -229,8 +236,8 @@
                     <h3 style="font-size: 1.2rem; margin-bottom: 20px;"><i class="ri-tools-line"></i> Technology Stack</h3>
                     <div class="tech-grid">
                         <div class="tech-card">
-                            <h4><i class="ri-checkbox-blank-circle-fill" style="color:var(--success)"></i> Node.js</h4>
-                            <p>Runtime server utama. Menangani REST API, MQTT subscription, WebSocket broadcasting, dan bridge ke Python prediction engine.</p>
+                            <h4><i class="ri-checkbox-blank-circle-fill" style="color:var(--success)"></i> Node.js (Modular MVC)</h4>
+                            <p>Runtime server utama yang kini berjalan dengan arsitektur terstruktur (src/). Menangani REST API, MQTT, WebSocket, dan cron job.</p>
                         </div>
                         <div class="tech-card">
                             <h4><i class="ri-database-2-line"></i> InfluxDB</h4>
@@ -245,8 +252,8 @@
                             <p>Protokol IoT lightweight untuk komunikasi real-time antara datalogger stasiun dan server. QoS 0 untuk efisiensi bandwidth.</p>
                         </div>
                         <div class="tech-card">
-                            <h4>🤖 TensorFlow / Keras</h4>
-                            <p>Framework Deep Learning untuk model Bidirectional LSTM. Dilatih dengan data historis 5 tahun dari stasiun BMKG.</p>
+                            <h4>🤖 TensorFlow 2.20.0</h4>
+                            <p>Framework Deep Learning untuk model Bidirectional LSTM. Dilengkapi Adaptive Seasonal Filter untuk menekan error prediksi.</p>
                         </div>
                         <div class="tech-card">
                             <h4><i class="ri-map-2-line"></i> Leaflet.js</h4>

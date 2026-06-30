@@ -40,4 +40,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=30s \
     CMD curl -f http://localhost:3001/api/stations || exit 1
 
 # Start server
-CMD ["node", "server.js"]
+CMD ["node", "src/server.js"]

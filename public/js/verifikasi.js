@@ -11,26 +11,14 @@ let currentType = 'all';
 let currentSeason = 'all';
 let currentDate = '';
 
+let modelMetrics = null;
+
 async function initVerifikasi() {
     try {
-        // Fetch Model Overall Performance (Global)
         const perfResponse = await fetch('/api/model-performance');
-        const perf = await perfResponse.json();
+        modelMetrics = await perfResponse.json();
         
-        document.getElementById('valRmse').textContent = perf.rmse ? perf.rmse.toFixed(2) : '0.0';
-        document.getElementById('valBaselineRmse').textContent = perf.baseline_rmse ? perf.baseline_rmse.toFixed(2) : '0.0';
-        document.getElementById('valMae').textContent = perf.mae ? perf.mae.toFixed(2) : '0.0';
-        if (document.getElementById('valBaselineMae')) {
-            document.getElementById('valBaselineMae').textContent = perf.baseline_mae ? perf.baseline_mae.toFixed(2) : '0.0';
-        }
-        document.getElementById('valR2').textContent = perf.r_squared.toFixed(3);
-        if (document.getElementById('valBaselineR2')) {
-            document.getElementById('valBaselineR2').textContent = perf.baseline_r2 !== undefined ? perf.baseline_r2.toFixed(3) : '0.000';
-        }
-        if (perf.accuracy !== undefined) {
-            const accVal = perf.accuracy > 1 ? perf.accuracy : perf.accuracy * 100;
-            document.getElementById('valAccuracy').textContent = accVal.toFixed(1) + '%';
-        }
+        updateMetricsCard(currentType);
 
         // Setup UI Listeners
         setupFilterListeners();
@@ -43,6 +31,24 @@ async function initVerifikasi() {
     }
 }
 
+function updateMetricsCard(type) {
+    if (!modelMetrics) return;
+    let metrics;
+    if (type === 'all' || !modelMetrics[type]) {
+        // Just show AWS as baseline if 'all' is selected
+        metrics = modelMetrics['AWS']; 
+    } else {
+        metrics = modelMetrics[type];
+    }
+    
+    if (document.getElementById('valRmse')) document.getElementById('valRmse').textContent = metrics.rmse.toFixed(2);
+    if (document.getElementById('valMae')) document.getElementById('valMae').textContent = metrics.mae.toFixed(2);
+    if (document.getElementById('valR2')) document.getElementById('valR2').textContent = metrics.r2.toFixed(3);
+    if (document.getElementById('valPod')) document.getElementById('valPod').textContent = metrics.pod.toFixed(3);
+    if (document.getElementById('valFar')) document.getElementById('valFar').textContent = metrics.far.toFixed(3);
+    if (document.getElementById('valCsi')) document.getElementById('valCsi').textContent = metrics.csi.toFixed(3);
+}
+
 function setupFilterListeners() {
     const typeFilter = document.getElementById('typeFilter');
     const dateFilter = document.getElementById('dateFilter');
@@ -52,6 +58,7 @@ function setupFilterListeners() {
     if (typeFilter) {
         typeFilter.addEventListener('change', (e) => {
             currentType = e.target.value;
+            updateMetricsCard(currentType);
             fetchAndRenderVerification();
         });
     }

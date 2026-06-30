@@ -24,13 +24,13 @@ function initDatePicker() {
     const today = new Date();
     picker.value = today.toISOString().split('T')[0];
     picker.min = today.toISOString().split('T')[0];
-    const maxDate = new Date(today.getTime() + 6 * 86400000);
+    const maxDate = new Date(today.getTime() + 7 * 86400000);
     picker.max = maxDate.toISOString().split('T')[0];
 
     picker.addEventListener('change', () => {
         const selected = new Date(picker.value);
         const diff = Math.round((selected - today) / 86400000);
-        currentDay = Math.max(0, Math.min(6, diff));
+        currentDay = Math.max(0, Math.min(7, diff));
         // Update active day tab
         document.querySelectorAll('.day-tab').forEach(btn => {
             btn.classList.toggle('active', parseInt(btn.dataset.day) === currentDay);
@@ -44,7 +44,7 @@ function generateDayTabs() {
     const container = document.getElementById('dayTabs');
     const days = [];
     const today = new Date();
-    for (let i = 0; i < 7; i++) {
+    for (let i = 0; i < 8; i++) {
         const date = new Date(today.getTime() + i * 86400000);
         const dayName = i === 0 ? 'Hari Ini' : date.toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta', weekday: 'short' });
         const dateStr = date.toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta', day: 'numeric', month: 'short' });
@@ -86,7 +86,10 @@ async function loadRegions() {
 
 // ─── Setup Filters ─────────────────────────────────
 function setupFilters() {
-    document.getElementById('typeFilter').addEventListener('change', loadPredictions);
+    document.getElementById('typeFilter').addEventListener('change', () => {
+        loadPredictions();
+        loadModelPerformance();
+    });
     document.getElementById('regionFilter').addEventListener('change', loadPredictions);
 }
 
@@ -366,30 +369,36 @@ function renderCategoryDistribution(predictions) {
     }).join('');
 }
 
-// ─── Model Performance ─────────────────────────────
+let modelMetricsData = null;
+
 async function loadModelPerformance() {
     try {
-        const perf = await API.get('/api/model-performance');
+        if (!modelMetricsData) {
+            modelMetricsData = await API.get('/api/model-performance');
+        }
+        
+        const stationType = document.getElementById('typeFilter').value;
+        let perf;
+        if (stationType === 'all' || !modelMetricsData[stationType]) {
+            perf = modelMetricsData['AWS'];
+        } else {
+            perf = modelMetricsData[stationType];
+        }
 
-        document.getElementById('perfRmse').textContent = formatNumber(perf.rmse);
-        document.getElementById('perfMae').textContent = formatNumber(perf.mae);
-        document.getElementById('perfR2').textContent = formatNumber(perf.r_squared, 2);
-        document.getElementById('perfR2Change').innerHTML = perf.r_squared >= 0.7 ? '<i class="ri-check-line"></i> Good Fit' : '<i class="ri-alert-line"></i> Underfitting';
-        document.getElementById('perfR2Change').style.color = perf.r_squared >= 0.7 ? 'var(--success)' : 'var(--warning)';
-        document.getElementById('perfDate').textContent = formatDate(perf.training_date);
-        document.getElementById('perfNotes').textContent = perf.notes || '';
+        if (document.getElementById('perfRmse')) document.getElementById('perfRmse').textContent = formatNumber(perf.rmse);
+        if (document.getElementById('perfMae')) document.getElementById('perfMae').textContent = formatNumber(perf.mae);
+        if (document.getElementById('perfR2')) {
+            document.getElementById('perfR2').textContent = formatNumber(perf.r2, 3);
+            if (document.getElementById('perfR2Change')) {
+                document.getElementById('perfR2Change').innerHTML = perf.r2 >= 0 ? '<i class="ri-check-line"></i> Positive Fit' : '<i class="ri-alert-line"></i> Negative Fit';
+                document.getElementById('perfR2Change').style.color = perf.r2 >= 0 ? 'var(--success)' : 'var(--warning)';
+            }
+        }
+        
+        if (document.getElementById('perfPod')) document.getElementById('perfPod').textContent = formatNumber(perf.pod, 3);
+        if (document.getElementById('perfFar')) document.getElementById('perfFar').textContent = formatNumber(perf.far, 3);
+        if (document.getElementById('perfCsi')) document.getElementById('perfCsi').textContent = formatNumber(perf.csi, 3);
 
-        const accuracy = perf.accuracy || 0;
-        document.getElementById('perfAccuracy').textContent = `${formatNumber(accuracy, 0)}%`;
-
-        setTimeout(() => {
-            document.getElementById('accuracyFill').style.width = `${accuracy}%`;
-        }, 300);
-
-        let confidence = 'Low Stability';
-        if (accuracy >= 85) confidence = 'High Stability';
-        else if (accuracy >= 70) confidence = 'Medium Stability';
-        document.getElementById('confidenceText').textContent = `Model Confidence: ${confidence}`;
     } catch (e) {
         console.error('Failed to load model performance:', e);
     }

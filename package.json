@@ -2,10 +2,10 @@
   "name": "stmkg-monitoring",
   "version": "1.0.0",
   "description": "Sistem Monitoring dan Prediksi Curah Hujan - STMKG Jawa Barat",
-  "main": "server.js",
+  "main": "src/server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js",
+    "start": "node src/server.js",
+    "dev": "node src/server.js",
     "seed": "node database/seed.js",
     "simulate": "node mqtt/simulator.js"
   },

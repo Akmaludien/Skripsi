@@ -8,19 +8,20 @@ Sebuah platform pemantauan cuaca IoT secara *real-time* terintegrasi dengan mesi
 
 1. **Real-time IoT Telemetry**: Menerima dan memproses data sensor secara langsung melalui protokol MQTT v5 dari server BMKG.
 2. **Time-Series Database**: Mengelola puluhan ribu baris data historis secara efisien menggunakan **InfluxDB**.
-3. **Deep Learning Prediction (Bi-LSTM)**: Mesin prediksi kecerdasan buatan berbasis Python (TensorFlow/Keras) yang mampu meramalkan intensitas curah hujan hingga 7 hari ke depan dengan tingkat akurasi terukur.
-4. **Interactive Dashboard**: Antarmuka responsif dengan peta interaktif (Leaflet.js) untuk melacak status operasional, tegangan baterai, suhu, arah angin, dan parameter meteorologi lainnya.
-5. **Export & Reporting**: Fitur unduh laporan dalam format CSV dan cetak PDF langsung dari sistem.
-6. **Docker & Coolify Ready**: Dirancang penuh menggunakan pendekatan *containerized* (Docker) sehingga sangat mudah di-*deploy* ke VPS melalui Coolify.
+3. **Deep Learning Prediction (Bi-LSTM)**: Mesin prediksi kecerdasan buatan berbasis Python (TensorFlow/Keras) yang mampu meramalkan intensitas curah hujan hingga 7 hari ke depan. Dilengkapi dengan **Adaptive Seasonal Filter** untuk menekan *over-prediction* di musim kemarau.
+4. **Interactive Dashboard**: Antarmuka responsif dengan peta interaktif (Leaflet.js) untuk melacak status operasional stasiun, tegangan baterai, dan parameter meteorologi.
+5. **Evaluasi & Verifikasi Model**: Menampilkan performa metrik model yang aktual secara *real-time* sesuai Bab IV Skripsi (RMSE, MAE, R², POD, FAR, CSI).
+6. **Export & Reporting**: Fitur unduh laporan dalam format CSV dan cetak PDF langsung dari sistem.
+7. **Docker & Coolify Ready**: Dirancang penuh menggunakan pendekatan *containerized* (Docker) sehingga sangat mudah di-*deploy* ke VPS melalui Coolify.
 
 ## 🛠️ Tech Stack
 
 | Komponen | Teknologi |
 |----------|-----------|
-| **Backend** | Node.js, Express.js |
-| **Database** | InfluxDB (Time-series), SQLite (Metadata Stasiun) |
+| **Backend** | Node.js, Express.js (Modular MVC Architecture) |
+| **Database** | InfluxDB (Time-series), SQLite (Metadata Stasiun & Prediksi) |
 | **Frontend** | Vanilla JS, HTML5, CSS3, Chart.js, Leaflet.js |
-| **Machine Learning**| Python 3.12, TensorFlow, Keras, Pandas, NumPy, Scikit-learn |
+| **Machine Learning**| Python 3.11, TensorFlow 2.20.0, Keras, Pandas, NumPy |
 | **IoT / Real-time** | MQTT v5, WebSocket |
 | **Deployment** | Docker, Coolify (Ubuntu VPS) |
 
@@ -42,28 +43,34 @@ NODE_ENV=production
 
 ### 2. Proses Build
 Coolify akan secara otomatis membaca `Dockerfile` yang ada di *root repository* ini, yang mencakup arsitektur *multi-stage*:
-- Menginstal **Node.js** dan dependensi paket NPM.
-- Menginstal **Python 3.12** berserta *virtual environment* (venv).
-- Menjalankan `pip install` untuk *library* berat seperti TensorFlow.
-- Menjalankan `server.js` pada *port* 3001.
+- Menginstal **Node.js 22** dan dependensi paket NPM.
+- Menginstal **Python 3.11**.
+- Menjalankan `pip install` untuk *library* pendukung termasuk TensorFlow 2.20.0.
+- Menjalankan `src/server.js` pada *port* 3001.
 
-*Catatan: Proses redeploy mungkin memakan waktu 5-15 menit tergantung kecepatan VPS dalam mengekstrak TensorFlow.*
+*Catatan: Proses redeploy mungkin memakan waktu 5-15 menit tergantung kecepatan VPS dalam mengunduh base image dan package Python.*
 
 ## 📂 Struktur Direktori Penting
 
 ```text
-├── server.js              # Entry point Backend Node.js
-├── predict.py             # Script Inference Model ML Python
+├── src/                   # Backend Node.js Terstruktur
+│   ├── config/            # Konfigurasi Database & Environment
+│   ├── controllers/       # Logika Bisnis Endpoint API
+│   ├── routes/            # Definisi Endpoint API (Express Router)
+│   ├── services/          # Logika Background (MQTT, WebSocket, Python Runner, Scheduler)
+│   ├── utils/             # Helper fungsi dan Constants metrik model
+│   └── server.js          # Entry point utama aplikasi
+├── python_scripts/
+│   └── predict.py         # Script ML Prediction (Bi-LSTM + Adaptive Seasonal Filter)
 ├── Dockerfile             # Konfigurasi containerized apps
 ├── database/
-│   └── seed.js            # Inisialisasi daftar 50 stasiun ke SQLite
-├── models/aws/
-│   └── model_aws_cibeureum_FINAL.h5 # Model AI terlatih (Bi-LSTM)
+│   └── seed.js            # Inisialisasi metadata dan daftar stasiun ke SQLite
+├── models/                # Model AI & Scaler (Terbagi dalam AWS, AAWS, ARG)
 ├── public/
-│   ├── index.html         # Dashboard Utama
-│   ├── detail.html        # Detail Spesifik Stasiun & Grafik
-│   └── prediksi.html      # Peta dan Tabel Prediksi 7 Hari
-└── requirements.txt       # Daftar pustaka Python
+│   ├── verifikasi.html    # Dashboard Evaluasi Model (Menampilkan RMSE, MAE, R², dsb)
+│   ├── prediksi.html      # Peta dan Tabel Prediksi Curah Hujan 7 Hari
+│   └── detail.html        # Detail Spesifik Stasiun & Grafik Historis
+└── requirements.txt       # Daftar pustaka Python (Versi library fix)
 ```
 
 ## 🤝 Author

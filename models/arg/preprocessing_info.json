@@ -1,0 +1,101 @@
+{
+    "input_format": {
+        "description": "30 hari terakhir curah hujan",
+        "unit": "mm",
+        "shape": "(30,) atau list dengan 30 elemen",
+        "example": [
+            0.0,
+            2.5,
+            0.0,
+            15.3,
+            8.2,
+            0.0,
+            0.0,
+            1.2,
+            0.0,
+            0.0,
+            25.6,
+            12.4,
+            3.8,
+            0.0,
+            0.0,
+            5.5,
+            18.9,
+            0.0,
+            0.0,
+            0.0,
+            7.3,
+            0.0,
+            0.0,
+            0.0,
+            11.2,
+            0.0,
+            3.5,
+            0.0,
+            0.0,
+            2.1
+        ]
+    },
+    "preprocessing_pipeline": {
+        "step_1": {
+            "operation": "Square root transform",
+            "formula": "x_sqrt = sqrt(max(x, 0))",
+            "purpose": "Stabilize variance, handle outliers"
+        },
+        "step_2": {
+            "operation": "MinMaxScaler",
+            "formula": "x_scaled = (x_sqrt - min) / (max - min)",
+            "range": [
+                0.0,
+                1.0
+            ],
+            "scaler_file": "scaler.pkl"
+        },
+        "step_3": {
+            "operation": "Reshape for LSTM",
+            "formula": "X = x_scaled.reshape(1, 30, 1)",
+            "output_shape": "(1, 30, 1)"
+        }
+    },
+    "postprocessing_pipeline": {
+        "step_1": {
+            "operation": "Inverse MinMaxScaler",
+            "formula": "y_sqrt = scaler.inverse_transform(y_scaled)"
+        },
+        "step_2": {
+            "operation": "Square transform",
+            "formula": "y_mm = y_sqrt ** 2",
+            "purpose": "Convert back from sqrt space"
+        },
+        "step_3": {
+            "operation": "Clip negative",
+            "formula": "y_mm = max(y_mm, 0)"
+        },
+        "step_4": {
+            "operation": "Dry threshold",
+            "formula": "y_mm = 0 if y_mm < 3.0 else y_mm",
+            "threshold": 3.0,
+            "unit": "mm"
+        }
+    },
+    "output_format": {
+        "description": "7 hari prediksi curah hujan",
+        "unit": "mm",
+        "shape": "(7,)",
+        "example": [
+            3.2,
+            5.8,
+            0.0,
+            0.0,
+            12.5,
+            0.0,
+            0.0
+        ]
+    },
+    "model_info": {
+        "lookback": 30,
+        "horizon": 7,
+        "architecture": "Bi-LSTM",
+        "seed": 2024
+    }
+}

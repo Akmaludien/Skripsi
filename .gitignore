@@ -18,24 +18,13 @@ __pycache__/
 *.pyc
 *.pyo
 
-# One-off fix/migration scripts (not needed for deployment)
-add_api.js
-append_css.js
-apply_fixes.py
-fix_bugs.py
-fix_css.py
-fix_heat.js
-fix_tentang.py
-fix_widgets.js
-migrate_db.js
-replace_js.js
-test_influx.js
+# Scripts (not needed for deployment)
+scripts/maintenance/
+scripts/migration/
+scripts/archive/
+backup/
 
 # Thesis evaluation documents (not part of the app)
-BAB_4_Hasil_dan_Pembahasan.md
-BAB_5_Penutup.md
-evaluasi-simprech-jabar.md
-evaluasi-simprech-jabar-final.md
 docs/
 
 # IDE & OS
