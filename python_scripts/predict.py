@@ -6,6 +6,10 @@ import numpy as np
 import pickle
 from datetime import datetime, timedelta
 
+from predictors.aws_predictor import predict_7days as aws_predict
+from predictors.aaws_predictor import predict_7days as aaws_predict
+from predictors.arg_predictor import predict_7days as arg_predict
+
 # Suppress TF logs
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 try:
@@ -197,53 +201,18 @@ def run_predictions():
         predicted_rain_7days = []
         if HAS_TF and current_model and cur_scaler_X:
             try:
-                if not df.empty:
-                    df_rain = df['rain'].resample('1D').max() if 'rain' in df.columns else pd.Series(dtype=float)
-                    if len(df_rain) < 60:
-                        predicted_rain_7days = _statistical_fallback(df, station_type)
-                    else:
-                        rr_ma3 = df_rain.rolling(window=3, min_periods=1).mean()
-                        df_multi = pd.DataFrame({'RR_MA3': rr_ma3.tail(60).values, 'RR_lag1': df_rain.tail(60).values})
-                        df_multi = df_multi.ffill().bfill().fillna(0)
-                        current_input = df_multi.values
-                        num_features = 2
-
-                        for day_ahead in range(8):
-                            input_scaled = cur_scaler_X.transform(current_input)
-                            input_scaled = np.clip(input_scaled, -5.0, 5.0) 
-                            input_seq = input_scaled.reshape(1, 60, num_features)
-                            pred_scaled = current_model.predict(input_seq, verbose=0)
-                            
-                            if cur_scaler_y:
-                                pred_val = float(cur_scaler_y.inverse_transform(pred_scaled)[0, 0])
-                            else:
-                                try:
-                                    pred_val = float(cur_scaler_X.inverse_transform(pred_scaled)[0, 0])
-                                except ValueError:
-                                    dummy = np.zeros((1, num_features))
-                                    dummy[0, 1] = pred_scaled[0, 0]
-                                    pred_val = float(cur_scaler_X.inverse_transform(dummy)[0, 1])
-                            
-                            pred_val = np.clip(pred_val, 0, 200)
-                            
-                            # Adaptive Seasonal Filter untuk mengurangi error (over-prediction) di musim kemarau
-                            current_month = datetime.now().month
-                            if 5 <= current_month <= 10:  # Musim kemarau di Jawa Barat (Mei-Oktober)
-                                pred_val *= 0.7
-                            
-                            predicted_rain_7days.append(pred_val)
-                            
-                            new_row = np.zeros(num_features)
-                            new_row[1] = pred_val
-                            new_row[0] = (current_input[-2, 1] + current_input[-1, 1] + pred_val) / 3.0
-                            current_input = np.vstack([current_input[1:], new_row])
-                            
-                            
-                        # Filter curah hujan sangat kecil (<1.0 mm) menjadi 0.0 untuk menekan error FAR
-                        predicted_rain_7days = [0.0 if p < 1.0 else p for p in predicted_rain_7days]
+                if station_type == 'ARG':
+                    predicted_rain_7days = arg_predict(df, current_model, cur_scaler_X, cur_scaler_y)
+                elif station_type == 'AAWS':
+                    predicted_rain_7days = aaws_predict(df, current_model, cur_scaler_X, cur_scaler_y)
                 else:
+                    predicted_rain_7days = aws_predict(df, current_model, cur_scaler_X, cur_scaler_y)
+                    
+                if not predicted_rain_7days or len(predicted_rain_7days) < 8:
                     predicted_rain_7days = _statistical_fallback(df, station_type)
             except Exception as e:
+                import traceback
+                traceback.print_exc()
                 print(f"Bi-LSTM failed for {station_id}: {e}")
                 predicted_rain_7days = _statistical_fallback(df, station_type)
         else:
