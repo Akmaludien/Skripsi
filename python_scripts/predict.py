@@ -185,6 +185,9 @@ def run_predictions():
     stations = pd.read_sql_query("SELECT id, type FROM stations WHERE type IN ('AWS', 'AAWS', 'ARG')", conn)
     conn.close()
 
+    success_counts = {'AWS': 0, 'AAWS': 0, 'ARG': 0}
+    fallback_counts = {'AWS': 0, 'AAWS': 0, 'ARG': 0}
+
     for _, station in stations.iterrows():
         station_id, station_type = station['id'], station['type']
         
@@ -210,17 +213,30 @@ def run_predictions():
                     
                 if not predicted_rain_7days or len(predicted_rain_7days) < 8:
                     predicted_rain_7days = _statistical_fallback(df, station_type)
+                    fallback_counts[station_type] += 1
+                else:
+                    success_counts[station_type] += 1
             except Exception as e:
                 import traceback
                 traceback.print_exc()
                 print(f"Bi-LSTM failed for {station_id}: {e}")
                 predicted_rain_7days = _statistical_fallback(df, station_type)
+                fallback_counts[station_type] += 1
         else:
             predicted_rain_7days = _statistical_fallback(df, station_type)
+            fallback_counts[station_type] += 1
 
         if predicted_rain_7days:
             for i in range(8):
                 save_prediction(station_id, (datetime.now() + timedelta(days=i)).strftime('%Y-%m-%d'), float(round(predicted_rain_7days[i], 1)), i)
+
+    # Cetak log summary untuk Coolify
+    total_success = sum(success_counts.values())
+    total_fallback = sum(fallback_counts.values())
+    print(f"\n[predict.py] Selesai memproses {len(stations)} stasiun.")
+    print(f"✅ Bi-LSTM Success: AWS ({success_counts['AWS']}), AAWS ({success_counts['AAWS']}), ARG ({success_counts['ARG']})")
+    if total_fallback > 0:
+        print(f"⚠️ Fallback (Karena error/Data Kosong): AWS ({fallback_counts['AWS']}), AAWS ({fallback_counts['AAWS']}), ARG ({fallback_counts['ARG']})")
 
 if __name__ == "__main__":
     run_predictions()
