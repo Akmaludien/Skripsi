@@ -8,7 +8,7 @@ Sebuah platform pemantauan cuaca IoT secara *real-time* terintegrasi dengan mesi
 
 1. **Real-time IoT Telemetry**: Menerima dan memproses data sensor secara langsung melalui protokol MQTT v5 dari server BMKG.
 2. **Time-Series Database**: Mengelola puluhan ribu baris data historis secara efisien menggunakan **InfluxDB**.
-3. **Deep Learning Prediction (Bi-LSTM)**: Mesin prediksi kecerdasan buatan berbasis Python (TensorFlow/Keras) yang mampu meramalkan intensitas curah hujan hingga 7 hari ke depan. Dilengkapi dengan **Adaptive Seasonal Filter** untuk menekan *over-prediction* di musim kemarau.
+3. **Deep Learning Prediction (Bi-LSTM)**: Mesin prediksi kecerdasan buatan berbasis Python (TensorFlow/Keras) yang mampu meramalkan intensitas curah hujan hingga 7 hari ke depan. Menggunakan pendekatan **Modular OOP** dengan rekayasa fitur dinamis per stasiun (AWS 17 fitur, AAWS 10 fitur, ARG 1 fitur) serta **Adaptive Seasonal Filter** untuk menekan *over-prediction* di musim kemarau.
 4. **Interactive Dashboard**: Antarmuka responsif dengan peta interaktif (Leaflet.js) untuk melacak status operasional stasiun, tegangan baterai, dan parameter meteorologi.
 5. **Evaluasi & Verifikasi Model**: Menampilkan performa metrik model yang aktual secara *real-time* sesuai Bab IV Skripsi (RMSE, MAE, R², POD, FAR, CSI).
 6. **Export & Reporting**: Fitur unduh laporan dalam format CSV dan cetak PDF langsung dari sistem.
@@ -61,7 +61,8 @@ Coolify akan secara otomatis membaca `Dockerfile` yang ada di *root repository* 
 │   ├── utils/             # Helper fungsi dan Constants metrik model
 │   └── server.js          # Entry point utama aplikasi
 ├── python_scripts/
-│   └── predict.py         # Script ML Prediction (Bi-LSTM + Adaptive Seasonal Filter)
+│   ├── predict.py         # Script Orchestrator Prediksi
+│   └── predictors/        # Modul Bi-LSTM OOP spesifik (AWS, AAWS, ARG)
 ├── Dockerfile             # Konfigurasi containerized apps
 ├── database/
 │   └── seed.js            # Inisialisasi metadata dan daftar stasiun ke SQLite
