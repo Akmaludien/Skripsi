@@ -341,10 +341,11 @@ function renderCategoryDistribution(predictions) {
     const total = predictions.length || 1;
 
     const categories = [
-        { name: 'Ringan', key: 'RINGAN', color: '#22c55e', range: '0 – 20 mm' },
+        { name: 'Ringan', key: 'RINGAN', color: '#22c55e', range: '5 – 20 mm' },
         { name: 'Sedang', key: 'SEDANG', color: '#f97316', range: '20 – 50 mm' },
         { name: 'Lebat', key: 'LEBAT', color: '#ef4444', range: '50 – 100 mm' },
-        { name: 'Sangat Lebat', key: 'SANGAT LEBAT', color: '#7c3aed', range: '> 100 mm' },
+        { name: 'Sangat Lebat', key: 'SANGAT LEBAT', color: '#7c3aed', range: '100 – 150 mm' },
+        { name: 'Ekstrem', key: 'EKSTREM', color: '#9d174d', range: '> 150 mm' },
     ];
 
     container.innerHTML = categories.map(cat => {

@@ -345,14 +345,15 @@ function renderConfusionMatrix(data) {
     // Hapus canvas yang ada
     container.innerHTML = '';
     
-    const cats = ['TIDAK HUJAN', 'RINGAN', 'SEDANG', 'LEBAT', 'SANGAT LEBAT'];
+    const cats = ['TIDAK HUJAN', 'RINGAN', 'SEDANG', 'LEBAT', 'SANGAT LEBAT', 'EKSTREM'];
     
     const matrix = {
-        'TIDAK HUJAN': { 'TIDAK HUJAN': 0, 'RINGAN': 0, 'SEDANG': 0, 'LEBAT': 0, 'SANGAT LEBAT': 0 },
-        'RINGAN': { 'TIDAK HUJAN': 0, 'RINGAN': 0, 'SEDANG': 0, 'LEBAT': 0, 'SANGAT LEBAT': 0 },
-        'SEDANG': { 'TIDAK HUJAN': 0, 'RINGAN': 0, 'SEDANG': 0, 'LEBAT': 0, 'SANGAT LEBAT': 0 },
-        'LEBAT': { 'TIDAK HUJAN': 0, 'RINGAN': 0, 'SEDANG': 0, 'LEBAT': 0, 'SANGAT LEBAT': 0 },
-        'SANGAT LEBAT': { 'TIDAK HUJAN': 0, 'RINGAN': 0, 'SEDANG': 0, 'LEBAT': 0, 'SANGAT LEBAT': 0 }
+        'TIDAK HUJAN': { 'TIDAK HUJAN': 0, 'RINGAN': 0, 'SEDANG': 0, 'LEBAT': 0, 'SANGAT LEBAT': 0, 'EKSTREM': 0 },
+        'RINGAN': { 'TIDAK HUJAN': 0, 'RINGAN': 0, 'SEDANG': 0, 'LEBAT': 0, 'SANGAT LEBAT': 0, 'EKSTREM': 0 },
+        'SEDANG': { 'TIDAK HUJAN': 0, 'RINGAN': 0, 'SEDANG': 0, 'LEBAT': 0, 'SANGAT LEBAT': 0, 'EKSTREM': 0 },
+        'LEBAT': { 'TIDAK HUJAN': 0, 'RINGAN': 0, 'SEDANG': 0, 'LEBAT': 0, 'SANGAT LEBAT': 0, 'EKSTREM': 0 },
+        'SANGAT LEBAT': { 'TIDAK HUJAN': 0, 'RINGAN': 0, 'SEDANG': 0, 'LEBAT': 0, 'SANGAT LEBAT': 0, 'EKSTREM': 0 },
+        'EKSTREM': { 'TIDAK HUJAN': 0, 'RINGAN': 0, 'SEDANG': 0, 'LEBAT': 0, 'SANGAT LEBAT': 0, 'EKSTREM': 0 }
     };
 
     data.forEach(d => {

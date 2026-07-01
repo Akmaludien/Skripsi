@@ -65,11 +65,11 @@
                     <div class="map-overlay-legend">
                         <h4>Intensitas Curah Hujan (mm)</h4>
                         <div class="legend-scale">
-                            <div class="legend-scale-item"><div class="legend-scale-color" style="background:#E53E3E"></div> > 100 (Sangat Lebat)</div>
-                            <div class="legend-scale-item"><div class="legend-scale-color" style="background:#ED8936"></div> 50 - 100 (Lebat)</div>
-                            <div class="legend-scale-item"><div class="legend-scale-color" style="background:#ECC94B"></div> 20 - 50 (Sedang)</div>
-                            <div class="legend-scale-item"><div class="legend-scale-color" style="background:#38A169"></div> 0.5 - 20 (Ringan)</div>
-                            <div class="legend-scale-item"><div class="legend-scale-color" style="background:#E2E8F0"></div> < 0.5 (Tidak Hujan)</div>
+                            <div class="legend-scale-item"><div class="legend-scale-color" style="background:#E53E3E"></div> > 20 (Sangat Lebat)</div>
+                            <div class="legend-scale-item"><div class="legend-scale-color" style="background:#ED8936"></div> 10 - 20 (Lebat)</div>
+                            <div class="legend-scale-item"><div class="legend-scale-color" style="background:#ECC94B"></div> 5 - 10 (Sedang)</div>
+                            <div class="legend-scale-item"><div class="legend-scale-color" style="background:#38A169"></div> 1 - 5 (Ringan)</div>
+                            <div class="legend-scale-item"><div class="legend-scale-color" style="background:#E2E8F0"></div> < 1 (Sangat Ringan)</div>
                         </div>
                     </div>
                     <!-- Time Info -->
@@ -113,18 +113,18 @@
     }
 
     function getRainfallColor(rr) {
-        if (rr > 100) return '#E53E3E';  // Sangat Lebat - merah
-        if (rr > 50) return '#ED8936';   // Lebat - oranye
-        if (rr > 20) return '#ECC94B';   // Sedang - kuning
-        if (rr >= 0.5) return '#38A169'; // Ringan - hijau
+        if (rr > 20) return '#E53E3E';  // Sangat Lebat - merah
+        if (rr >= 10) return '#ED8936';   // Lebat - oranye
+        if (rr >= 5) return '#ECC94B';   // Sedang - kuning
+        if (rr >= 1) return '#38A169'; // Ringan - hijau
         return '#E2E8F0';                // Tidak Hujan - abu-abu muda
     }
 
     function getRainfallOpacity(rr) {
-        if (rr > 50) return 0.7;
-        if (rr > 20) return 0.6;
-        if (rr > 5) return 0.5;
-        if (rr >= 0.5) return 0.4;
+        if (rr > 20) return 0.7;
+        if (rr >= 10) return 0.6;
+        if (rr >= 5) return 0.5;
+        if (rr >= 1) return 0.4;
         return 0.05; // Hampir transparan jika tidak hujan (polosan)
     }
 
@@ -210,7 +210,7 @@
                         <div style="font-size:0.9rem;margin-top:8px">
                             <i class="ri-rainy-line"></i> Curah Hujan: <strong style="color:${color}">${rr.toFixed(1)} mm</strong>
                         </div>
-                        <div style="font-size:0.72rem;color:var(--text-muted);margin-top:4px">${getRainfallCategory(rr).label}</div>
+                        <div style="font-size:0.72rem;color:var(--text-muted);margin-top:4px">${getHourlyRainfallCategory(rr).label}</div>
                     </div>
                 `);
 

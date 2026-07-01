@@ -156,6 +156,7 @@ function getCategoryColor(category) {
         case 'SEDANG': return '#f97316';
         case 'LEBAT': return '#ef4444';
         case 'SANGAT LEBAT': return '#7c3aed';
+        case 'EKSTREM': return '#9d174d';
         default: return '#94a3b8';
     }
 }
@@ -173,12 +174,25 @@ function getTypeColor(type) {
  * Get BMKG Rainfall Category (24h Accumulated)
  */
 function getRainfallCategory(val) {
-    if (val === null || val === undefined || val < 0.5) return { name: 'Tidak Hujan', label: 'Tidak Hujan', class: 'cat-none', color: '#E2E8F0' };
-    if (val < 20) return { name: 'Ringan', label: 'Hujan Ringan', class: 'cat-light', color: '#38A169' };
-    if (val < 50) return { name: 'Sedang', label: 'Hujan Sedang', class: 'cat-moderate', color: '#ECC94B' };
-    if (val < 100) return { name: 'Lebat', label: 'Hujan Lebat', class: 'cat-heavy', color: '#ED8936' };
+    if (val === null || val === undefined || val < 5) return { name: 'Tidak Hujan', label: 'Tidak Hujan / Sangat Ringan', class: 'cat-none', color: '#E2E8F0' };
+    if (val <= 20) return { name: 'Ringan', label: 'Hujan Ringan', class: 'cat-light', color: '#38A169' };
+    if (val <= 50) return { name: 'Sedang', label: 'Hujan Sedang', class: 'cat-moderate', color: '#ECC94B' };
+    if (val <= 100) return { name: 'Lebat', label: 'Hujan Lebat', class: 'cat-heavy', color: '#ED8936' };
+    if (val <= 150) return { name: 'Sangat Lebat', label: 'Hujan Sangat Lebat', class: 'cat-very-heavy', color: '#E53E3E' };
+    return { name: 'Ekstrem', label: 'Hujan Ekstrem', class: 'cat-extreme', color: '#9d174d' };
+}
+
+/**
+ * Get BMKG Rainfall Category (1h Accumulated / Real-time)
+ */
+function getHourlyRainfallCategory(val) {
+    if (val === null || val === undefined || val < 1) return { name: 'Sangat Ringan', label: 'Sangat Ringan', class: 'cat-none', color: '#E2E8F0' };
+    if (val <= 5) return { name: 'Ringan', label: 'Hujan Ringan', class: 'cat-light', color: '#38A169' };
+    if (val <= 10) return { name: 'Sedang', label: 'Hujan Sedang', class: 'cat-moderate', color: '#ECC94B' };
+    if (val <= 20) return { name: 'Lebat', label: 'Hujan Lebat', class: 'cat-heavy', color: '#ED8936' };
     return { name: 'Sangat Lebat', label: 'Hujan Sangat Lebat', class: 'cat-very-heavy', color: '#E53E3E' };
 }
+
 
 /**
  * Data Quality Control (QC) Flagging

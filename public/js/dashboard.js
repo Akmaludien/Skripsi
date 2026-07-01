@@ -378,7 +378,7 @@ function renderStationCards(stations) {
                 <div class="metric-circle ${!rrQC.valid ? 'qc-warning' : ''}" title="${!rrQC.valid ? rrQC.message : ''}">
                     ${createCircleProgress(s.latest_rr || 0, 100, rrQC.valid ? getTypeColor(s.type) : '#ef4444')}
                     <div class="metric-label">Curah Hujan<br>(mm) ${!rrQC.valid ? '<i class="ri-error-warning-line"></i>' : ''}</div>
-                    <div style="font-size:0.6rem; font-weight:700; color:${getRainfallCategory(s.latest_rr).color}; text-align:center; margin-top:2px;">${getRainfallCategory(s.latest_rr).label}</div>
+                    <div style="font-size:0.6rem; font-weight:700; color:${getHourlyRainfallCategory(s.latest_rr).color}; text-align:center; margin-top:2px;">${getHourlyRainfallCategory(s.latest_rr).label}</div>
                 </div>
                 ${s.type === 'ARG' ? `
                 <div class="metric-circle ${!tempQC.valid ? 'qc-warning' : ''}" title="${!tempQC.valid ? tempQC.message : ''}">
