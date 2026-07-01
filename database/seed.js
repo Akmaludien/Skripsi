@@ -167,10 +167,10 @@ console.log(`✓ ${alertStations.length} alerts seeded`);
 
 // ─── Seed model performance ────────────────────────
 const insertPerf = db.prepare(`
-    INSERT INTO model_performance (rmse, mae, r_squared, accuracy, training_date, model_version, notes)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO model_performance (rmse, mae, r_squared, accuracy, pod, far, csi, training_date, model_version, notes)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 `);
-insertPerf.run(12.4, 9.1, 0.85, 88.0, '2024-05-24', 'Bi-LSTM-v1.0', 'Model Bi-LSTM trained on 5 years historical data from 50 stations');
+insertPerf.run(12.4, 9.1, 0.85, 88.0, 0.89, 0.12, 0.78, '2024-05-24', 'Bi-LSTM-v1.0', 'Model Bi-LSTM trained on 5 years historical data from 50 stations');
 console.log('✓ Model performance seeded');
 
 db.close();
