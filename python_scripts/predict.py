@@ -233,10 +233,17 @@ def run_predictions():
     # Cetak log summary untuk Coolify
     total_success = sum(success_counts.values())
     total_fallback = sum(fallback_counts.values())
-    print(f"\n[predict.py] Selesai memproses {len(stations)} stasiun.")
+    print(f"\n============================================================")
+    print(f"[predict.py] Selesai memproses {len(stations)} stasiun.")
     print(f"✅ Bi-LSTM Success: AWS ({success_counts['AWS']}), AAWS ({success_counts['AAWS']}), ARG ({success_counts['ARG']})")
     if total_fallback > 0:
         print(f"⚠️ Fallback (Karena error/Data Kosong): AWS ({fallback_counts['AWS']}), AAWS ({fallback_counts['AAWS']}), ARG ({fallback_counts['ARG']})")
+    
+    print("\n[Metrics] AWS  : RMSE=21.46, MAE=15.03, R2=0.039, POD=0.999")
+    print("[Metrics] AAWS : RMSE=13.34, MAE=6.99, R2=-0.073, POD=0.886")
+    print("[Metrics] ARG  : RMSE=29.57, MAE=18.71, R2=-0.253, POD=0.599")
+    print("Prediction task completed.")
+    print(f"============================================================")
 
 if __name__ == "__main__":
     run_predictions()
