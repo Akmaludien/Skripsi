@@ -341,9 +341,11 @@ function renderCharts(data) {
 }
 
 function renderConfusionMatrix(data) {
-    const container = document.getElementById('confusionMatrixChart').parentElement;
-    // Hapus canvas yang ada
-    container.innerHTML = '';
+    const container = document.getElementById('confusionMatrixContainer') || document.getElementById('confusionMatrixChart')?.parentElement;
+    if (!container) return;
+    container.style.height = 'auto';
+    container.style.minHeight = '300px';
+    container.style.overflowX = 'auto';
     
     const cats = ['TIDAK HUJAN', 'RINGAN', 'SEDANG', 'LEBAT', 'SANGAT LEBAT', 'EKSTREM'];
     
@@ -365,14 +367,14 @@ function renderConfusionMatrix(data) {
     });
 
     let html = `
-    <table class="verify-table" style="width: 100%; text-align: center; border-collapse: collapse;">
+    <table class="verify-table" style="width: 100%; text-align: center; border-collapse: collapse; font-size: 0.75rem;">
         <thead>
             <tr>
-                <th style="background: var(--bg-card); border-bottom: 2px solid var(--border-color);" colspan="2" rowspan="2"></th>
-                <th style="background: var(--bg-card); border-bottom: 1px solid var(--border-color);" colspan="5">Aktual (X)</th>
+                <th style="background: var(--bg-card); border-bottom: 2px solid var(--border-color); border-right: 1px solid var(--border-color);" colspan="2" rowspan="2"></th>
+                <th style="background: var(--bg-card); border-bottom: 1px solid var(--border-color); font-weight: 700; text-transform: uppercase; padding: 6px; letter-spacing: 0.5px;" colspan="6">Aktual (X)</th>
             </tr>
             <tr>
-                ${cats.map(c => `<th style="background: var(--bg-body); border-bottom: 2px solid var(--border-color); font-size: 0.8rem;">${c}</th>`).join('')}
+                ${cats.map(c => `<th style="background: var(--bg-body); border-bottom: 2px solid var(--border-color); font-size: 0.7rem; padding: 6px 4px; border-right: 1px solid var(--border-color);">${c}</th>`).join('')}
             </tr>
         </thead>
         <tbody>
@@ -381,18 +383,20 @@ function renderConfusionMatrix(data) {
     cats.forEach((catPred, idx) => {
         html += `<tr>`;
         if (idx === 0) {
-            html += `<td rowspan="5" style="background: var(--bg-card); font-weight: bold; border-right: 1px solid var(--border-color); vertical-align: middle;">
-                        <div style="writing-mode: vertical-rl; transform: rotate(180deg); margin: 0 auto;">Prediksi (Y)</div>
+            html += `<td rowspan="6" style="background: var(--bg-card); font-weight: bold; border-right: 1px solid var(--border-color); vertical-align: middle; padding: 4px; width: 30px;">
+                        <div style="writing-mode: vertical-rl; transform: rotate(180deg); margin: 0 auto; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; color: var(--text-muted);">Prediksi (Y)</div>
                      </td>`;
         }
-        html += `<td style="background: var(--bg-body); font-weight: bold; font-size: 0.8rem; border-right: 2px solid var(--border-color); text-align: left;">${catPred}</td>`;
+        html += `<td style="background: var(--bg-body); font-weight: bold; font-size: 0.7rem; border-right: 2px solid var(--border-color); text-align: left; padding: 6px 8px; white-space: nowrap;">${catPred}</td>`;
         
         cats.forEach(catAct => {
             const count = matrix[catAct][catPred];
             const isMatch = catAct === catPred;
             // Highlight diagonal (benar) dengan warna hijau transparan
-            const bg = isMatch && count > 0 ? 'rgba(34, 197, 94, 0.2)' : (count > 0 ? 'rgba(239, 68, 68, 0.1)' : 'transparent');
-            html += `<td style="background: ${bg}; border: 1px solid var(--border-color);">${count === 0 ? '-' : count}</td>`;
+            const bg = isMatch && count > 0 ? 'rgba(34, 197, 94, 0.2)' : (count > 0 ? 'rgba(239, 68, 68, 0.15)' : 'transparent');
+            const color = isMatch && count > 0 ? 'var(--success)' : (count > 0 ? 'var(--danger)' : 'var(--text-muted)');
+            const weight = count > 0 ? '700' : '400';
+            html += `<td style="background: ${bg}; border: 1px solid var(--border-color); padding: 8px 4px; font-weight: ${weight}; color: ${color};">${count === 0 ? '-' : count}</td>`;
         });
         html += `</tr>`;
     });

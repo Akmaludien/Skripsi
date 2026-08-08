@@ -2,6 +2,7 @@ require('dotenv').config();
 
 const config = {
     port: process.env.PORT || 3001,
+    host: process.env.HOST || '0.0.0.0',
     mqttBroker: process.env.MQTT_BROKER || 'mqtt://202.90.198.159:1883',
     mqttUser: process.env.MQTT_USER || 'bmkg_aws',
     mqttPass: process.env.MQTT_PASS || 'bmkg_aws123',

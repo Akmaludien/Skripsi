@@ -12,10 +12,10 @@ const server = http.createServer(app);
 // Initialize WebSocket
 initWebSocketServer(server);
 
-server.listen(config.port, () => {
+server.listen(config.port, config.host, () => {
     console.log(`\n☁️  STMKG Monitoring System`);
-    console.log(`   Server running on http://localhost:${config.port}`);
-    console.log(`   WebSocket on ws://localhost:${config.port}/ws\n`);
+    console.log(`   Server running on http://${config.host}:${config.port}`);
+    console.log(`   WebSocket on ws://${config.host}:${config.port}/ws\n`);
     
     connectMQTT();
     connectReklimStations();

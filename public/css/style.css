@@ -2855,6 +2855,13 @@ select option {
     .metrics-grid-v2-bottom { grid-template-columns: 1fr; }
     .metrics-grid-v2-arg { grid-template-columns: 1fr; }
 }
+@media (max-width: 640px) {
+    .metrics-grid-v2-top { grid-template-columns: 1fr; }
+    .verification-grid { grid-template-columns: 1fr; }
+    .stats-summary { grid-template-columns: repeat(2, 1fr); }
+    .day-tabs { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 6px; }
+    .day-tab { white-space: nowrap; flex-shrink: 0; }
+}
 
 /* ─── Modal Peringkat Cuaca Ekstrem ─── */
 .btn-extreme {

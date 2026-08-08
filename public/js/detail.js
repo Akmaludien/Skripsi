@@ -377,9 +377,9 @@ async function loadStationPredictions(stationId) {
     if (!alert || !tbody) return; // Feature not enabled in HTML
 
     try {
-        // Fetch predictions for all 7 days for the station
+        // Fetch predictions for all 8 days for the station (H+0 to H+7)
         const allDayPreds = [];
-        for (let d = 0; d < 7; d++) {
+        for (let d = 0; d < 8; d++) {
             try {
                 const preds = await API.get(`/api/predictions?day=${d}`);
                 const stationPred = preds.find(p => p.station_id === stationId);

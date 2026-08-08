@@ -136,7 +136,7 @@ const categories = [
 
 const predTransaction = db.transaction(() => {
     for (const s of stations) {
-        for (let d = 0; d < 7; d++) {
+        for (let d = 0; d < 8; d++) {
             const date = new Date(Date.now() + d * 86400000);
             const dateStr = date.toISOString().split('T')[0];
             const rainfall = 0.0;
@@ -147,7 +147,7 @@ const predTransaction = db.transaction(() => {
     }
 });
 predTransaction();
-console.log(`✓ ${stations.length * 7} predictions seeded`);
+console.log(`✓ ${stations.length * 8} predictions seeded`);
 
 // ─── Seed alerts ───────────────────────────────────
 const insertAlert = db.prepare(`
