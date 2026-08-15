@@ -58,6 +58,59 @@
         .diff-pos { color: #ef4444; font-weight: 600; }
         .diff-neg { color: #22c55e; font-weight: 600; }
         .diff-neutral { color: var(--text-muted); }
+
+        .verify-filter-grid {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            gap: 16px;
+            justify-content: space-between;
+        }
+        .verify-filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        @media (max-width: 768px) {
+            /* Filter bar stacks vertically */
+            .verify-filter-grid {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 14px !important;
+            }
+            .verify-filter-group {
+                width: 100% !important;
+            }
+            .verify-filter-group input,
+            .verify-filter-group select {
+                width: 100% !important;
+            }
+
+            /* Day tabs horizontal scroll on mobile */
+            .day-tabs {
+                display: flex !important;
+                overflow-x: auto !important;
+                flex-wrap: nowrap !important;
+                gap: 8px !important;
+                width: 100% !important;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+                padding-bottom: 4px;
+            }
+            .day-tabs::-webkit-scrollbar { display: none; }
+            .day-tab { white-space: nowrap !important; flex-shrink: 0 !important; }
+
+            /* Verify table scroll */
+            .verify-table { min-width: 460px; }
+            /* Stats summary */
+            .stats-summary { grid-template-columns: repeat(2, 1fr) !important; }
+            /* Verification grid */
+            .verification-grid { grid-template-columns: 1fr !important; }
+        }
+
+        @media (max-width: 480px) {
+            .stats-summary { grid-template-columns: 1fr !important; }
+        }
     </style>
     <link href="/css/remixicon/remixicon.css" rel="stylesheet" />
 <style> .leaflet-container, .leaflet-popup-content { color: var(--text-primary) !important; } .map-popup h4 { color: var(--text-primary) !important; } .map-popup p, .map-popup div { color: var(--text-secondary) !important; } .map-popup strong { color: var(--text-primary) !important; } </style></head>
@@ -98,7 +151,7 @@
                     <img src="/img/stmkg-logo.png" alt="STMKG" style="height:46px;width:auto;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.1))">
                     <div>
                         <h1>Verifikasi & Validasi Model</h1>
-                        <span>Analisis Perbandingan Prediksi vs Observasi Riil</span>
+                        <span>Evaluasi Performa Prediksi Bi-LSTM Berdasarkan Data Observasi</span>
                     </div>
                 </div>
                 <div class="header-actions">
@@ -121,29 +174,29 @@
             </header>
 
             <main class="content-body">
-                <div class="card" style="padding: 16px 24px; margin-bottom: 24px; display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between;">
-                    <div style="display: flex; align-items: center; gap: 16px;">
-                        <div>
-                            <label style="display: block; font-size: 0.75rem; color: var(--text-muted); font-weight: 600; margin-bottom: 4px;">TANGGAL PREDIKSI</label>
-                            <input type="date" id="dateFilter" class="btn-sm" style="background: var(--bg-body); border: 1px solid var(--border-color); color: var(--text-main); padding: 8px 12px; border-radius: 8px;">
+                <div class="card" style="padding: 16px 20px; margin-bottom: 24px;">
+                    <div class="verify-filter-grid">
+                        <div class="verify-filter-group">
+                            <label style="display: block; font-size: 0.72rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">TANGGAL PREDIKSI</label>
+                            <input type="date" id="dateFilter" class="btn-sm" style="background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary); padding: 8px 12px; border-radius: 8px; font-family: inherit; font-size: 0.85rem;">
                         </div>
-                        <div>
-                            <label style="display: block; font-size: 0.75rem; color: var(--text-muted); font-weight: 600; margin-bottom: 4px;">MUSIM (STANDAR BMKG)</label>
-                            <div class="day-tabs" style="justify-content: flex-start; margin: 0; padding: 0; overflow: visible;">
+                        <div class="verify-filter-group" style="flex: 1; min-width: 0;">
+                            <label style="display: block; font-size: 0.72rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">PERIODE MUSIM</label>
+                            <div class="day-tabs" style="justify-content: flex-start; margin: 0; padding: 0;">
                                 <button class="day-tab active" data-season="all" onclick="changeSeason('all', this)">Semua</button>
                                 <button class="day-tab" data-season="hujan" onclick="changeSeason('hujan', this)">Hujan (Nov-Apr)</button>
                                 <button class="day-tab" data-season="kemarau" onclick="changeSeason('kemarau', this)">Kemarau (Mei-Okt)</button>
                             </div>
                         </div>
-                    </div>
-                    <div>
-                        <label style="display: block; font-size: 0.75rem; color: var(--text-muted); font-weight: 600; margin-bottom: 4px;">TIPE STASIUN</label>
-                        <select id="typeFilter" class="btn-sm" style="background: var(--bg-body); border: 1px solid var(--border-color); color: var(--text-main); padding: 8px 12px; border-radius: 8px; min-width: 150px;">
-                            <option value="all">Semua Tipe</option>
-                            <option value="AWS">AWS</option>
-                            <option value="ARG">ARG</option>
-                            <option value="AAWS">AAWS</option>
-                        </select>
+                        <div class="verify-filter-group">
+                            <label style="display: block; font-size: 0.72rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">TIPE STASIUN</label>
+                            <select id="typeFilter" class="btn-sm" style="background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary); padding: 8px 12px; border-radius: 8px; font-family: inherit; font-size: 0.85rem; min-width: 140px;">
+                                <option value="all">Semua Tipe</option>
+                                <option value="AWS">AWS</option>
+                                <option value="ARG">ARG</option>
+                                <option value="AAWS">AAWS</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 

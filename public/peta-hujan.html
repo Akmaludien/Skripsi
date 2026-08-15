@@ -10,18 +10,104 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <link rel="stylesheet" href="/css/style.css?v=6">
     <style>
-        .rainfall-map-container { position: relative; width: 100%; height: calc(100vh - var(--header-height) - 48px); border-radius: var(--border-radius); overflow: hidden; }
+        .rainfall-map-container {
+            position: relative;
+            width: 100%;
+            height: calc(100vh - var(--header-height) - 48px);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
         #rainfallMap { width: 100%; height: 100%; z-index: 1; }
-        .map-overlay-legend { position: absolute; bottom: 16px; right: 16px; z-index: 1000; background: rgba(15,23,42,0.9); backdrop-filter: blur(8px); border-radius: 10px; padding: 14px 16px; border: 1px solid rgba(255,255,255,0.1); }
-        .map-overlay-legend h4 { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+
+        /* ─── Map Overlay Base (Dark-mode native) ─── */
+        .map-overlay-legend,
+        .map-overlay-info {
+            position: absolute;
+            z-index: 1000;
+            background: rgba(15, 23, 42, 0.88);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+        .map-overlay-legend {
+            bottom: 16px;
+            right: 16px;
+            padding: 14px 16px;
+        }
+        .map-overlay-info {
+            top: 16px;
+            right: 16px;
+            padding: 14px 18px;
+            text-align: center;
+        }
+        .map-overlay-legend h4 {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
         .legend-scale { display: flex; flex-direction: column; gap: 4px; }
-        .legend-scale-item { display: flex; align-items: center; gap: 8px; font-size: 0.78rem; color: #e2e8f0; }
+        .legend-scale-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.78rem;
+            color: #e2e8f0;
+        }
         .legend-scale-color { width: 24px; height: 14px; border-radius: 3px; }
-        .map-overlay-info { position: absolute; top: 16px; right: 16px; z-index: 1000; background: rgba(15,23,42,0.9); backdrop-filter: blur(8px); border-radius: 10px; padding: 14px 18px; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
-        .map-overlay-info .time { font-size: 1.1rem; font-weight: 700; color: #3b82f6; }
+        .map-overlay-info .time { font-size: 1.1rem; font-weight: 700; color: #60a5fa; }
         .map-overlay-info .date { font-size: 0.78rem; color: #94a3b8; margin-top: 2px; }
         .map-overlay-info .label { font-size: 0.68rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+
+        /* ─── Light Mode Overrides ─── */
+        [data-theme="light"] .map-overlay-legend,
+        [data-theme="light"] .map-overlay-info {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+        }
+        [data-theme="light"] .map-overlay-legend h4 {
+            color: #475569;
+        }
+        [data-theme="light"] .legend-scale-item {
+            color: #1e293b;
+        }
+        [data-theme="light"] .map-overlay-info .time {
+            color: #2563eb;
+        }
+        [data-theme="light"] .map-overlay-info .date {
+            color: #475569;
+        }
+        [data-theme="light"] .map-overlay-info .label {
+            color: #64748b;
+        }
+
+        /* ─── Mobile Adjustments ─── */
+        @media (max-width: 768px) {
+            .rainfall-map-container {
+                height: calc(100vh - 60px);
+                border-radius: 0;
+            }
+            .map-overlay-legend {
+                bottom: 10px;
+                right: 10px;
+                padding: 10px 12px;
+            }
+            .map-overlay-legend h4 { font-size: 0.68rem; }
+            .legend-scale-item { font-size: 0.7rem; }
+            .legend-scale-color { width: 18px; height: 11px; }
+            .map-overlay-info {
+                top: 10px;
+                right: 10px;
+                padding: 10px 12px;
+            }
+            .map-overlay-info .time { font-size: 0.95rem; }
+            .map-overlay-info .date { font-size: 0.7rem; }
+        }
     </style>
+
     <link href="/css/remixicon/remixicon.css" rel="stylesheet" />
 <style> .leaflet-container, .leaflet-popup-content { color: var(--text-primary) !important; } .map-popup h4 { color: var(--text-primary) !important; } .map-popup p, .map-popup div { color: var(--text-secondary) !important; } .map-popup strong { color: var(--text-primary) !important; } </style></head>
 <body>
@@ -69,7 +155,7 @@
                             <div class="legend-scale-item"><div class="legend-scale-color" style="background:#ED8936"></div> 10 - 20 (Lebat)</div>
                             <div class="legend-scale-item"><div class="legend-scale-color" style="background:#ECC94B"></div> 5 - 10 (Sedang)</div>
                             <div class="legend-scale-item"><div class="legend-scale-color" style="background:#38A169"></div> 1 - 5 (Ringan)</div>
-                            <div class="legend-scale-item"><div class="legend-scale-color" style="background:#E2E8F0"></div> < 1 (Sangat Ringan)</div>
+                            <div class="legend-scale-item"><div class="legend-scale-color" style="background:#cbd5e1;border:1px solid rgba(0,0,0,0.15)"></div> < 1 (Sangat Ringan)</div>
                         </div>
                     </div>
                     <!-- Time Info -->
@@ -104,6 +190,14 @@
         // Update clock
         updateMapClock();
         setInterval(updateMapClock, 1000);
+
+        // Re-render markers & polygon boundaries immediately on theme switch
+        const themeBtn = document.getElementById('themeToggle');
+        if (themeBtn) {
+            themeBtn.addEventListener('click', () => {
+                setTimeout(() => loadRainfallData(currentRfHours), 50);
+            });
+        }
     });
 
     function updateMapClock() {
@@ -117,15 +211,15 @@
         if (rr >= 10) return '#ED8936';   // Lebat - oranye
         if (rr >= 5) return '#ECC94B';   // Sedang - kuning
         if (rr >= 1) return '#38A169'; // Ringan - hijau
-        return '#E2E8F0';                // Tidak Hujan - abu-abu muda
+        return '#94A3B8';                // Tidak Hujan / Sangat Ringan - abu-abu netral
     }
 
     function getRainfallOpacity(rr) {
-        if (rr > 20) return 0.7;
-        if (rr >= 10) return 0.6;
-        if (rr >= 5) return 0.5;
-        if (rr >= 1) return 0.4;
-        return 0.05; // Hampir transparan jika tidak hujan (polosan)
+        if (rr > 20) return 0.75;
+        if (rr >= 10) return 0.65;
+        if (rr >= 5) return 0.55;
+        if (rr >= 1) return 0.45;
+        return 0.08; // Transparan jika tidak hujan (polosan)
     }
 
     let currentRfHours = 0;
@@ -176,6 +270,9 @@
 
             if (points.length === 0) return;
 
+            // Detect current theme (dark or light)
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+
             // Compute Voronoi using d3-delaunay
             // Bounding box for Jawa Barat
             const bounds = [105.0, -8.0, 109.5, -5.5]; // [minLng, minLat, maxLng, maxLat]
@@ -194,11 +291,13 @@
                 // Convert [lng, lat] to [lat, lng] for Leaflet
                 const latlngs = cell.map(p => [p[1], p[0]]);
 
+                // Adaptive polygon styling for light vs dark mode
                 const polygon = L.polygon(latlngs, {
-                    fillColor: color,
+                    fillColor: (rr >= 1) ? color : (isDark ? '#334155' : '#cbd5e1'),
                     fillOpacity: opacity,
-                    color: 'rgba(255,255,255,0.15)',
-                    weight: 1
+                    color: isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(30, 41, 59, 0.45)',
+                    weight: isDark ? 1.2 : 1.5,
+                    dashArray: isDark ? null : '4, 4'
                 }).addTo(rfMap);
 
                 polygon.bindPopup(`
@@ -214,11 +313,14 @@
                     </div>
                 `);
 
-                // Station marker (small dot)
+                // Station marker (adaptive high-contrast dot for both light & dark mode)
+                const markerFill = (rr >= 1) ? color : (isDark ? '#f8fafc' : '#0f172a');
+                const markerBorder = isDark ? '#0f172a' : '#ffffff';
+
                 L.circleMarker([points[i][1], points[i][0]], {
-                    radius: 4,
-                    fillColor: '#fff',
-                    color: color,
+                    radius: 5,
+                    fillColor: markerFill,
+                    color: markerBorder,
                     weight: 2,
                     fillOpacity: 1
                 }).addTo(rfMap);

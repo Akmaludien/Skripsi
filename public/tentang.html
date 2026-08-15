@@ -23,6 +23,20 @@
         .stat-box { flex: 1; min-width: 120px; background: var(--bg-main); border-radius: 8px; padding: 16px; text-align: center; border: 1px solid var(--border-color); }
         .stat-box .num { font-size: 1.8rem; font-weight: 800; color: var(--primary-500); }
         .stat-box .label { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
+
+        @media (max-width: 768px) {
+            .tech-grid { grid-template-columns: 1fr !important; }
+            .arch-diagram {
+                font-size: 0.65rem;
+                padding: 16px;
+                white-space: pre-wrap;
+                word-break: break-word;
+            }
+            .stat-row { flex-direction: column; }
+            .stat-box { width: 100%; min-width: unset; }
+            /* SVG architecture diagram: allow horizontal scroll */
+            .card div[style*="overflow-x"] { overflow-x: auto !important; }
+        }
     </style>
     <link href="/css/remixicon/remixicon.css" rel="stylesheet" />
 <style> .leaflet-container, .leaflet-popup-content { color: var(--text-primary) !important; } .map-popup h4 { color: var(--text-primary) !important; } .map-popup p, .map-popup div { color: var(--text-secondary) !important; } .map-popup strong { color: var(--text-primary) !important; } </style></head>

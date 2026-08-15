@@ -448,6 +448,51 @@
                 grid-template-columns: 1fr 1fr;
             }
         }
+
+        @media (max-width: 768px) {
+            /* Table horizontal scroll */
+            .pred-table-wrapper {
+                overflow-x: auto;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            .prediction-table {
+                min-width: 480px;
+            }
+
+            /* Controls stack vertically */
+            .prediction-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .control-group {
+                width: 100%;
+            }
+            .control-input {
+                width: 100%;
+                min-width: unset;
+            }
+
+            /* Day tabs horizontal scroll */
+            .day-tabs {
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+                padding-bottom: 4px;
+            }
+            .day-tabs::-webkit-scrollbar { display: none; }
+
+            /* Banner compact */
+            .forecast-banner {
+                padding: 18px 16px;
+            }
+            .forecast-banner h2 { font-size: 1.1rem; }
+
+            /* Chart heights */
+            .chart-container-pred { height: 220px; }
+            #predictionMap { height: 320px; }
+        }
     </style>
     <link href="/css/remixicon/remixicon.css" rel="stylesheet" />
 <style> .leaflet-container, .leaflet-popup-content { color: var(--text-primary) !important; } .map-popup h4 { color: var(--text-primary) !important; } .map-popup p, .map-popup div { color: var(--text-secondary) !important; } .map-popup strong { color: var(--text-primary) !important; } </style></head>

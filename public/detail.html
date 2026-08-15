@@ -184,7 +184,7 @@
                             <h3 style="font-size: 1.2rem;">Meteorological Parameters</h3>
                             <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 4px;">Detailed historical readings for the past 24 hours</p>
                         </div>
-                        <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
+                        <div class="chart-controls-row" style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
                             <button id="btn-export" class="btn-sm" style="background:var(--bg-main);border:1px solid var(--border-color);color:var(--text-secondary);padding:6px 12px;border-radius:6px;font-size:0.85rem;cursor:pointer;"><i class="ri-inbox-line"></i> Export CSV</button>
                             <button id="btn-print" class="btn-sm" style="background:var(--bg-main);border:1px solid var(--border-color);color:var(--text-secondary);padding:6px 12px;border-radius:6px;font-size:0.85rem;cursor:pointer;"><i class="ri-printer-line"></i> Cetak Laporan</button>
                             <select id="chartParamSelect" class="filter-select" style="padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-primary);">
@@ -232,8 +232,8 @@
                         <canvas id="predictionChart"></canvas>
                     </div>
                     <!-- Prediction Table -->
-                    <div style="padding:12px 16px">
-                        <table style="width:100%;font-size:0.78rem;border-collapse:collapse" id="predDayTable">
+                    <div style="padding:12px 16px; overflow-x: auto; -webkit-overflow-scrolling: touch;">
+                        <table style="width:100%;min-width:400px;font-size:0.78rem;border-collapse:collapse" id="predDayTable">
                             <thead>
                                 <tr style="border-bottom:1px solid var(--border-color);color:var(--text-muted)">
                                     <th style="padding:8px;text-align:left">HARI</th>
