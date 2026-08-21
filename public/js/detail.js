@@ -124,7 +124,6 @@ function renderNewWidgets(station, data) {
             <div class="metric-card-v2 accent-orange">
                 <div class="metric-v2-header"><i class="ri-temp-hot-line"></i> Suhu</div>
                 <div class="metric-v2-value">${fNum(tempVal)}<span>°C</span></div>
-                <div class="metric-v2-subtitle">Terasa seperti ${fNum(heatIndex)}°C</div>
                 <div>
                     <div class="metric-v2-progress"><div class="metric-v2-progress-fill orange" style="width: ${Math.min(100, tempVal/50*100)}%;"></div></div>
                     <div class="metric-v2-range"><span>0°</span><span>50°</span></div>
@@ -135,7 +134,6 @@ function renderNewWidgets(station, data) {
             <div class="metric-card-v2 accent-green">
                 <div class="metric-v2-header"><i class="ri-drop-line"></i> Kelembapan</div>
                 <div class="metric-v2-value">${fNum(rhVal)}<span>%</span></div>
-                <div class="metric-v2-subtitle">${getHumidityDesc(rhVal)}</div>
                 <div>
                     <div class="metric-v2-progress"><div class="metric-v2-progress-fill green" style="width: ${Math.min(100, rhVal)}%;"></div></div>
                     <div class="metric-v2-range"><span>0%</span><span>100%</span></div>
