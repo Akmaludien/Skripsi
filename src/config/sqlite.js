@@ -50,10 +50,49 @@ try {
     console.error('[DB] Migration error:', e);
 }
 
-// Check if stations table is empty (seed if necessary)
-const stationCount = db.prepare('SELECT COUNT(*) as cnt FROM stations').get();
-if (stationCount && stationCount.cnt === 0) {
-    console.log('[DB] No stations found. Run seed.js to populate.');
+// Ensure stations metadata (elevation, coords, etc.) are always synchronized
+try {
+    const stationsData = require('./stationsData');
+    const extractRegion = (loc) => loc.replace('Kab. ', '').replace('Kota ', '');
+    const getModel = (type) => {
+        switch (type) {
+            case 'AWS': return 'Vaisala WXT536';
+            case 'ARG': return 'OTT Pluvio2';
+            case 'AAWS': return 'Davis Pro2';
+            default: return '';
+        }
+    };
+
+    const insertOrUpdateStation = db.prepare(`
+        INSERT INTO stations (id, name, type, location, region, elevation, latitude, longitude, model, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(id) DO UPDATE SET
+            name = excluded.name,
+            type = excluded.type,
+            location = excluded.location,
+            region = excluded.region,
+            elevation = excluded.elevation,
+            latitude = excluded.latitude,
+            longitude = excluded.longitude,
+            model = excluded.model
+    `);
+
+    const syncStations = db.transaction((list) => {
+        for (const s of list) {
+            insertOrUpdateStation.run(
+                s.id, s.name, s.type, s.location,
+                extractRegion(s.location),
+                s.elevation, s.lat, s.lng,
+                getModel(s.type),
+                s.status || 'Active / Normal'
+            );
+        }
+    });
+
+    syncStations(stationsData);
+    console.log(`[DB] Synchronized ${stationsData.length} stations metadata & elevations.`);
+} catch (e) {
+    console.error('[DB] Station sync error:', e);
 }
 
 module.exports = db;
