@@ -1,81 +1,129 @@
-# Sistem Monitoring & Prediksi Curah Hujan Jawa Barat
+# Sistem Monitoring dan Prediksi Curah Hujan Jawa Barat
 
-Sebuah platform pemantauan cuaca IoT secara *real-time* terintegrasi dengan mesin prediksi *Deep Learning* (Bi-LSTM) untuk jaringan stasiun observasi BMKG (AWS, ARG, AAWS) di wilayah Jawa Barat. Proyek ini dikembangkan khusus untuk tugas akhir / Skripsi di Sekolah Tinggi Meteorologi Klimatologi dan Geofisika (STMKG).
+Platform pemantauan cuaca IoT terintegrasi dan prediksi curah hujan berbasis *Deep Learning* (Bidirectional LSTM) untuk 50 jaringan stasiun observasi BMKG (AWS, ARG, dan AAWS) di wilayah Jawa Barat. Sistem ini dikembangkan sebagai bagian dari tugas akhir / skripsi di Sekolah Tinggi Meteorologi Klimatologi dan Geofisika (STMKG).
 
 ---
 
-## 🌟 Fitur Utama
+## Gambaran Sistem
 
-1. **Real-time IoT Telemetry**: Menerima dan memproses data sensor secara langsung melalui protokol MQTT v5 dari server BMKG.
-2. **Time-Series Database**: Mengelola puluhan ribu baris data historis secara efisien menggunakan **InfluxDB**.
-3. **Deep Learning Prediction (Bi-LSTM)**: Mesin prediksi kecerdasan buatan berbasis Python (TensorFlow/Keras) yang mampu meramalkan intensitas curah hujan hingga 7 hari ke depan. Menggunakan pendekatan **Modular OOP** dengan rekayasa fitur dinamis per stasiun (AWS 17 fitur, AAWS 10 fitur, ARG 1 fitur) serta **Adaptive Seasonal Filter** untuk menekan *over-prediction* di musim kemarau.
-4. **Interactive Dashboard**: Antarmuka responsif dengan peta interaktif (Leaflet.js) untuk melacak status operasional stasiun, tegangan baterai, dan parameter meteorologi.
-5. **Evaluasi & Verifikasi Model**: Menampilkan performa metrik model yang aktual secara *real-time* sesuai Bab IV Skripsi (RMSE, MAE, R², POD, FAR, CSI).
-6. **Export & Reporting**: Fitur unduh laporan dalam format CSV dan cetak PDF langsung dari sistem.
-7. **Docker & Coolify Ready**: Dirancang penuh menggunakan pendekatan *containerized* (Docker) sehingga sangat mudah di-*deploy* ke VPS melalui Coolify.
+Sistem ini mengintegrasikan akuisisi data cuaca *real-time* melalui protokol IoT MQTT, penyimpanan data *time-series*, pipeline pemrosesan data, serta inferensi model *machine learning* untuk menghasilkan prediksi curah hujan harian hingga 7 hari ke depan pada setiap stasiun.
 
-## 🛠️ Tech Stack
+### Fitur Utama
 
-| Komponen | Teknologi |
-|----------|-----------|
-| **Backend** | Node.js, Express.js (Modular MVC Architecture) |
-| **Database** | InfluxDB (Time-series), SQLite (Metadata Stasiun & Prediksi) |
-| **Frontend** | Vanilla JS, HTML5, CSS3, Chart.js, Leaflet.js |
-| **Machine Learning**| Python 3.11, TensorFlow 2.20.0, Keras, Pandas, NumPy |
-| **IoT / Real-time** | MQTT v5, WebSocket |
-| **Deployment** | Docker, Coolify (Ubuntu VPS) |
+1. **Telemetri IoT Real-time**: Mengonsumsi dan memproses data sensor meteorologi secara kontinu dari stasiun observasi BMKG menggunakan protokol MQTT v5.
+2. **Penyimpanan Time-Series & Relasional**:
+   - **InfluxDB**: Menyimpan data parameter observasi berkecepatan tinggi (*time-series*) untuk analisis historis dan visualisasi grafik.
+   - **SQLite**: Menyimpan metadata 50 stasiun (koordinat, elevasi SRTM, status), data prediksi harian, dan metrik verifikasi.
+3. **Prediksi Curah Hujan Multi-Stasiun (Bi-LSTM)**:
+   - Menggunakan arsitektur Bidirectional LSTM dengan penyesuaian fitur dinamis (*AWS*: 17 fitur, *AAWS*: 10 fitur, *ARG*: 1 fitur).
+   - Dilengkapi *Adaptive Seasonal Filter* untuk mengoptimalkan akurasi prediksi pada pola musiman (musim hujan dan kemarau).
+   - Menghasilkan proyeksi curah hujan harian (skala mm dan klasifikasi intensitas hujan) hingga 7 hari ke depan.
+4. **Visualisasi Spasial & Analisis**:
+   - Peta sebaran spasial interaktif menggunakan Leaflet.js dengan interpolasi Poligon Thiessen.
+   - Pemantauan status operasional stasiun (*online/offline*), kesehatan logger, dan tegangan baterai/panel surya.
+   - Grafik interaktif parameter cuaca (suhu, kelembapan, tekanan udara, arah/kecepatan angin, radiasi matahari).
+5. **Verifikasi & Evaluasi Model**:
+   - Menampilkan metrik performa model aktual (RMSE, MAE, R², POD, FAR, CSI, ACC, ETS) per stasiun maupun agregat wilayah.
+6. **Ekspor Data & Laporan**:
+   - Ekspor data historis observasi ke format CSV dan fitur cetak laporan operasional stasiun.
 
-## 🚀 Deployment (via Coolify)
+---
 
-Aplikasi ini didesain agar sangat mudah dijalankan di atas peladen VPS menggunakan Coolify.
+## Arsitektur Teknologi
 
-### 1. Persiapan Environment Variables
-Pastikan Anda mendaftarkan variabel lingkungan rahasia berikut di panel **Environment Variables** Coolify Anda (JANGAN sertakan `.env` di dalam GitHub!):
+| Komponen | Teknologi yang Digunakan |
+|---|---|
+| **Backend** | Node.js, Express.js |
+| **Database** | InfluxDB (Time-series data), SQLite (Metadata & Prediksi) |
+| **Frontend** | Vanilla JavaScript, HTML5, CSS3, Chart.js, Leaflet.js |
+| **Machine Learning** | Python 3.11, TensorFlow / Keras, NumPy, Pandas, Scikit-learn |
+| **Komunikasi Data** | MQTT v5 (Paho/MQTT.js), WebSocket |
+| **Kontainerisasi & Deploy** | Docker, Coolify / Ubuntu Server |
 
-```ini
-INFLUX_URL=http://<IP-INFLUXDB>:8086
-INFLUX_TOKEN=token_rahasia_anda_di_sini
-INFLUX_ORG=SKRIPSI
-INFLUX_BUCKET=Monitoring
-PORT=3001
-NODE_ENV=production
-```
+---
 
-### 2. Proses Build
-Coolify akan secara otomatis membaca `Dockerfile` yang ada di *root repository* ini, yang mencakup arsitektur *multi-stage*:
-- Menginstal **Node.js 22** dan dependensi paket NPM.
-- Menginstal **Python 3.11**.
-- Menjalankan `pip install` untuk *library* pendukung termasuk TensorFlow 2.20.0.
-- Menjalankan `src/server.js` pada *port* 3001.
-
-*Catatan: Proses redeploy mungkin memakan waktu 5-15 menit tergantung kecepatan VPS dalam mengunduh base image dan package Python.*
-
-## 📂 Struktur Direktori Penting
+## Struktur Direktori
 
 ```text
-├── src/                   # Backend Node.js Terstruktur
-│   ├── config/            # Konfigurasi Database & Environment
-│   ├── controllers/       # Logika Bisnis Endpoint API
-│   ├── routes/            # Definisi Endpoint API (Express Router)
-│   ├── services/          # Logika Background (MQTT, WebSocket, Python Runner, Scheduler)
-│   ├── utils/             # Helper fungsi dan Constants metrik model
-│   └── server.js          # Entry point utama aplikasi
+├── src/
+│   ├── config/            # Konfigurasi database (InfluxDB, SQLite), metadata stasiun, dan environment
+│   ├── controllers/       # Controller logika bisnis API
+│   ├── routes/            # Rute Express API (stations, predictions, dashboard, verification)
+│   ├── services/          # Service layer (MQTT client, InfluxDB query, Python runner, scheduler, WebSocket)
+│   ├── utils/             # Helper fungsi dan konstanta verifikasi
+│   └── server.js          # Entry point aplikasi backend
 ├── python_scripts/
-│   ├── predict.py         # Script Orchestrator Prediksi
-│   └── predictors/        # Modul Bi-LSTM OOP spesifik (AWS, AAWS, ARG)
-├── Dockerfile             # Konfigurasi containerized apps
+│   ├── predict.py         # Skrip orkestrator inferensi prediksi curah hujan
+│   └── predictors/        # Modul prediktor berbasis OOP (AWS, AAWS, ARG)
+├── models/                # Model Bi-LSTM (.keras/.h5) dan berkas scaler (.pkl)
 ├── database/
-│   └── seed.js            # Inisialisasi metadata dan daftar stasiun ke SQLite
-├── models/                # Model AI & Scaler (Terbagi dalam AWS, AAWS, ARG)
-├── public/
-│   ├── verifikasi.html    # Dashboard Evaluasi Model (Menampilkan RMSE, MAE, R², dsb)
-│   ├── prediksi.html      # Peta dan Tabel Prediksi Curah Hujan 7 Hari
-│   └── detail.html        # Detail Spesifik Stasiun & Grafik Historis
-└── requirements.txt       # Daftar pustaka Python (Versi library fix)
+│   ├── schema.sql         # Skema struktur tabel database SQLite
+│   └── seed.js            # Skrip seeding awal metadata stasiun
+├── public/                # Antarmuka web (Frontend)
+│   ├── index.html         # Dashboard ringkasan pemantauan
+│   ├── peta-hujan.html    # Peta sebaran spasial curah hujan real-time
+│   ├── stasiun.html       # Tabel daftar dan status 50 stasiun observasi
+│   ├── detail.html        # Detail parameter stasiun, analitik daya, dan grafik historis
+│   ├── prediksi.html      # Hasil prediksi curah hujan 7 hari ke depan
+│   ├── verifikasi.html    # Evaluasi metrik performa model
+│   ├── tentang.html       # Informasi metodologi dan sistem
+│   ├── css/               # Berkas stylesheet
+│   └── js/                # Berkas logika frontend per halaman
+├── data/                  # Direktori penyimpanan SQLite database lokal
+├── Dockerfile             # Konfigurasi container Docker multi-stage (Node.js + Python)
+├── package.json           # Dependensi dan skrip Node.js
+└── requirements.txt       # Dependensi pustaka Python
 ```
 
-## 🤝 Author
+---
 
-**Akmaludien Ramadhan**  
-Sekolah Tinggi Meteorologi Klimatologi dan Geofisika (STMKG)  
-*For academic and research purposes only.*
+## Panduan Deployment
+
+Aplikasi ini dikemas dalam bentuk kontainer Docker (*multi-stage build*) yang memadukan lingkungan Node.js dan Python runtime.
+
+### 1. Konfigurasi Environment Variables
+
+Siapkan variabel lingkungan pada berkas `.env` atau panel environment server produksi:
+
+```ini
+PORT=3001
+NODE_ENV=production
+
+# InfluxDB Configuration
+INFLUX_URL=http://<IP_INFLUXDB>:8086
+INFLUX_TOKEN=<INFLUX_TOKEN>
+INFLUX_ORG=SKRIPSI
+INFLUX_BUCKET=Monitoring
+
+# Optional Secret Keys
+API_KEY=<SECRET_API_KEY>
+```
+
+### 2. Menjalankan secara Lokal
+
+```bash
+# Instalasi dependensi Node.js
+npm install
+
+# Inisialisasi database awal
+npm run seed
+
+# Menjalankan server aplikasi
+npm run dev
+```
+
+### 3. Menjalankan via Docker
+
+```bash
+# Build image Docker
+docker build -t stmkg-monitoring .
+
+# Menjalankan kontainer
+docker run -d -p 3001:3001 --env-file .env --name simprech-app stmkg-monitoring
+```
+
+---
+
+## Lisensi dan Hak Cipta
+
+Proyek ini dikembangkan oleh **Akmaludien Ramadhan** untuk keperluan akademik dan penelitian skripsi di **Sekolah Tinggi Meteorologi Klimatologi dan Geofisika (STMKG)**.
